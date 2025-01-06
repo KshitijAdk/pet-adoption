@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Navbar from "./Navbar";
-import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import "../components/styles.css";
 
 const Signup = () => {
@@ -72,7 +72,7 @@ const Signup = () => {
                             />
                             <span
                                 onClick={() => setIsPasswordShown((prevState) => !prevState)}
-                                className="absolute top-10 right-3 transform -translate-y-1/2 text-[#917DE8] cursor-pointer text-xl"
+                                className="absolute top-12 right-3 transform -translate-y-1/2 text-[#917DE8] cursor-pointer text-xl"
                             >
                                 {isPasswordShown ? <EyeOff /> : <Eye />}
                             </span>

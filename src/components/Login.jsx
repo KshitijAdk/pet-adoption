@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Navbar from "./Navbar";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import "../components/styles.css"
 
 const Login = () => {
@@ -26,9 +26,8 @@ const Login = () => {
                 type="email"
                 id="email"
                 placeholder="Email address"
-                className="w-full h-12 px-16 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
+                className="w-full h-12 px-4 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
               />
-              <Mail className="absolute top-1/2 left-3 transform -translate-y-1/2 text-[#a395e0]" />
             </div>
 
             {/* Password Input */}
@@ -38,12 +37,11 @@ const Login = () => {
                 type={isPasswordShown ? "text" : "password"}
                 id="password"
                 placeholder="Password"
-                className="w-full h-12 px-16 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
+                className="w-full h-12 px-4 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
               />
-              <Lock className="absolute top-1/2 left-3 transform -translate-y-1/2 text-[#a395e0]" />
               <span
                 onClick={() => setIsPasswordShown((prevState) => !prevState)}
-                className="absolute top-1/2 right-3 transform -translate-y-1/2 text-[#917DE8] cursor-pointer text-xl"
+                className="absolute top-11 right-3 transform -translate-y-1/2 text-[#917DE8] cursor-pointer text-xl"
               >
                 {isPasswordShown ? <EyeOff /> : <Eye />}
               </span>

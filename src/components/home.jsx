@@ -1,9 +1,5 @@
 import Search from "./search";
 import Navbar from "./Navbar"
-// import "./style.css";
-// import Steps from "./Home/Steps";
-// import Services from "./Services";
-// import Blogs from "./Blogs";
 
 const Home = () => {
   return (
@@ -12,9 +8,6 @@ const Home = () => {
 
         <Navbar />
         <Search />
-        {/* <Steps/>
-        <Services />
-        <Blogs /> */}
       </div>
     </>
   );

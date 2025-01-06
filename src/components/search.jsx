@@ -1,5 +1,5 @@
 import PetTypeCard from "./petcard";
-import petsImage from "../assests/pets.jpg";
+import petsImage from "../assests/pets.png";
 import { DogIcon, Cat, PawPrintIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
