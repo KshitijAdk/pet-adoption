@@ -1,6 +1,7 @@
 import React from "react";
 import img1 from '../assests/home.png'
 import img2 from '../assests/pets.png'
+import Button from "./ui/button";
 
 const BlogSection = () => {
   return (
@@ -21,12 +22,11 @@ const BlogSection = () => {
               <h3 className="text-lg font-semibold text-purple-800">
                 Blog Title [Dog Adoption Blogs]
               </h3>
-              <p className="text-purple-600 mt-2">
+              <p className="text-purple-600 mt-2 pb-4">
                 Read blogs about caring for your Dog.
               </p>
-              <button className="mt-4 px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700">
-                Read More
-              </button>
+
+              <Button text="Read More" variant="primary" />
             </div>
           </div>
 
@@ -41,12 +41,10 @@ const BlogSection = () => {
               <h3 className="text-lg font-semibold text-purple-800">
                 Blog Title [Cat Adoption Blogs]
               </h3>
-              <p className="text-purple-600 mt-2">
+              <p className="text-purple-600 mt-2 pb-4">
                 Read blogs about caring for your Cat.
               </p>
-              <button className="mt-4 px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700">
-                Read More
-              </button>
+              <Button text="Read More" variant="primary" />
             </div>
           </div>
         </div>

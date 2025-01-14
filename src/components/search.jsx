@@ -1,6 +1,7 @@
 import React from "react";
-import petImage from '../assests/home.png'
-import './styles.css'
+import Button from "./ui/button";
+import petImage from '../assests/home.png';
+import './styles.css';
 
 const Search = () => {
   return (
@@ -17,22 +18,14 @@ const Search = () => {
               eiusmod tempor incididunt ut labore.
             </p>
             <div className="flex justify-center md:justify-start space-x-4">
-              <button className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700">
-                FIND OUT NOW
-              </button>
-              <button className="px-6 py-3 border border-purple-900 text-purple-600 font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:text-white">
-                DONATE
-              </button>
+              <Button text="FIND OUT NOW" variant="primary" />
+              <Button text="DONATE" variant="secondary" />
             </div>
           </div>
 
           {/* Image Section */}
           <div className="md:w-1/2 mt-8 md:mt-0">
-            <img
-              src={petImage}
-              alt="Dog"
-              className="rounded-lg -mt-20"
-            />
+            <img src={petImage} alt="Dog" className="rounded-lg -mt-20" />
           </div>
         </div>
       </div>

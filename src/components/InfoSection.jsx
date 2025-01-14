@@ -1,9 +1,10 @@
 import React from "react";
 import { Home, Dog, HelpCircle } from "lucide-react";
+import Button from "./ui/button";
 
 const InfoSection = () => {
   return (
-    <div className="bg-white text-black py-16 bg-image-login">
+    <div className="bg-white text-black py-16 bg-image-petDetails">
       <div className="container mx-auto px-6 text-center">
         <h2 className="text-4xl font-bold mb-12">PLANNING TO ADOPT A PET?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -16,9 +17,7 @@ const InfoSection = () => {
             <p className="text-gray-700 mt-2 flex-grow mb-6">
               Make the adoption transition as smooth as possible.
             </p>
-            <button className="px-6 py-2 border border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-600 hover:text-white">
-              LEARN MORE
-            </button>
+            <Button text="LEARN MORE" variant="secondary" />
           </div>
 
           {/* Card 2 */}
@@ -31,9 +30,7 @@ const InfoSection = () => {
               Learn to translate dog years to human years just for fun, and vice
               versa. Finally answer how old your dog is!
             </p>
-            <button className="px-6 py-2 border border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-600 hover:text-white">
-              LEARN MORE
-            </button>
+            <Button text="LEARN MORE" variant="secondary" />
           </div>
 
           {/* Card 3 */}
@@ -46,9 +43,7 @@ const InfoSection = () => {
               Get answers to all the questions you haven't thought of for your
               adoption.
             </p>
-            <button className="px-6 py-2 border border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-600 hover:text-white">
-              LEARN MORE
-            </button>
+            <Button text="LEARN MORE" variant="secondary" />
           </div>
         </div>
       </div>
