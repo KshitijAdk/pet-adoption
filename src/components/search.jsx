@@ -1,49 +1,42 @@
-import PetTypeCard from "./petcard";
-import petsImage from "../assests/pets.png";
-import { DogIcon, Cat, PawPrintIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import React from "react";
+import petImage from '../assests/home.png'
+import './styles.css'
 
 const Search = () => {
   return (
-    <>
-      <div
-        className="p-10 bg-center bg-cover bg-opacity-15"
-        style={{
-          backgroundImage: `url(${petsImage})`,
-        }}
-      >
-        <h1 className="text-5xl mt-40 text-center text-white font-bold ">
-          Take care of your Friend !
-        </h1>
-        <br />
-        <p className="text-white text-center">
-          If you want a bestfriend, you’re in the right place! Find the ideal
-          pet for yours and adopt it, bring love into your life:)
-        </p>
-        <br />
+    <div className="relative bg-white text-black bg-image-login">
+      <div className="container mx-auto px-6 py-12 md:py-24">
+        <div className="flex flex-col md:flex-row items-center">
+          {/* Text Section */}
+          <div className="text-center md:text-left md:w-1/2">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Do you think about <br /> adopting a pet?
+            </h1>
+            <p className="text-lg mb-8">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore.
+            </p>
+            <div className="flex justify-center md:justify-start space-x-4">
+              <button className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700">
+                FIND OUT NOW
+              </button>
+              <button className="px-6 py-3 border border-purple-900 text-purple-600 font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:text-white">
+                DONATE
+              </button>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-5 items-center justify-center p-1 mt-10 h-auto text-white">
-          <Link to="/pets">
-            <PetTypeCard
-              petType={"Cat"}
-              petIcon={<DogIcon size={"50px"} className=" text-black" />}
+          {/* Image Section */}
+          <div className="md:w-1/2 mt-8 md:mt-0">
+            <img
+              src={petImage}
+              alt="Dog"
+              className="rounded-lg -mt-20"
             />
-          </Link>
-          <Link to="/pets">
-            <PetTypeCard
-              petType={"Dog"}
-              petIcon={<Cat size={"50px"} className=" text-black" />}
-            />
-          </Link>
-          <Link to="/pets">
-            <PetTypeCard
-              petType={"Other Pets"}
-              petIcon={<PawPrintIcon size={"50px"} className=" text-black" />}
-            />
-          </Link>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

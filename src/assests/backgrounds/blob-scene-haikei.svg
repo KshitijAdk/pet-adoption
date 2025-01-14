@@ -1,1 +1,23 @@
-<svg id="visual" viewBox="0 0 900 600" width="900" height="600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"><rect x="0" y="0" width="900" height="600" fill="#A9C4E8"></rect><defs><linearGradient id="grad1_0" x1="33.3%" y1="0%" x2="100%" y2="100%"><stop offset="20%" stop-color="#a9c4e5" stop-opacity="1"></stop><stop offset="80%" stop-color="#a9c4e5" stop-opacity="1"></stop></linearGradient></defs><defs><linearGradient id="grad2_0" x1="0%" y1="0%" x2="66.7%" y2="100%"><stop offset="20%" stop-color="#a9c4e5" stop-opacity="1"></stop><stop offset="80%" stop-color="#a9c4e5" stop-opacity="1"></stop></linearGradient></defs><g transform="translate(900, 0)"><path d="M0 270.4C-44.1 258.3 -88.2 246.2 -130 225.2C-171.8 204.1 -211.2 174.2 -234.2 135.2C-257.2 96.2 -263.8 48.1 -270.4 0L0 0Z" fill="#739ACA"></path></g><g transform="translate(0, 600)"><path d="M0 -270.4C48.1 -263.8 96.2 -257.2 135.2 -234.2C174.2 -211.2 204.1 -171.8 225.2 -130C246.2 -88.2 258.3 -44.1 270.4 0L0 0Z" fill="#739ACA"></path></g></svg>
+<svg id="visual" viewBox="0 0 900 600" width="900" height="600"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1">
+    <rect x="0" y="0" width="900" height="600" fill="#DCCEF7"></rect>
+    <defs>
+        <linearGradient id="grad1_0" x1="33.3%" y1="0%" x2="100%" y2="100%">
+            <stop offset="20%" stop-color="#d3bdf0" stop-opacity="1"></stop>
+            <stop offset="80%" stop-color="#d3bdf0" stop-opacity="1"></stop>
+        </linearGradient>
+    </defs>
+    <defs>
+        <linearGradient id="grad2_0" x1="0%" y1="0%" x2="66.7%" y2="100%">
+            <stop offset="20%" stop-color="#d3bdf0" stop-opacity="1"></stop>
+            <stop offset="80%" stop-color="#d3bdf0" stop-opacity="1"></stop>
+        </linearGradient>
+    </defs>
+    <g transform="translate(900, 0)">
+        <path d="M0 270.4C-44.1 258.3 -88.2 246.2 -130 225.2C-171.8 204.1 -211.2 174.2 -234.2 135.2C-257.2 96.2 -263.8 48.1 -270.4 0L0 0Z" fill="#C4A4E5"></path>
+    </g>
+    <g transform="translate(0, 600)">
+        <path d="M0 -270.4C48.1 -263.8 96.2 -257.2 135.2 -234.2C174.2 -211.2 204.1 -171.8 225.2 -130C246.2 -88.2 258.3 -44.1 270.4 0L0 0Z" fill="#C4A4E5"></path>
+    </g>
+</svg>
