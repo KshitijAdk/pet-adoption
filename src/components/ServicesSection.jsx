@@ -3,7 +3,7 @@ import { Stethoscope, PawPrint, Bone, Scissors } from "lucide-react";
 
 const ServicesSection = () => {
   return (
-    <div className="bg-purple-100 py-16 bg-image-testimonials">
+    <div className="bg-purple-100 py-16 bg-image-login">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold text-center text-black-800 mb-12">
           Our Services

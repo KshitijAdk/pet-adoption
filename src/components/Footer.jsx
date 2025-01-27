@@ -20,7 +20,7 @@ const Footer = () => {
                 <div className="text-center mb-6 md:mb-0">
                     <ul className="flex space-x-6 text-sm">
                         <li>
-                            <a href="#home" className="hover:text-purple-400">
+                            <a href="/" className="hover:text-purple-400">
                                 Home
                             </a>
                         </li>
@@ -66,7 +66,7 @@ const Footer = () => {
 
             {/* Footer Bottom */}
             <div className="text-center text-sm text-gray-400 mt-6">
-                © 2025 SanoSansar. All rights reserved.
+                © 2025 NayaSathi. All rights reserved.
             </div>
         </footer>
     );
