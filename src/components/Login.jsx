@@ -1,10 +1,13 @@
 import { useState } from "react";
 import Navbar from "./Navbar";
-import { Eye, EyeOff } from "lucide-react";
-import "../components/styles.css"
+import InputField from "./ui/inputField";
+import Button from "./ui/button";
+import "../components/styles.css";
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
+
+  const togglePasswordVisibility = () => setIsPasswordShown((prevState) => !prevState);
 
   return (
     <>
@@ -20,32 +23,22 @@ const Login = () => {
 
           <form action="#" className="login-form">
             {/* Email Input */}
-            <div className="relative mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Email address"
-                className="w-full h-12 px-4 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
-              />
-            </div>
+            <InputField
+              id="email"
+              label="Email"
+              type="email"
+              placeholder="Email address"
+            />
 
             {/* Password Input */}
-            <div className="relative mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-              <input
-                type={isPasswordShown ? "text" : "password"}
-                id="password"
-                placeholder="Password"
-                className="w-full h-12 px-4 text-base border border-[#bfb3f2] rounded-lg focus:border-[#5F41E4] placeholder-[#9284c8] transition ease-in-out"
-              />
-              <span
-                onClick={() => setIsPasswordShown((prevState) => !prevState)}
-                className="absolute top-11 right-3 transform -translate-y-1/2 text-[#917DE8] cursor-pointer text-xl"
-              >
-                {isPasswordShown ? <EyeOff /> : <Eye />}
-              </span>
-            </div>
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              placeholder="Password"
+              isPasswordShown={isPasswordShown}
+              togglePasswordVisibility={togglePasswordVisibility}
+            />
 
             {/* Forgot Password Link */}
             <a href="#" className="block text-right text-[#007bff] text-sm hover:underline">
@@ -53,12 +46,12 @@ const Login = () => {
             </a>
 
             {/* Log In Button */}
-            <button
-              type="submit"
-              className="w-full h-12 mt-7 text-white font-medium text-lg rounded-lg bg-[#5F41E4] hover:bg-[#4320df] transition ease-in-out"
-            >
-              Log In
-            </button>
+            <Button
+              text="Log In"
+              onClick={() => console.log("Log In clicked")}
+              variant="primary"
+              className="w-full"
+            />
           </form>
 
           {/* Log in with Google Button */}
