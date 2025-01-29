@@ -45,8 +45,6 @@ const Signup = () => {
         setIsLoading(true);
 
         try {
-            console.log("Sending signup request to:", `${backendUrl}/api/auth/register`);
-
             const response = await fetch(`${backendUrl}/api/auth/register`, {
                 method: "POST",
                 headers: {
@@ -57,11 +55,10 @@ const Signup = () => {
             });
 
             const data = await response.json();
-            console.log("Signup Response:", data);
 
             if (data.success) {
-                toast.success(data.message || "Signup successful! Please check your email for verification.");
-                setTimeout(() => navigate("/login"), 2000);
+                toast.success("Signup successful! Sending OTP...");
+                await sendOtp(data.userId);
             } else {
                 toast.error(data.message || "Signup failed. Try again.");
             }
@@ -70,6 +67,30 @@ const Signup = () => {
             toast.error(error.message || "Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const sendOtp = async (userId) => {
+        try {
+            const response = await fetch(`${backendUrl}/api/auth/send-verify-otp`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId }),
+                credentials: "include",
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success("OTP sent! Check your email.");
+                setTimeout(() => navigate("/email-verification"), 2000);
+            } else {
+                toast.error(data.message || "Failed to send OTP.");
+            }
+        } catch (error) {
+            console.error("OTP sending error:", error);
+            toast.error("Failed to send OTP. Try again.");
         }
     };
 
