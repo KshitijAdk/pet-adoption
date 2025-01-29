@@ -1,13 +1,77 @@
-import React, { useState } from "react";
+// src/components/Signup.jsx
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Button from "./ui/button";
 import InputField from "./ui/inputField";
-import "../components/styles.css";
+import { AppContent } from "../context/AppContext";
+import { toast } from "react-toastify";
+import ToastComponent from './ui/ToastComponent'
 
 const Signup = () => {
     const [isPasswordShown, setIsPasswordShown] = useState(false);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const { backendUrl } = useContext(AppContent);
 
     const togglePasswordVisibility = () => setIsPasswordShown((prev) => !prev);
+
+    // Validate email format
+    const validateEmail = (email) => {
+        const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return regex.test(email);
+    };
+
+    // Validate password (at least 6 characters)
+    const validatePassword = (password) => password.length >= 6;
+
+    const handleSignup = async (e) => {
+        e.preventDefault();
+
+        if (!validateEmail(email)) {
+            toast.error("Please enter a valid email.");
+            return;
+        }
+
+        if (!validatePassword(password)) {
+            toast.error("Password must be at least 6 characters.");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            console.log("Sending signup request to:", `${backendUrl}/api/auth/register`);
+
+            const response = await fetch(`${backendUrl}/api/auth/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name, email, password }),
+                credentials: "include",
+            });
+
+            const data = await response.json();
+            console.log("Signup Response:", data);
+
+            if (data.success) {
+                toast.success(data.message || "Signup successful! Please check your email for verification.");
+                setTimeout(() => navigate("/login"), 2000);
+            } else {
+                toast.error(data.message || "Signup failed. Try again.");
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            toast.error(error.message || "Something went wrong. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <>
@@ -18,14 +82,20 @@ const Signup = () => {
                     <p className="text-left text-lg font-medium text-gray-700 mb-6">
                         Create your account to get started
                     </p>
-                    <form action="#" className="signup-form">
+
+                    <form onSubmit={handleSignup} className="signup-form">
                         <InputField
-                            id="fullName"
+                            onChange={(e) => setName(e.target.value)}
+                            value={name}
+                            id="name"
                             label="Full Name"
+                            type="text"
                             placeholder="Full Name"
                             required
                         />
                         <InputField
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
                             id="email"
                             label="Email"
                             type="email"
@@ -33,36 +103,35 @@ const Signup = () => {
                             required
                         />
                         <InputField
+                            onChange={(e) => setPassword(e.target.value)}
+                            value={password}
                             id="password"
                             label="Password"
-                            type="password"
+                            type={isPasswordShown ? "text" : "password"}
                             placeholder="Password"
                             isPasswordShown={isPasswordShown}
                             togglePasswordVisibility={togglePasswordVisibility}
                             required
                         />
                         <Button
-                            text="Sign Up"
-                            onClick={() => console.log("Sign Up clicked")}
+                            text={isLoading ? "Signing Up..." : "Sign Up"}
+                            type="submit"
                             variant="primary"
                             className="w-full"
+                            disabled={isLoading}
                         />
                     </form>
+
                     <button
                         type="button"
                         className="w-full h-12 mt-4 text-white font-medium text-lg rounded-lg bg-[#DB4437] hover:bg-[#C1351D] transition ease-in-out flex items-center justify-center"
                     >
-                        {/* Google Icon SVG */}
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="currentColor"
-                            viewBox="0 0 488 512"
-                            className="h-5 w-5 mr-3"
-                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 488 512" className="h-5 w-5 mr-3">
                             <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
                         </svg>
                         Login with Google
                     </button>
+
                     <p className="text-center text-base font-medium mt-5 mb-1">
                         Already have an account?{" "}
                         <a href="/login" className="text-[#5F41E4] hover:underline">
@@ -71,6 +140,9 @@ const Signup = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Use ToastComponent for toast notifications */}
+            <ToastComponent />
         </>
     );
 };
