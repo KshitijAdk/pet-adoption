@@ -3,12 +3,15 @@ import ReactDOM from 'react-dom/client'; // import from 'react-dom/client' inste
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
+import { AppContextProvider } from './context/AppContext';
 
 // Use ReactDOM.createRoot instead of ReactDOM.render
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <BrowserRouter>
-    <App />
+    <AppContextProvider>
+      <App />
+    </AppContextProvider>
   </BrowserRouter>
 );
