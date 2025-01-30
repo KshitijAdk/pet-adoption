@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import InputField from "./ui/inputField";
 import Button from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { toast } from "react-toastify";
+import { AppContent } from "../context/AppContext";
+import ToastComponent from "./ui/ToastComponent";
 import './styles.css'
 
 export default function EmailVerification() {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [resendDisabled, setResendDisabled] = useState(false);
+    const navigate = useNavigate();
+    const { backendUrl } = useContext(AppContent);
 
     const handleChange = (index, value, event) => {
         if (!/^[0-9]?$/.test(value)) return;
@@ -22,20 +27,67 @@ export default function EmailVerification() {
         }
     };
 
-    const handleSubmit = () => {
+    const handlePaste = (event) => {
+        event.preventDefault();
+        const pastedData = event.clipboardData.getData("text").trim().replace(/\D/g, "");
+        const newOtp = pastedData.split("").slice(0, 6);
+        setOtp([...newOtp, ...Array(6 - newOtp.length).fill("")]);
+    };
+
+    const handleSubmit = async () => {
         const enteredOtp = otp.join("");
         if (enteredOtp.length < 6) {
             toast.error("Please enter the complete OTP.");
             return;
         }
-        toast.success("OTP Verified Successfully!");
+
+        try {
+            const response = await fetch(`${backendUrl}/api/auth/verify-account`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ otp: enteredOtp }),
+                credentials: "include",
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success("Email Verified Successfully!");
+                setTimeout(() => navigate("/login"), 2000);
+            } else {
+                toast.error(data.message || "Invalid OTP. Please try again.");
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.");
+        }
     };
 
-    const handleResend = () => {
+    const handleResend = async () => {
         setResendDisabled(true);
         toast.info("Resending OTP...");
+
+        try {
+            const response = await fetch(`${backendUrl}/api/auth/send-verify-otp`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                toast.success("OTP Resent Successfully!");
+            } else {
+                toast.error(data.message || "Failed to resend OTP.");
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.");
+        }
+
         setTimeout(() => {
-            toast.success("OTP Resent Successfully!");
             setResendDisabled(false);
         }, 30000);
     };
@@ -46,7 +98,7 @@ export default function EmailVerification() {
                 <CardContent className="text-center">
                     <h2 className="text-xl font-semibold mb-4">Email Verification</h2>
                     <p className="text-gray-600 mb-4">Enter the 6-digit OTP sent to your email</p>
-                    <div className="flex justify-center gap-4 mb-4">
+                    <div className="flex justify-center gap-4 mb-4" onPaste={handlePaste}>
                         {otp.map((digit, index) => (
                             <InputField
                                 key={index}
@@ -75,6 +127,7 @@ export default function EmailVerification() {
                     </p>
                 </CardContent>
             </Card>
+            <ToastComponent />
         </div>
     );
 }

@@ -59,6 +59,8 @@ const Signup = () => {
             if (data.success) {
                 toast.success("Signup successful! Sending OTP...");
                 await sendOtp(data.userId);
+                // setIsLoggedin(true)
+                // getUserData();
             } else {
                 toast.error(data.message || "Signup failed. Try again.");
             }
