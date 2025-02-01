@@ -3,8 +3,8 @@ import logo from "../assests/image.png";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import Cookies from "js-cookie";
-import { User } from "lucide-react"; // Lucide React User Icon
 import { toast } from "react-toastify";
+import ToastComponent from "./ui/ToastComponent";
 import axios from "axios";
 
 const Navbar = () => {
@@ -118,6 +118,7 @@ const Navbar = () => {
           )}
         </div>
       </div>
+      <ToastComponent />
     </>
   );
 };

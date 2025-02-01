@@ -84,7 +84,7 @@ const Login = () => {
               required
             />
 
-            <a href="#" className="block text-right text-[#007bff] text-sm hover:underline">
+            <a href="/reset-password" className="block text-right text-[#007bff] text-sm hover:underline">
               Forgot password?
             </a>
 
