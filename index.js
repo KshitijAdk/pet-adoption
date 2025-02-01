@@ -16,7 +16,14 @@ connectDB();
 app.use(express.urlencoded({ extended: true })); // For form-data (application/x-www-form-urlencoded)
 app.use(express.json()); // Middleware to parse JSON data
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, origin || "*"); // Allow all origins dynamically
+    },
+    credentials: true, // Allow credentials (cookies, auth headers, etc.)
+  })
+);
 
 app.get('/', (req, res) => {
   res.send("API Working")
