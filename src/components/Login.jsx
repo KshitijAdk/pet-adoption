@@ -50,7 +50,10 @@ const Login = () => {
     }
   };
 
-
+  const handleGoogleLogin = () => {
+    // Redirect the user to the backend Google OAuth endpoint
+    window.location.href = `${backendUrl}/auth/google`;
+  };
 
   return (
     <>
@@ -100,6 +103,7 @@ const Login = () => {
           <button
             type="button"
             className="w-full h-12 mt-4 text-white font-medium text-lg rounded-lg bg-[#DB4437] hover:bg-[#C1351D] transition ease-in-out flex items-center justify-center"
+            onClick={handleGoogleLogin}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
