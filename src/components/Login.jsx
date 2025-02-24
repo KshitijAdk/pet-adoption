@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
-import InputField from "./ui/inputField";
+import InputField from "./ui/InputField";
 import Button from "./ui/button";
 import ToastComponent from "./ui/ToastComponent";
 import { toast } from "react-toastify";
