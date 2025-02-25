@@ -15,6 +15,7 @@ import BlogPage from "./components/BlogsPage";
 import Navbar from "./components/Navbar";
 import VendorRegistration from "./components/VendorRegistration";
 import Footer from "./components/Footer";
+import ManageVendors from "./Admin/ManageVendors";
 
 const App = () => {
   return (
@@ -32,6 +33,12 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/fullblogs" element={<BlogPage />} />
         <Route path="/vendor-registration" element={<VendorRegistration />} />
+
+
+        <Route path="/admin/manage-vendors" element={<ManageVendors />} />
+        {/* <Route path="/admin" element={<VendorRegistration />} /> */}
+
+
 
       </Routes>
       <Footer />
