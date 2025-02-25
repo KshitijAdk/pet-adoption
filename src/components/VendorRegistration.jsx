@@ -88,7 +88,7 @@ export default function VendorRegistration() {
                 console.log("Starting image upload to Cloudinary..."); // Debug log
                 const formDataCloudinary = new FormData();
                 formDataCloudinary.append("file", image);
-                formDataCloudinary.append("upload_preset", "vendor_images"); // Your Cloudinary upload preset
+                formDataCloudinary.append("upload_preset", `${import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET}`); // Your Cloudinary upload preset
 
                 // Debug log: Check FormData contents
                 for (let [key, value] of formDataCloudinary.entries()) {
@@ -96,7 +96,7 @@ export default function VendorRegistration() {
                 }
 
                 const cloudinaryResponse = await fetch(
-                    `https://api.cloudinary.com/v1_1/dxigipf0k/image/upload`, // Your Cloudinary cloud name
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, // Your Cloudinary cloud name
                     {
                         method: "POST",
                         body: formDataCloudinary,
