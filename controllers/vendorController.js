@@ -31,3 +31,15 @@ export const registerVendor = async (req, res) => {
         res.status(500).json({ message: 'Something went wrong, please try again.' });
     }
 };
+
+
+// New controller to get all vendors
+export const getAllVendors = async (req, res) => {
+    try {
+        const vendors = await Vendor.find(); // Fetch all vendors from the database
+        res.status(200).json({ vendors });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch vendors, please try again.' });
+    }
+};
