@@ -8,6 +8,7 @@ const vendorSchema = new mongoose.Schema({
     address: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String, required: true },
+    status: { type: String, default: "pending", enum: ["pending", "approved", "rejected"] }, // Added status field
 });
 
 const Vendor = mongoose.models.Vendor || mongoose.model('VendorApply', vendorSchema);
