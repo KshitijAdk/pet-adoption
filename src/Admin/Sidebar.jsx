@@ -1,10 +1,11 @@
 import { Home, Users, Book, FileText, LogOut, TrendingUp, Star } from 'lucide-react';
+import logo from '../assests/image.png'
 
 const Sidebar = () => {
     return (
         <div className="h-screen w-64 bg-purple-100 shadow-lg p-4">
             <div className="flex items-center justify-center mb-6">
-                <img src="/logo.png" alt="Logo" className="h-12 w-12" />
+                <img src={logo} alt="Logo" className="h-12 w-12" />
                 <h1 className="text-xl font-bold text-black ml-2">NayaSathi</h1>
             </div>
             <nav className="space-y-2">
