@@ -1,9 +1,8 @@
 // src/components/Signup.jsx
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
 import Button from "./ui/button";
-import InputField from "./ui/inputField";
+import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
 import ToastComponent from './ui/ToastComponent'
@@ -98,7 +97,6 @@ const Signup = () => {
 
     return (
         <>
-            <Navbar />
             <div className="flex items-center justify-center min-h-screen bg-[#5F41E4] bg-image-login">
                 <div className="w-full max-w-[410px] p-6 rounded-lg bg-white shadow-lg">
                     <h2 className="text-left text-[2rem] font-semibold mb-5 text-black">Sign Up</h2>

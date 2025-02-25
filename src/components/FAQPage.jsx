@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
 
 const FAQPage = () => {
     const [openIndex, setOpenIndex] = useState(null);
@@ -39,42 +37,39 @@ const FAQPage = () => {
     ];
 
     return (
-        <>
-            <Navbar />
-            <div className="max-w-4xl mx-auto p-6">
-                <h1 className="text-3xl font-bold mb-4">Frequently Asked Questions</h1>
-                <p className="text-gray-600 mb-8">
-                    Get answers to the most common questions about pet adoption at NayaSathi.
-                </p>
 
-                <div className="space-y-4">
-                    {faqs.map((faq, index) => (
-                        <div
-                            key={index}
-                            className="border rounded-lg shadow-sm overflow-hidden"
+        <div className="max-w-4xl mx-auto p-6">
+            <h1 className="text-3xl font-bold mb-4">Frequently Asked Questions</h1>
+            <p className="text-gray-600 mb-8">
+                Get answers to the most common questions about pet adoption at NayaSathi.
+            </p>
+
+            <div className="space-y-4">
+                {faqs.map((faq, index) => (
+                    <div
+                        key={index}
+                        className="border rounded-lg shadow-sm overflow-hidden"
+                    >
+                        <button
+                            onClick={() => toggleFAQ(index)}
+                            className="flex justify-between items-center w-full p-4 text-left text-lg font-medium text-gray-800 bg-gray-100 hover:bg-gray-200"
                         >
-                            <button
-                                onClick={() => toggleFAQ(index)}
-                                className="flex justify-between items-center w-full p-4 text-left text-lg font-medium text-gray-800 bg-gray-100 hover:bg-gray-200"
-                            >
-                                {faq.question}
-                                {openIndex === index ? (
-                                    <ChevronUp className="h-5 w-5 text-gray-600" />
-                                ) : (
-                                    <ChevronDown className="h-5 w-5 text-gray-600" />
-                                )}
-                            </button>
-                            {openIndex === index && (
-                                <div className="p-4 text-gray-700 bg-white">
-                                    <p>{faq.answer}</p>
-                                </div>
+                            {faq.question}
+                            {openIndex === index ? (
+                                <ChevronUp className="h-5 w-5 text-gray-600" />
+                            ) : (
+                                <ChevronDown className="h-5 w-5 text-gray-600" />
                             )}
-                        </div>
-                    ))}
-                </div>
+                        </button>
+                        {openIndex === index && (
+                            <div className="p-4 text-gray-700 bg-white">
+                                <p>{faq.answer}</p>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
-            <Footer />
-        </>
+        </div>
     );
 };
 

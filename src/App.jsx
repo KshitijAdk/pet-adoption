@@ -14,12 +14,13 @@ import ResetPassword from "./components/ResetPassword";
 import BlogPage from "./components/BlogsPage";
 import Navbar from "./components/Navbar";
 import VendorRegistration from "./components/VendorRegistration";
+import Footer from "./components/Footer";
 
 const App = () => {
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      {/* <Navbar/> */}
+      <Navbar />
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -30,9 +31,10 @@ const App = () => {
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/fullblogs" element={<BlogPage />} />
-        <Route path="/vendor-registration" element={<VendorRegistration/>} />
+        <Route path="/vendor-registration" element={<VendorRegistration />} />
 
       </Routes>
+      <Footer />
     </>
   );
 }

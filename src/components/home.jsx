@@ -10,7 +10,7 @@ const Home = () => {
     <>
       <div className="bg-image-main">
 
-        <Navbar />
+        {/* <Navbar /> */}
         <Search />
         <InfoSection />
         <ServicesSection />
