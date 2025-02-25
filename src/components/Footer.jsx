@@ -44,6 +44,11 @@ const Footer = () => {
                                 Contact Us
                             </a>
                         </li>
+                        <li>
+                            <a href="/vendor-registration" className="hover:text-purple-400">
+                                Apply Vendor
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
