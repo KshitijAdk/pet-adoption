@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     isAccountVerified: { type: Boolean, default: false },
     resetOtp: { type: String, default: "" },
     resetOtpExpireAt: { type: Number, default: 0 },
+    role: { type: String, default: 'user' },  // Added role field with default value 'user'
 })
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema)

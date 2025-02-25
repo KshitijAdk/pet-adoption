@@ -6,10 +6,11 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
-import session from 'express-session';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import passport from 'passport';
-import oauthRouter from './routes/oauthRoutes.js';
+import vendorRoutes from './routes/vendorRoutes.js'
+// import session from 'express-session';
+// import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+// import passport from 'passport';
+// import oauthRouter from './routes/oauthRoutes.js';
 
 const app = express();
 const PORT = 3000;
@@ -29,47 +30,47 @@ app.use(
   })
 );
 
-// Session setup
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,  // Only create session if authenticated
-    cookie: {
-      secure: process.env.NODE_ENV === 'production', // Only set cookie over HTTPS in production
-      httpOnly: true, // Ensures the cookie can't be accessed via JavaScript
-      maxAge: 24 * 60 * 60 * 1000 // Cookie expiration time (24 hours)
-    }
-  })
-);
+// // Session setup
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,  // Only create session if authenticated
+//     cookie: {
+//       secure: process.env.NODE_ENV === 'production', // Only set cookie over HTTPS in production
+//       httpOnly: true, // Ensures the cookie can't be accessed via JavaScript
+//       maxAge: 24 * 60 * 60 * 1000 // Cookie expiration time (24 hours)
+//     }
+//   })
+// );
 
-// Passport initialization
-app.use(passport.initialize());
-app.use(passport.session());
+// // Passport initialization
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.CALLBACK_URL,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      console.log("Google Profile:", profile); // Debugging
-      return done(null, profile); // Save profile data in the session
-    }
-  )
-);
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: process.env.CALLBACK_URL,
+//     },
+//     (accessToken, refreshToken, profile, done) => {
+//       console.log("Google Profile:", profile); // Debugging
+//       return done(null, profile); // Save profile data in the session
+//     }
+//   )
+// );
 
-// Serialize the user into the session
-passport.serializeUser((user, done) => {
-  done(null, user); // Store the user object directly in the session
-});
+// // Serialize the user into the session
+// passport.serializeUser((user, done) => {
+//   done(null, user); // Store the user object directly in the session
+// });
 
-// Deserialize the user from the session
-passport.deserializeUser((user, done) => {
-  done(null, user); // Retrieve the full user data from the session
-});
+// // Deserialize the user from the session
+// passport.deserializeUser((user, done) => {
+//   done(null, user); // Retrieve the full user data from the session
+// });
 
 app.get('/', (req, res) => {
   res.send("API Working");
@@ -78,7 +79,9 @@ app.get('/', (req, res) => {
 // Define routes
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
-app.use('/auth', oauthRouter);
+// app.use('/auth', oauthRouter);
+app.use("/api/vendors", vendorRoutes);  // All vendor routes will be prefixed with /api/vendors
+
 
 // Start the server
 app.listen(PORT, () => {
