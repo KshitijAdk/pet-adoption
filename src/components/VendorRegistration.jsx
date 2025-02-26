@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Upload } from "lucide-react";
 import InputField from "./ui/InputField";
 import Button from './ui/button';
@@ -6,164 +6,102 @@ import defaultImg from '../assests/dog.jpg';
 import { AppContent } from "../context/AppContext";
 
 export default function VendorRegistration() {
-    const { backendUrl } = useContext(AppContent);
+    const { backendUrl, userData, isLoggedin } = useContext(AppContent);
     const [image, setImage] = useState(null);
     const [imagePath, setImagePath] = useState("");
     const [formData, setFormData] = useState({
         fullName: "",
         organization: "",
-        email: "",
+        email: userData?.email || "", // Set email from userData
         contact: "",
         address: "",
         description: "",
     });
-    const [errors, setErrors] = useState({}); // State to store validation errors
-    const [isLoading, setIsLoading] = useState(false); // Loading state for submission
+    const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Inside your component
+    useEffect(() => {
+        if (userData?.email) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userData.email,
+            }));
+        }
+    }, [userData]);
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            console.log("Selected file:", file); // Debug log
-            setImage(file); // Store the file itself
-            setImagePath(file.name); // Display the file name
+            setImage(file);
+            setImagePath(file.name);
         }
     };
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value });
-        // Clear the error for the field when the user starts typing
         setErrors({ ...errors, [name]: "" });
     };
 
-
-
     const validateForm = () => {
         const newErrors = {};
-
-        // Check if each field is filled out
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = "Full name is required";
-        }
-        if (!formData.organization.trim()) {
-            newErrors.organization = "Organization name is required";
-        }
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Email is invalid";
-        }
-        if (!formData.contact.trim()) {
-            newErrors.contact = "Contact number is required";
-        }
-        if (!formData.address.trim()) {
-            newErrors.address = "Address is required";
-        }
-        if (!formData.description.trim()) {
-            newErrors.description = "Description is required";
-        }
-        if (!image) {
-            newErrors.image = "Image is required";
-        }
-
+        if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+        if (!formData.organization.trim()) newErrors.organization = "Organization name is required";
+        if (!formData.contact.trim()) newErrors.contact = "Contact number is required";
+        if (!formData.address.trim()) newErrors.address = "Address is required";
+        if (!formData.description.trim()) newErrors.description = "Description is required";
+        if (!image) newErrors.image = "Image is required";
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // Return true if no errors
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
-        // Validate the form
-        if (!validateForm()) {
-            return; // Stop submission if there are errors
-        }
-
-        setIsLoading(true); // Start loading
-
+        if (!validateForm()) return;
+        setIsLoading(true);
         try {
             let imageUrl = null;
-
-            // Step 1: Upload image to Cloudinary if an image is selected
             if (image) {
-                console.log("Starting image upload to Cloudinary..."); // Debug log
                 const formDataCloudinary = new FormData();
                 formDataCloudinary.append("file", image);
-                formDataCloudinary.append("upload_preset", `${import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET}`); // Your Cloudinary upload preset
-
-                // Debug log: Check FormData contents
-                for (let [key, value] of formDataCloudinary.entries()) {
-                    console.log(key, value);
-                }
-
+                formDataCloudinary.append("upload_preset", `${import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET}`);
                 const cloudinaryResponse = await fetch(
-                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, // Your Cloudinary cloud name
-                    {
-                        method: "POST",
-                        body: formDataCloudinary,
-                    }
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    { method: "POST", body: formDataCloudinary }
                 );
-
-                console.log("Cloudinary response status:", cloudinaryResponse.status); // Debug log
-
-                if (!cloudinaryResponse.ok) {
-                    const errorData = await cloudinaryResponse.json();
-                    console.error("Cloudinary error details:", errorData); // Debug log
-                    throw new Error("Failed to upload image to Cloudinary");
-                }
-
+                if (!cloudinaryResponse.ok) throw new Error("Failed to upload image");
                 const cloudinaryData = await cloudinaryResponse.json();
-                console.log("Cloudinary response data:", cloudinaryData); // Debug log
-                imageUrl = cloudinaryData.secure_url; // Get the secure URL of the uploaded image
+                imageUrl = cloudinaryData.secure_url;
             }
-
-            // Step 2: Prepare the data to send to your backend
-            const dataToSend = {
-                ...formData,
-                image: imageUrl, // Include the Cloudinary image URL
-            };
-
-            console.log("Data to send to backend:", dataToSend); // Debug log
-
-            // Step 3: Send the data to your backend API
+            const dataToSend = { ...formData, image: imageUrl };
             const response = await fetch(backendUrl + "/api/vendors/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dataToSend),
             });
-
-            console.log("Backend response status:", response.status); // Debug log
-
             if (response.ok) {
-                console.log("Vendor registered successfully!");
                 alert("Vendor registered successfully!");
-                // Reset the form
                 setFormData({
                     fullName: "",
                     organization: "",
-                    email: "",
+                    email: userData?.email || "",
                     contact: "",
                     address: "",
                     description: "",
                 });
                 setImage(null);
                 setImagePath("");
-                setErrors({}); // Clear errors
+                setErrors({});
             } else {
-                const errorData = await response.json();
-                console.error("Backend error details:", errorData); // Debug log
-                console.error("Failed to register vendor");
                 alert("Failed to register vendor. Please try again.");
             }
         } catch (error) {
-            console.error("Error:", error); // Debug log
             alert("Something went wrong. Please try again.");
         } finally {
-            setIsLoading(false); // Stop loading
+            setIsLoading(false);
         }
     };
-
 
     return (
         <div className="min-h-screen bg-purple-300 flex justify-center items-center p-6">
@@ -193,6 +131,7 @@ export default function VendorRegistration() {
                         <p className="text-gray-700 text-sm mb-4">
                             Please fill out the form below to apply as a vendor
                         </p>
+
                         <form className="space-y-3" onSubmit={handleSubmit}>
                             <InputField
                                 name="fullName"
@@ -216,17 +155,8 @@ export default function VendorRegistration() {
                                 <p className="text-red-500 text-sm">{errors.organization}</p>
                             )}
 
-                            <InputField
-                                type="email"
-                                name="email"
-                                placeholder="Enter contact email"
-                                onChange={handleChange}
-                                value={formData.email}
-                                required
-                            />
-                            {errors.email && (
-                                <p className="text-red-500 text-sm">{errors.email}</p>
-                            )}
+                            <InputField type="email" name="email" value={formData.email} readOnly />
+
 
                             <InputField
                                 type="tel"

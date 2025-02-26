@@ -1,7 +1,21 @@
-import React from "react";
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom"; // Import the useNavigate hook
 import { Facebook, Twitter, Instagram, MessageCircle } from "lucide-react";
+import { AppContent } from "../context/AppContext";
 
 const Footer = () => {
+    const navigate = useNavigate();
+    const { isLoggedin } = useContext(AppContent); // Get isLoggedin from context
+
+    const handleVendorClick = () => {
+        if (!isLoggedin) {
+            // If not logged in, redirect to login page
+            navigate("/login");
+        } else {
+            navigate('/vendor-registration')
+        }
+    };
+
     return (
         <footer className="bg-gray-900 text-white py-6">
             <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
@@ -45,7 +59,11 @@ const Footer = () => {
                             </a>
                         </li>
                         <li>
-                            <a href="/vendor-registration" className="hover:text-purple-400">
+                            <a
+                                href=""
+                                className="hover:text-purple-400"
+                                onClick={handleVendorClick} // Use the handleVendorClick function here
+                            >
                                 Apply Vendor
                             </a>
                         </li>
