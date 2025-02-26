@@ -31,3 +31,23 @@ export const getUserData = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+
+// Get all users data
+export const getAllUsers = async (req, res) => {
+    try {
+        // Fetch all users from the database
+        const users = await userModel.find({}, 'name email role isAccountVerified');
+
+        // If no users found
+        if (!users.length) {
+            return res.json({ success: false, message: 'No users found' });
+        }
+
+        // Return all users' data
+        res.json({ success: true, users });
+
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
