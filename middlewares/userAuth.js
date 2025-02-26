@@ -8,7 +8,7 @@ const userAuth = async (req, res, next) => {
     }
 
     try {
-        console.log('Token:', token);  // Log the token to verify it's coming correctly
+        // console.log('Token:', token);  // Log the token to verify it's coming correctly
 
         const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
 

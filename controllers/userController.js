@@ -37,7 +37,7 @@ export const getUserData = async (req, res) => {
 export const getAllUsers = async (req, res) => {
     try {
         // Fetch all users from the database
-        const users = await userModel.find({}, 'name email role isAccountVerified');
+        const users = await userModel.find({}, 'name email role image isAccountVerified');
 
         // If no users found
         if (!users.length) {
