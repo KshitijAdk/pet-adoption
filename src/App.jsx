@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Router, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
 
 
 import Home from "./components/home";
@@ -16,6 +15,7 @@ import Navbar from "./components/Navbar";
 import VendorRegistration from "./components/VendorRegistration";
 import Footer from "./components/Footer";
 import ManageVendors from "./Admin/ManageVendors";
+import ManageUsers from "./Admin/ManageUsers";
 
 const App = () => {
   return (
@@ -36,7 +36,7 @@ const App = () => {
 
 
         <Route path="/admin/manage-vendors" element={<ManageVendors />} />
-        {/* <Route path="/admin" element={<VendorRegistration />} /> */}
+        <Route path="/admin/manage-users" element={<ManageUsers />} />
 
 
 

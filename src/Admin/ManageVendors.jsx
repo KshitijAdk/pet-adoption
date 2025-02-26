@@ -27,7 +27,7 @@ const ManageVendors = () => {
     }, []);
 
     return (
-        <div className="flex h-screen bg-purple-50">
+        <div className="flex h-screen bg-gray-100">
             {/* Sidebar on the left */}
             <div className="w-1/5">
                 <Sidebar />
