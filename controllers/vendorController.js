@@ -84,3 +84,34 @@ export const approveVendor = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const rejectVendor = async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+
+        // Find the vendor application
+        const vendorApplication = await Vendor.findById(vendorId);
+        if (!vendorApplication) {
+            return res.status(404).json({ message: "Vendor application not found" });
+        }
+
+        // Update the user's role back to "user"
+        const updatedUser = await userModel.findOneAndUpdate(
+            { email: vendorApplication.email },
+            { $set: { role: "user" } }, // Revert role to "user"
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Delete the vendor application
+        await Vendor.findByIdAndDelete(vendorId);
+
+        res.status(200).json({ message: "Vendor rejected successfully!", user: updatedUser });
+    } catch (error) {
+        console.error("Error rejecting vendor:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
