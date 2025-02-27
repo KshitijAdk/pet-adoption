@@ -51,6 +51,28 @@ const ManageVendors = () => {
         }
     };
 
+    const rejectVendor = async (vendorId) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/vendors/reject-vendor/${vendorId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to reject vendor");
+            }
+
+            // Remove the rejected vendor from the list
+            setVendors((prevVendors) => prevVendors.filter((vendor) => vendor._id !== vendorId));
+        } catch (error) {
+            console.error(error);
+            alert("Error rejecting vendor");
+        }
+    };
+
+
     return (
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar on the left */}
@@ -99,10 +121,10 @@ const ManageVendors = () => {
                                     <td className="p-3">
                                         <span
                                             className={`px-2 py-1 rounded-full text-white text-sm font-semibold ${vendor.status.toLowerCase() === "approved"
-                                                    ? "bg-green-500"
-                                                    : vendor.status.toLowerCase() === "pending"
-                                                        ? "bg-yellow-500"
-                                                        : "bg-red-500"
+                                                ? "bg-green-500"
+                                                : vendor.status.toLowerCase() === "pending"
+                                                    ? "bg-yellow-500"
+                                                    : "bg-red-500"
                                                 }`}
                                         >
                                             {vendor.status.toLowerCase()}
@@ -116,7 +138,9 @@ const ManageVendors = () => {
                                             disabled={vendor.status === "Approved"}>
                                             <CheckCircle size={16} />
                                         </button>
-                                        <button className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
+
+                                        {/* {Reject Vendor Button} */}
+                                        <button onClick={() => rejectVendor(vendor._id)} className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
                                             <XCircle size={16} />
                                         </button>
                                     </td>
