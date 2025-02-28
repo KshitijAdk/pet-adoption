@@ -5,8 +5,8 @@ const Button = ({ text = "Button", onClick, variant = "primary", className = "" 
   const baseClass = "px-6 py-3 font-semibold rounded-lg shadow-md ";
   const variantClass =
     variant === "primary"
-      ? "bg-purple-600 text-white hover:bg-purple-700"
-      : "border border-purple-900 text-purple-600 hover:bg-purple-700 hover:text-white";
+      ? "bg-blue-600 text-white hover:bg-blue-700"
+      : "border border-blue-900 text-blue-600 hover:bg-blue-700 hover:text-white";
 
   return (
     <button

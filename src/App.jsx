@@ -6,7 +6,6 @@ import { ToastContainer } from "react-toastify";
 import Home from "./components/home";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-import PetsPage from "./components/PetsPage";
 import FAQPage from "./components/FAQPage";
 import EmailVerification from "./components/EmailVerification";
 import ResetPassword from "./components/ResetPassword";
@@ -18,6 +17,7 @@ import ManageVendors from "./Admin/ManageVendors";
 import ManageUsers from "./Admin/ManageUsers";
 import PendingApplications from "./Admin/PendingApplications";
 import AdminDashboard from "./Admin/AdminDashboard";
+import PetListing from "./components/PetListing";
 
 const App = () => {
   return (
@@ -29,7 +29,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/pets" element={<PetsPage />} />
+        <Route path="/pets" element={<PetListing />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
