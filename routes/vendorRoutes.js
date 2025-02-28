@@ -11,7 +11,7 @@ const upload = multer({ storage }); // Use Cloudinary storage for multer
 router.post('/register', upload.single('image'), registerVendor); // Handle single file upload
 router.get('/all-vendors', getAllVendors);
 router.put('/approve-vendor/:vendorId', approveVendor);
-router.delete('/reject-vendor/:vendorId', rejectVendor); // New route for rejecting a vendor
+router.put('/reject-vendor/:vendorId', rejectVendor); // New route for rejecting a vendor
 
 
 export default router;

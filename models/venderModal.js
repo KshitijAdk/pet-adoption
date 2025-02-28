@@ -8,8 +8,8 @@ const vendorSchema = new mongoose.Schema({
     address: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String, required: true },
-    status: { type: String, default: "pending", enum: ["pending", "approved", "rejected"] }, // Added status field
-});
+    status: { type: String, default: "Pending", enum: ["Pending", "Approved", "Rejected"] },
+}, { timestamps: true }); // This adds createdAt and updatedAt automatically
 
 const Vendor = mongoose.models.Vendor || mongoose.model('VendorApply', vendorSchema);
 

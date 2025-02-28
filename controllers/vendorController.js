@@ -76,7 +76,7 @@ export const approveVendor = async (req, res) => {
         }
 
         // Approve vendor
-        await Vendor.findByIdAndUpdate(vendorId, { status: "approved" });
+        await Vendor.findByIdAndUpdate(vendorId, { status: "Approved" });
 
         res.status(200).json({ message: "Vendor approved successfully!", user: updatedUser });
     } catch (error) {
@@ -98,7 +98,16 @@ export const rejectVendor = async (req, res) => {
         // Update the user's role back to "user"
         const updatedUser = await userModel.findOneAndUpdate(
             { email: vendorApplication.email },
-            { $set: { role: "user" } }, // Revert role to "user"
+            {
+                $set: {
+                    role: "user",
+                    organization: "",
+                    contact: "",
+                    address: "",
+                    description: "",
+                    image: ""
+                }
+            }, // Revert role to "user"
             { new: true }
         );
 
@@ -106,10 +115,11 @@ export const rejectVendor = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Delete the vendor application
-        await Vendor.findByIdAndDelete(vendorId);
+        // Update the vendor application status to "rejected"
+        vendorApplication.status = "Rejected";
+        await vendorApplication.save();
 
-        res.status(200).json({ message: "Vendor rejected successfully!", user: updatedUser });
+        res.status(200).json({ message: "Vendor rejected successfully!", user: updatedUser, vendor: vendorApplication });
     } catch (error) {
         console.error("Error rejecting vendor:", error);
         res.status(500).json({ message: "Internal server error" });
