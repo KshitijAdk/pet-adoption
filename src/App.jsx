@@ -16,6 +16,8 @@ import VendorRegistration from "./components/VendorRegistration";
 import Footer from "./components/Footer";
 import ManageVendors from "./Admin/ManageVendors";
 import ManageUsers from "./Admin/ManageUsers";
+import PendingApplications from "./Admin/PendingApplications";
+import AdminDashboard from "./Admin/AdminDashboard";
 
 const App = () => {
   return (
@@ -37,6 +39,8 @@ const App = () => {
 
         <Route path="/admin/manage-vendors" element={<ManageVendors />} />
         <Route path="/admin/manage-users" element={<ManageUsers />} />
+        <Route path="/admin/pending-vendors" element={<PendingApplications />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
 
 

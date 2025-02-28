@@ -10,7 +10,7 @@ const Tabs = () => {
     const tabs = [
         { id: "dashboard", label: "Dashboard", link: "/admin/dashboard" }, // Fixed link for dashboard
         { id: "manage-users", label: "Manage Users", link: "/admin/manage-users" },
-        { id: "pending", label: "Pending Applications", link: "/admin/pending" }, // Fixed link for pending
+        { id: "pending", label: "Pending Applications", link: "/admin/pending-vendors" }, // Fixed link for pending
         { id: "all", label: "All Applications", link: "/admin/manage-vendors" } // Fixed link for all applications
     ];
 

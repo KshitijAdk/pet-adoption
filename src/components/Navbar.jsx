@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import ToastComponent from "./ui/ToastComponent";
 import axios from "axios";
+import { Shield, Store } from 'lucide-react';
 
 const Navbar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } = useContext(AppContent);
@@ -18,7 +19,7 @@ const Navbar = () => {
       const response = await axios.post(backendUrl + "/api/auth/logout");
       if (response.data.success) {
         setIsLoggedin(false);
-        setUserData({}); // Set to empty object instead of null
+        setUserData({});
         Cookies.remove("token");
         navigate("/");
         toast.success("Successfully logged out!");
@@ -45,9 +46,6 @@ const Navbar = () => {
             />
           </Link>
         </div>
-
-        {/* Display User Name or "Guest" */}
-        <div>{isLoggedin && userData ? `Hey, ${userData.name || 'User'} 👋` : "Guest"}</div>
 
         {/* Navigation Links */}
         <div className="text-black text-xs md:text-sm flex rounded-full px-5 py-3">
@@ -80,7 +78,7 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Conditionally Show Profile Icon or Log In Button */}
+        {/* User Profile / Login */}
         <div className="flex items-center relative">
           {isLoggedin ? (
             <div className="relative">
@@ -88,16 +86,13 @@ const Navbar = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold"
               >
-                {userData && userData.name ? userData.name[0].toUpperCase() : 'U'}
+                {userData?.name ? userData.name[0].toUpperCase() : 'U'}
               </button>
 
               {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                     Profile
                   </Link>
                   <button
@@ -115,6 +110,23 @@ const Navbar = () => {
                 Log In
               </button>
             </Link>
+          )}
+        </div>
+
+        {/* Role-based Buttons */}
+        <div className="flex items-center space-x-4">
+          {userData?.role === "admin" && (
+            <Link to="/admin/dashboard">
+              <button className="flex items-center space-x-2 p-2 bg-blue-500 text-white rounded-md">
+                <Shield className="text-xl" />
+                <span>Admin</span>
+              </button></Link>
+          )}
+          {userData?.role === "vendor" && (
+            <button className="flex items-center space-x-2 p-2 bg-green-500 text-white rounded-md">
+              <Store className="text-xl" />
+              <span>Vendor</span>
+            </button>
           )}
         </div>
       </div>
