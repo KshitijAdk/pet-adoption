@@ -125,3 +125,20 @@ export const rejectVendor = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+// New controller to get only pending vendors
+export const getPendingVendors = async (req, res) => {
+    try {
+        // Assuming 'status' is a field in your Vendor model that tracks the vendor's approval status.
+        const pendingVendors = await Vendor.find({ status: 'Pending' }); // Fetch all vendors with status 'pending'
+        
+        if (pendingVendors.length === 0) {
+            return res.status(404).json({ message: 'No pending vendors found.' });
+        }
+
+        res.status(200).json({ vendors: pendingVendors });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch pending vendors, please try again.' });
+    }
+};
