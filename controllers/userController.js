@@ -52,3 +52,26 @@ export const getAllUsers = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+export const deleteUser = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        // Ensure userId is provided
+        if (!userId) {
+            return res.json({ success: false, message: 'User ID is required' });
+        }
+
+        // Find and delete the user
+        const deletedUser = await userModel.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        // Return success response
+        res.json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
