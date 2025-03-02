@@ -8,7 +8,7 @@ import Applications from './Applications';
 import Settings from './Settings';
 
 // Mock data for the user profile
-const userData = {
+const user = {
     id: 1,
     name: 'Sarah Johnson',
     email: 'sarah@example.com',
@@ -77,15 +77,15 @@ const Profile = () => {
                 <div className="lg:grid lg:grid-cols-12 lg:gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-3">
-                        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} userData={userData} />
+                        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
                     </div>
 
                     {/* Main Content */}
                     <div className="mt-8 lg:mt-0 lg:col-span-9">
-                        {activeTab === 'profile' && <ProfileInfo userData={userData} />}
-                        {activeTab === 'adopted' && <AdoptedPets adoptedPets={userData.adoptedPets} />}
-                        {activeTab === 'favorites' && <FavoritePets favoritePets={userData.favoritePets} />}
-                        {activeTab === 'applications' && <Applications applications={userData.applications} />}
+                        {activeTab === 'profile' && <ProfileInfo user={user} />}
+                        {activeTab === 'adopted' && <AdoptedPets adoptedPets={user.adoptedPets} />}
+                        {activeTab === 'favorites' && <FavoritePets favoritePets={user.favoritePets} />}
+                        {activeTab === 'applications' && <Applications applications={user.applications} />}
                         {activeTab === 'settings' && <Settings />}
                     </div>
                 </div>

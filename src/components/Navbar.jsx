@@ -86,7 +86,10 @@ const Navbar = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold"
               >
-                {userData?.name ? userData.name[0].toUpperCase() : 'U'}
+                <img
+                  src={userData?.image}
+                  alt={userData?.name}
+                  className="rounded-full" />
               </button>
 
               {/* Dropdown Menu */}
@@ -110,23 +113,6 @@ const Navbar = () => {
                 Log In
               </button>
             </Link>
-          )}
-        </div>
-
-        {/* Role-based Buttons */}
-        <div className="flex items-center space-x-4">
-          {userData?.role === "admin" && (
-            <Link to="/admin/dashboard">
-              <button className="flex items-center space-x-2 p-2 bg-blue-500 text-white rounded-md">
-                <Shield className="text-xl" />
-                <span>Admin</span>
-              </button></Link>
-          )}
-          {userData?.role === "vendor" && (
-            <button className="flex items-center space-x-2 p-2 bg-green-500 text-white rounded-md">
-              <Store className="text-xl" />
-              <span>Vendor</span>
-            </button>
           )}
         </div>
       </div>

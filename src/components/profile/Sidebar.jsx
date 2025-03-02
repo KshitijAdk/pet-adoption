@@ -1,33 +1,37 @@
-// Sidebar.js
-import React from 'react';
-import { User, PawPrint, Heart, Calendar, Settings, LogOut, Edit } from 'lucide-react';
+import React, { useContext } from 'react';
+import { AppContent } from '../../context/AppContext';
+import { User, PawPrint, Heart, Calendar, Settings, LogOut, Edit, ArrowRightCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab, userData }) => {
+const Sidebar = ({ activeTab, setActiveTab, user }) => {
+    const { userData } = useContext(AppContent);
+
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden sticky top-6">
+            {/* Profile Section */}
             <div className="p-6 text-center">
                 <div className="relative mx-auto w-32 h-32 mb-4">
                     <img
-                        src={userData.profileImage}
-                        alt={userData.name}
+                        src={userData?.image}
+                        alt={userData?.name}
                         className="rounded-full w-full h-full object-cover border-4 border-teal-100"
                     />
                     <button className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full hover:bg-teal-700">
                         <Edit className="h-4 w-4" />
                     </button>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">{userData.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">Member since {userData.joinDate}</p>
+                <h2 className="text-xl font-bold text-gray-900">{userData?.name}</h2>
+                <p className="text-sm text-gray-500 mt-1">Member since {user.joinDate}</p>
             </div>
 
-            <div className="border-t border-gray-200">
+            {/* Navigation Menu */}
+            <div className="border-t border-gray-200 mt-4">
                 <nav className="flex flex-col">
                     <button
                         onClick={() => setActiveTab('profile')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'profile'
                             ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <User className="mr-3 h-5 w-5" />
                         Profile Information
@@ -37,13 +41,12 @@ const Sidebar = ({ activeTab, setActiveTab, userData }) => {
                         onClick={() => setActiveTab('adopted')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'adopted'
                             ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <PawPrint className="mr-3 h-5 w-5" />
                         My Adopted Pets
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {userData.adoptedPets.length}
+                            {user.adoptedPets.length}
                         </span>
                     </button>
 
@@ -51,13 +54,12 @@ const Sidebar = ({ activeTab, setActiveTab, userData }) => {
                         onClick={() => setActiveTab('favorites')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'favorites'
                             ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Heart className="mr-3 h-5 w-5" />
                         Favorite Pets
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {userData.favoritePets.length}
+                            {user.favoritePets.length}
                         </span>
                     </button>
 
@@ -65,13 +67,12 @@ const Sidebar = ({ activeTab, setActiveTab, userData }) => {
                         onClick={() => setActiveTab('applications')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'applications'
                             ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Calendar className="mr-3 h-5 w-5" />
                         My Applications
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {userData.applications.length}
+                            {user.applications.length}
                         </span>
                     </button>
 
@@ -79,15 +80,41 @@ const Sidebar = ({ activeTab, setActiveTab, userData }) => {
                         onClick={() => setActiveTab('settings')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'settings'
                             ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Settings className="mr-3 h-5 w-5" />
                         Account Settings
                     </button>
+
+                    {/* Admin Dashboard Link */}
+                    {userData?.role === "admin" && (
+                        <Link to="/admin/dashboard">
+                            <button
+                                className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'admin-dashboard'
+                                    ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                                <ArrowRightCircle className="mr-3 h-5 w-5" />
+                                Go to Admin Dashboard
+                            </button>
+                        </Link>
+                    )}
+                    {userData?.role === "vendor" && (
+                        <Link to="/vendor/dashboard">
+                            <button
+                                className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'vendor-dashboard'
+                                    ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                                <ArrowRightCircle className="mr-3 h-5 w-5" />
+                                Go to Vendor Dashboard
+                            </button>
+                        </Link>
+                    )}
                 </nav>
             </div>
 
+            {/* Sign Out Button */}
             <div className="p-6 border-t border-gray-200">
                 <button className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
                     <LogOut className="mr-2 h-4 w-4" />
