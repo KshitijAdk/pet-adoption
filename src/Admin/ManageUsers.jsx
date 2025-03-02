@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Trash, Edit } from "lucide-react";
+import { Trash } from "lucide-react";
 import Tabs from "./Tabs";
+import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     // Fetch users from API
     useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = () => {
         fetch("http://localhost:3000/api/user")
             .then((response) => {
                 if (!response.ok) {
@@ -17,21 +23,42 @@ const ManageUsers = () => {
                 return response.json();
             })
             .then((data) => {
-                console.log("Fetched users:", data); // Debugging: Check if data is received
                 if (data.success) {
                     setUsers(data.users);
-                    setLoading(false); // Set loading to false after data is fetched
                 } else {
                     setError("Failed to fetch users.");
-                    setLoading(false);
                 }
+                setLoading(false);
             })
             .catch((error) => {
                 setError("Error fetching users.");
                 setLoading(false);
-                console.error("Error fetching users:", error); // Debugging: Check for errors
+                console.error("Error fetching users:", error);
             });
-    }, []);
+    };
+
+    // Delete user function
+    const handleDelete = (userId) => {
+        fetch("http://localhost:3000/api/user/delete-user", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setUsers(users.filter(user => user._id !== userId));
+                } else {
+                    setError("Failed to delete user.");
+                }
+            })
+            .catch((error) => {
+                setError("Error deleting user.");
+                console.error("Error deleting user:", error);
+            });
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
@@ -76,21 +103,13 @@ const ManageUsers = () => {
                                         <td className="p-4 text-gray-600 text-sm">{user.email}</td>
                                         <td className="p-4 text-gray-600 text-sm">{user.role}</td>
                                         <td className="p-4 text-center">
-                                            <div className="flex flex-col space-y-2 items-center">
-                                                <button
-                                                    className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center justify-center space-x-1 text-sm w-full">
-                                                    <Edit size={14} />
-                                                    <span>Edit</span>
-                                                </button>
-                                                <button
-                                                    className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center justify-center space-x-1 text-sm w-full">
-                                                    <Trash size={14} />
-                                                    <span>Delete</span>
-                                                </button>
-                                            </div>
+                                            <button
+                                                onClick={() => setConfirmDelete(user._id)}
+                                                className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center justify-center space-x-1 text-sm w-full">
+                                                <Trash size={14} />
+                                                <span>Delete</span>
+                                            </button>
                                         </td>
-
-
                                     </tr>
                                 ))}
                             </tbody>
@@ -98,6 +117,18 @@ const ManageUsers = () => {
                     </div>
                 )}
             </div>
+
+            {confirmDelete && (
+                <ConfirmationPopup
+                    type="delete"
+                    isOpen={!!confirmDelete}
+                    onConfirm={() => {
+                        handleDelete(confirmDelete);
+                        setConfirmDelete(null);
+                    }}
+                    onCancel={() => setConfirmDelete(null)}
+                />
+            )}
         </div>
     );
 };
