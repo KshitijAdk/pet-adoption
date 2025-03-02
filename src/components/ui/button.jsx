@@ -1,28 +1,25 @@
-import React from "react";
 import PropTypes from "prop-types";
 
-const Button = ({ text = "Button", onClick, variant = "primary", className = "" }) => {
-  const baseClass = "px-6 py-3 font-semibold rounded-lg shadow-md ";
-  const variantClass =
-    variant === "primary"
-      ? "bg-blue-600 text-white hover:bg-blue-700"
-      : "border border-blue-900 text-blue-600 hover:bg-blue-700 hover:text-white";
+const Button = ({ children, text, onClick, variant = "primary" }) => {
+  const baseStyles = "mt-3 w-full text-white py-2 rounded-lg transition";
+  const primaryStyles = "bg-amber-500 hover:bg-amber-600";
+  const secondaryStyles = "bg-gray-500 hover:bg-gray-600";
 
   return (
     <button
+      className={`${baseStyles} ${variant === "secondary" ? secondaryStyles : primaryStyles}`}
       onClick={onClick}
-      className={`${baseClass} ${variantClass} ${className}`}
     >
-      {text}
+      {text || children}
     </button>
   );
 };
 
 Button.propTypes = {
+  children: PropTypes.node,
   text: PropTypes.string,
   onClick: PropTypes.func,
   variant: PropTypes.oneOf(["primary", "secondary"]),
-  className: PropTypes.string,
 };
 
 export default Button;

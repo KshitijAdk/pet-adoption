@@ -3,6 +3,7 @@ import { Search, Heart, ChevronDown } from "lucide-react";
 import dog from '../assests/dog.jpg'
 import cat from '../assests/cat.jpg'
 import pets from '../assests/pets.png'
+import Button from "./ui/button";
 
 const allPets = [
   {
@@ -61,7 +62,7 @@ const PetListing = () => {
     <div className="bg-gray-100 min-h-screen py-10 px-5">
       {/* Header */}
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-[#4A3AFF] text-2xl font-bold text-center mb-4">
+        <h1 className="text-amber-500 text-2xl font-bold text-center mb-4">
           Find Your Perfect Pet
         </h1>
 
@@ -160,9 +161,7 @@ const PetListing = () => {
                     <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.gender}</span>
                     <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.size}</span>
                   </div>
-                  <button className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg">
-                    Meet {pet.name}
-                  </button>
+                  <Button> Meet {pet.name}</Button>
                 </div>
               </div>
             ))}
