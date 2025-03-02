@@ -3,7 +3,7 @@ import { Route, Router, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 
-import Home from "./components/home";
+import Home from "./components/Landing/home";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import FAQPage from "./components/FAQPage";
@@ -18,6 +18,7 @@ import ManageUsers from "./Admin/ManageUsers";
 import PendingApplications from "./Admin/PendingApplications";
 import AdminDashboard from "./Admin/AdminDashboard";
 import PetListing from "./components/PetListing";
+import Profile from "./components/profile/Profile";
 
 const App = () => {
   return (
@@ -41,6 +42,9 @@ const App = () => {
         <Route path="/admin/manage-users" element={<ManageUsers />} />
         <Route path="/admin/pending-vendors" element={<PendingApplications />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+
+        <Route path="/profile" element={<Profile />} />
 
 
 
