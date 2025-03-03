@@ -2,9 +2,29 @@ import React, { useContext } from 'react';
 import { AppContent } from '../../context/AppContext';
 import { User, PawPrint, Heart, Calendar, Settings, LogOut, Edit, ArrowRightCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const Sidebar = ({ activeTab, setActiveTab, user }) => {
-    const { userData } = useContext(AppContent);
+    const { userData, setUserData, setIsLoggedin, backendUrl } = useContext(AppContent);
+
+    // Handle Logout
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post(backendUrl + "/api/auth/logout");
+            if (response.data.success) {
+                setIsLoggedin(false);
+                setUserData({});
+                Cookies.remove("token");
+                navigate("/");
+                toast.success("Successfully logged out!");
+            } else {
+                toast.error("Logout failed. Please try again.");
+            }
+        } catch (error) {
+            toast.error("An error occurred during logout. Please try again.");
+        }
+    };
 
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden sticky top-6">
@@ -116,7 +136,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
 
             {/* Sign Out Button */}
             <div className="p-6 border-t border-gray-200">
-                <button className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                <button onClick={handleLogout} className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                 </button>

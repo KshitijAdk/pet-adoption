@@ -6,7 +6,6 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import ToastComponent from "./ui/ToastComponent";
 import axios from "axios";
-import { Shield, Store } from 'lucide-react';
 
 const Navbar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } = useContext(AppContent);
