@@ -62,7 +62,7 @@ const Applications = ({ applications }) => {
                             Start the adoption process by applying for a pet.
                         </p>
                         <div className="mt-6">
-                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700">
+                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
                                 Browse Available Pets
                             </button>
                         </div>

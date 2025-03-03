@@ -22,7 +22,7 @@ const Settings = () => {
                                     name="notifications-new-pets"
                                     type="checkbox"
                                     defaultChecked
-                                    className="focus:ring-teal-500 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                                    className="focus:ring-amber-500 h-4 w-4 text-amber-600 border-gray-300 rounded"
                                 />
                             </div>
                             <div className="ml-3 text-sm">
@@ -38,7 +38,7 @@ const Settings = () => {
                                     name="notifications-application-updates"
                                     type="checkbox"
                                     defaultChecked
-                                    className="focus:ring-teal-500 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                                    className="focus:ring-amber-500 h-4 w-4 text-amber-600 border-gray-300 rounded"
                                 />
                             </div>
                             <div className="ml-3 text-sm">
@@ -53,7 +53,7 @@ const Settings = () => {
                                     id="notifications-newsletter"
                                     name="notifications-newsletter"
                                     type="checkbox"
-                                    className="focus:ring-teal-500 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                                    className="focus:ring-amber-500 h-4 w-4 text-amber-600 border-gray-300 rounded"
                                 />
                             </div>
                             <div className="ml-3 text-sm">

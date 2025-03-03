@@ -34,9 +34,9 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <img
                         src={userData?.image}
                         alt={userData?.name}
-                        className="rounded-full w-full h-full object-cover border-4 border-teal-100"
+                        className="rounded-full w-full h-full object-cover border-4 border-amber-100"
                     />
-                    <button className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full hover:bg-teal-700">
+                    <button className="absolute bottom-0 right-0 bg-amber-600 text-white p-2 rounded-full hover:bg-amber-700">
                         <Edit className="h-4 w-4" />
                     </button>
                 </div>
@@ -50,7 +50,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <button
                         onClick={() => setActiveTab('profile')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'profile'
-                            ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                            ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <User className="mr-3 h-5 w-5" />
@@ -60,7 +60,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <button
                         onClick={() => setActiveTab('adopted')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'adopted'
-                            ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                            ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <PawPrint className="mr-3 h-5 w-5" />
@@ -73,7 +73,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <button
                         onClick={() => setActiveTab('favorites')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'favorites'
-                            ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                            ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Heart className="mr-3 h-5 w-5" />
@@ -86,7 +86,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <button
                         onClick={() => setActiveTab('applications')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'applications'
-                            ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                            ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Calendar className="mr-3 h-5 w-5" />
@@ -99,7 +99,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <button
                         onClick={() => setActiveTab('settings')}
                         className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'settings'
-                            ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                            ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                         <Settings className="mr-3 h-5 w-5" />
@@ -111,7 +111,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                         <Link to="/admin/dashboard">
                             <button
                                 className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'admin-dashboard'
-                                    ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                                    ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                             >
                                 <ArrowRightCircle className="mr-3 h-5 w-5" />
@@ -123,11 +123,23 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                         <Link to="/vendor/dashboard">
                             <button
                                 className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'vendor-dashboard'
-                                    ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
+                                    ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                             >
                                 <ArrowRightCircle className="mr-3 h-5 w-5" />
                                 Go to Vendor Dashboard
+                            </button>
+                        </Link>
+                    )}
+                    {userData?.role === "user" && (
+                        <Link to="/vendor-registration">
+                            <button
+                                className={`flex items-center px-6 py-3 text-sm font-medium ${activeTab === 'vendor-dashboard'
+                                    ? 'bg-amber-50 text-amber-700 border-l-4 border-amber-600'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                                <ArrowRightCircle className="mr-3 h-5 w-5" />
+                                Apply for Vendor
                             </button>
                         </Link>
                     )}

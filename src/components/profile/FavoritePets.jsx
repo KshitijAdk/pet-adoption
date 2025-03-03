@@ -42,7 +42,7 @@ const FavoritePets = ({ favoritePets }) => {
                                         <span className="ml-2">{pet.type}</span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
-                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700">
+                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
                                             View Details
                                         </button>
                                         <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
@@ -61,7 +61,7 @@ const FavoritePets = ({ favoritePets }) => {
                             Save pets you're interested in to your favorites list.
                         </p>
                         <div className="mt-6">
-                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700">
+                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
                                 Browse Available Pets
                             </button>
                         </div>
