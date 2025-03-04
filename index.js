@@ -11,6 +11,7 @@ import vendorRoutes from './routes/vendorRoutes.js'
 // import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // import passport from 'passport';
 // import oauthRouter from './routes/oauthRoutes.js';
+// import userModel from './models/userModel.js';
 
 const app = express();
 const PORT = 3000;
@@ -30,17 +31,18 @@ app.use(
   })
 );
 
-// // Session setup
+// Session setup
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET,
 //     resave: false,
-//     saveUninitialized: false,  // Only create session if authenticated
+//     saveUninitialized: false,
 //     cookie: {
-//       secure: process.env.NODE_ENV === 'production', // Only set cookie over HTTPS in production
-//       httpOnly: true, // Ensures the cookie can't be accessed via JavaScript
-//       maxAge: 24 * 60 * 60 * 1000 // Cookie expiration time (24 hours)
-//     }
+//       secure: process.env.NODE_ENV === "production", // HTTPS in production
+//       httpOnly: true,
+//       sameSite: "lax",
+//       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+//     },
 //   })
 // );
 
@@ -48,6 +50,7 @@ app.use(
 // app.use(passport.initialize());
 // app.use(passport.session());
 
+// // Google OAuth Strategy
 // passport.use(
 //   new GoogleStrategy(
 //     {
@@ -55,22 +58,51 @@ app.use(
 //       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 //       callbackURL: process.env.CALLBACK_URL,
 //     },
-//     (accessToken, refreshToken, profile, done) => {
-//       console.log("Google Profile:", profile); // Debugging
-//       return done(null, profile); // Save profile data in the session
+//     async (accessToken, refreshToken, profile, done) => {
+//       try {
+//         let user = await userModel.findOne({ email: profile.emails[0].value });
+
+//         if (!user) {
+//           // Create a new user if they don't exist
+//           user = await userModel.create({
+//             googleId: profile.id,
+//             email: profile.emails[0].value,
+//             name: profile.displayName,
+//             image: profile.photos[0].value, // Save Google profile picture
+//             isAccountVerified: true, // Google OAuth users are automatically verified
+//           });
+//         } else if (!user.googleId) {
+//           // Link Google account to existing user
+//           user.googleId = profile.id;
+//           user.isAccountVerified = true;
+//           await user.save();
+//         }
+
+//         console.log("Google OAuth User:", user); // Debugging
+//         done(null, user); // Attach user to the session
+//       } catch (err) {
+//         console.error("Google OAuth Error:", err); // Debugging
+//         done(err);
+//       }
 //     }
 //   )
 // );
 
 // // Serialize the user into the session
 // passport.serializeUser((user, done) => {
-//   done(null, user); // Store the user object directly in the session
+//   done(null, user.id);
 // });
 
 // // Deserialize the user from the session
-// passport.deserializeUser((user, done) => {
-//   done(null, user); // Retrieve the full user data from the session
+// passport.deserializeUser(async (id, done) => {
+//   try {
+//     const user = await userModel.findById(id);
+//     done(null, user);
+//   } catch (err) {
+//     done(err);
+//   }
 // });
+
 
 app.get('/', (req, res) => {
   res.send("API Working");
