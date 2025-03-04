@@ -19,6 +19,7 @@ import PendingApplications from "./Admin/PendingApplications";
 import AdminDashboard from "./Admin/AdminDashboard";
 import PetListing from "./components/PetListing";
 import Profile from "./components/profile/Profile";
+import VendorDashboard from "./Vendor/VendorDashboard";
 
 const App = () => {
   return (
@@ -45,6 +46,9 @@ const App = () => {
 
 
         <Route path="/profile" element={<Profile />} />
+
+
+        <Route path="/vendor-dashboard" element={<VendorDashboard />} />
 
 
 
