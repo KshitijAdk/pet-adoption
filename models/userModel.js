@@ -10,11 +10,9 @@ const userSchema = new mongoose.Schema({
     resetOtp: { type: String, default: "" },
     resetOtpExpireAt: { type: Number, default: 0 },
     role: { type: String, default: 'user' },  // Role field (user or vendor or admin)
-    organization: { type: String, default: "" },  // Vendor-specific fields
     contact: { type: String, default: "" },
     address: { type: String, default: "" },
-    description: { type: String, default: "" },
-    image: { type: String, default: "" }
+    image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" }
 });
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);
