@@ -49,11 +49,6 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Redirect the user to the backend Google OAuth endpoint
-    window.location.href = `${backendUrl}/auth/google`;
-  };
-
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-[#5F41E4] bg-image-login">

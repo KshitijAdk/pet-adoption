@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { AppContent } from '../../context/AppContext';
 import { User, PawPrint, Heart, Calendar, Settings, LogOut, Edit, ArrowRightCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,12 @@ import axios from 'axios';
 const Sidebar = ({ activeTab, setActiveTab, user }) => {
     const { userData, setUserData, setIsLoggedin, backendUrl } = useContext(AppContent);
 
-    // Handle Logout
+    const fileInputRef = useRef(null); // Reference for file input
+    const [isUploading, setIsUploading] = useState(false); // Track upload state
+
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
     const handleLogout = async () => {
         try {
             const response = await axios.post(backendUrl + "/api/auth/logout");
@@ -16,7 +21,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                 setIsLoggedin(false);
                 setUserData({});
                 Cookies.remove("token");
-                navigate("/");
+                navigate("/login");
                 toast.success("Successfully logged out!");
             } else {
                 toast.error("Logout failed. Please try again.");
@@ -26,6 +31,49 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
         }
     };
 
+    // Function to trigger file input
+    const handleEditClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset); // Cloudinary preset
+
+        setIsUploading(true);
+        try {
+            const uploadResponse = await axios.post(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                formData,
+                {
+                    withCredentials: false, // Explicitly disable credentials
+                }
+            );
+
+            const imageUrl = uploadResponse.data.secure_url;
+            console.log("Image URL:", imageUrl);
+
+            // Update backend
+            await axios.put(
+                `${backendUrl}/api/user/update-profile-img`,
+                { email: userData?.email, image: imageUrl },
+                { withCredentials: true } // Only send credentials for your own backend
+            );
+
+            setUserData((prevData) => ({ ...prevData, image: imageUrl }));
+            toast.success("Profile picture updated successfully!");
+        } catch (error) {
+            toast.error("Error uploading image. Please try again.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden sticky top-6">
             {/* Profile Section */}
@@ -34,11 +82,23 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                     <img
                         src={userData?.image}
                         alt={userData?.name}
-                        className="rounded-full w-full h-full object-cover border-4 border-amber-100"
+                        className="rounded-full w-full h-full object-cover border-4 border-amber-400"
                     />
-                    <button className="absolute bottom-0 right-0 bg-amber-600 text-white p-2 rounded-full hover:bg-amber-700">
-                        <Edit className="h-4 w-4" />
+                    <button
+                        onClick={handleEditClick}
+                        className="absolute bottom-0 right-0 bg-amber-500 text-white p-2 rounded-full hover:bg-amber-600"
+                        disabled={isUploading}
+                    >
+                        {isUploading ? "..." : <Edit className="h-4 w-4" />}
                     </button>
+                    {/* Hidden file input */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept="image/*"
+                    />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">{userData?.name}</h2>
                 <p className="text-sm text-gray-500 mt-1">Member since {user.joinDate}</p>

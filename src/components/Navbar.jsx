@@ -32,7 +32,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="font-medium text-black bg-white/30 flex flex-wrap justify-evenly items-center p-2 backdrop-blur-lg sticky top-0 left-0 w-full z-50">
+      <div className="font-medium text-black bg-amber-100 flex flex-wrap justify-evenly items-center p-2 backdrop-blur-lg sticky top-0 left-0 w-full z-50">
         {/* Logo */}
         <div className="rounded-full">
           <Link to={"/"}>
@@ -88,7 +88,8 @@ const Navbar = () => {
                 <img
                   src={userData?.image}
                   alt={userData?.name}
-                  className="rounded-full" />
+                  className="rounded-full w-full h-full object-cover border-2 border-amber-400"
+                  />
               </button>
 
               {/* Dropdown Menu */}
