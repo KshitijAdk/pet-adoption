@@ -11,6 +11,6 @@ const vendorSchema = new mongoose.Schema({
     status: { type: String, default: "Pending", enum: ["Pending", "Approved", "Rejected"] },
 }, { timestamps: true }); // This adds createdAt and updatedAt automatically
 
-const VendorApplication = mongoose.models.Vendor || mongoose.model('VendorApply', vendorSchema);
+const VendorApplication = mongoose.models.VendorApplication || mongoose.model('VendorApplication', vendorSchema);
 
 export default VendorApplication;

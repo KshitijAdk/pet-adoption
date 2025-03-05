@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import Vendor from "../models/Vendor.js";
 
 export const getUserData = async (req, res) => {
     try {
@@ -16,27 +17,45 @@ export const getUserData = async (req, res) => {
             return res.json({ success: false, message: 'User not found' });
         }
 
+        // Initialize user data object
+        const userData = {
+            name: user.name,
+            email: user.email,
+            isAccountVerified: user.isAccountVerified,
+            role: user.role,
+            image: user.image,
+            contact: user.contact,
+            address: user.address,
+            
+        };
+
+        // If the user is a vendor, fetch additional data from the Vendor collection
+        if (user.role === 'vendor') {
+            const vendorData = await Vendor.findOne({ email: user.email });
+
+            if (vendorData) {
+                userData.vendorDetails = {
+                    organization: vendorData.organization,
+                    contact: vendorData.contact,
+                    address: vendorData.address,
+                    description: vendorData.description,
+                    pets: vendorData.pets, // Include pets data
+                    adoptionRequests: vendorData.adoptionRequests, // Include adoption requests data
+                };
+            }
+        }
+
         // Return the user data
         res.json({
             success: true,
-            userData: {
-                name: user.name,
-                email: user.email,
-                isAccountVerified: user.isAccountVerified,
-                role: user.role,
-                image: user.image,
-                contact: user.contact,
-                address: user.address,
-                description: user.description
-            }
+            userData,
         });
 
     } catch (error) {
         // Return the error message in the response
         res.json({ success: false, message: error.message });
     }
-}
-
+};
 
 // Get all users data
 export const getAllUsers = async (req, res) => {

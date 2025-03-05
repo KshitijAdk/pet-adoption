@@ -35,16 +35,18 @@ export const registerVendor = async (req, res) => {
 };
 
 
-// New controller to get all vendors
-export const getAllVendors = async (req, res) => {
+export const getAllVendorApplications = async (req, res) => {
     try {
-        const vendors = await VendorApplication.find(); // Fetch all vendors from the database
-        res.status(200).json({ vendors });
+        const vendors = await VendorApplication.find({});
+        console.log("Fetched Vendor Applications:", vendors); // Debugging log
+        res.status(200).json({ success: true, data: vendors });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to fetch vendors, please try again.' });
+        console.error("Error fetching vendor applications:", error);
+        res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
+
+
 
 
 export const approveVendor = async (req, res) => {
