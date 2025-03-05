@@ -34,12 +34,6 @@ const VendorDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
-        <Link
-          to="/pets"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Add New Pet
-        </Link>
       </div>
 
       {/* Stats Cards */}
@@ -62,7 +56,7 @@ const VendorDashboard = () => {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link to="/pets" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/pets-listing" className="font-medium text-indigo-600 hover:text-indigo-500">
                 View all pets
               </Link>
             </div>
@@ -87,7 +81,7 @@ const VendorDashboard = () => {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link to="/pets" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/pets-listing" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Manage listings
               </Link>
             </div>

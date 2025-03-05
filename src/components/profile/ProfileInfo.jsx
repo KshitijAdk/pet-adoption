@@ -33,7 +33,7 @@ const ProfileInfo = () => {
                         <h4 className="text-sm font-medium text-gray-500">Phone Number</h4>
                         <div className="mt-1 flex items-center text-sm text-gray-900">
                             <Phone className="mr-2 h-4 w-4 text-gray-400" />
-                            {userData?.contact}
+                            {userData.vendorDetails?.contact}
                         </div>
                     </div>
 
@@ -41,7 +41,7 @@ const ProfileInfo = () => {
                         <h4 className="text-sm font-medium text-gray-500">Location</h4>
                         <div className="mt-1 flex items-center text-sm text-gray-900">
                             <MapPin className="mr-2 h-4 w-4 text-gray-400" />
-                            {userData?.address}
+                            {userData.vendorDetails?.address}
                         </div>
                     </div>
 
@@ -49,7 +49,7 @@ const ProfileInfo = () => {
 
                 <div className="mt-6">
                     <h4 className="text-sm font-medium text-gray-500">Bio</h4>
-                    <p className="mt-1 text-sm text-gray-900">{userData?.description}</p>
+                    <p className="mt-1 text-sm text-gray-900">{userData.vendorDetails?.description}</p>
                 </div>
 
                 <div className="mt-6">

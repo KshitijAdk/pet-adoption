@@ -20,6 +20,7 @@ import AdminDashboard from "./Admin/AdminDashboard";
 import PetListing from "./components/PetListing";
 import Profile from "./components/profile/Profile";
 import VendorDashboard from "./Vendor/VendorDashboard";
+import PetManagement from "./Vendor/PetManagement";
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
 
 
         <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+        <Route path="/pets-listing" element={<PetManagement />} />
 
 
 

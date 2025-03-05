@@ -10,14 +10,15 @@ const ManageVendors = () => {
     useEffect(() => {
         const fetchVendors = async () => {
             try {
-                const response = await fetch("http://localhost:3000/api/vendors/all-vendors");
+                const response = await fetch("http://localhost:3000/api/vendors/all-vendor-applications");
                 if (!response.ok) {
                     throw new Error("Failed to fetch vendors");
                 }
                 const data = await response.json();
-                setVendors(data.vendors);
+                setVendors(data.data || []); // ✅ Ensure it's always an array
             } catch (err) {
                 setError(err.message);
+                setVendors([]); // ✅ Set empty array on error
             } finally {
                 setLoading(false);
             }
@@ -25,6 +26,7 @@ const ManageVendors = () => {
 
         fetchVendors();
     }, []);
+
 
     const approveVendor = async (vendorId) => {
         try {
@@ -76,11 +78,18 @@ const ManageVendors = () => {
         }
     };
 
+    const adminTabs = [
+        { id: "dashboard", label: "Dashboard", link: "/admin/dashboard" },
+        { id: "manage-users", label: "Manage Users", link: "/admin/manage-users" },
+        { id: "pending", label: "Pending Applications", link: "/admin/pending-vendors" },
+        { id: "all", label: "All Applications", link: "/admin/manage-vendors" }
+    ];
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="bg-white shadow-md mb-4 p-4 rounded-lg">
-                <Tabs />
+                <Tabs tabs={adminTabs} initialActiveTab="all" />
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
