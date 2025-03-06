@@ -35,6 +35,7 @@ export const getUserData = async (req, res) => {
 
             if (vendorData) {
                 userData.vendorDetails = {
+                    vendorId: vendorData._id,
                     organization: vendorData.organization,
                     contact: vendorData.contact,
                     address: vendorData.address,
