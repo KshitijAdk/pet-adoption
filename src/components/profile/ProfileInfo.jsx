@@ -4,7 +4,8 @@ import { Mail, Phone, MapPin, Edit } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
 
 const ProfileInfo = () => {
-    const { userData } = useContext(AppContent)
+    const { userData } = useContext(AppContent);
+
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-200">
@@ -18,14 +19,14 @@ const ProfileInfo = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h4 className="text-sm font-medium text-gray-500">Full Name</h4>
-                        <p className="mt-1 text-sm text-gray-900">{userData?.name}</p>
+                        <p className="mt-1 text-sm text-gray-900">{userData?.name || "N/A"}</p>
                     </div>
 
                     <div>
                         <h4 className="text-sm font-medium text-gray-500">Email Address</h4>
                         <div className="mt-1 flex items-center text-sm text-gray-900">
                             <Mail className="mr-2 h-4 w-4 text-gray-400" />
-                            {userData?.email}
+                            {userData?.email || "N/A"}
                         </div>
                     </div>
 
@@ -33,7 +34,7 @@ const ProfileInfo = () => {
                         <h4 className="text-sm font-medium text-gray-500">Phone Number</h4>
                         <div className="mt-1 flex items-center text-sm text-gray-900">
                             <Phone className="mr-2 h-4 w-4 text-gray-400" />
-                            {userData.vendorDetails?.contact}
+                            {userData?.vendorDetails?.contact || "N/A"}
                         </div>
                     </div>
 
@@ -41,15 +42,14 @@ const ProfileInfo = () => {
                         <h4 className="text-sm font-medium text-gray-500">Location</h4>
                         <div className="mt-1 flex items-center text-sm text-gray-900">
                             <MapPin className="mr-2 h-4 w-4 text-gray-400" />
-                            {userData.vendorDetails?.address}
+                            {userData?.vendorDetails?.address || "N/A"}
                         </div>
                     </div>
-
                 </div>
 
                 <div className="mt-6">
                     <h4 className="text-sm font-medium text-gray-500">Bio</h4>
-                    <p className="mt-1 text-sm text-gray-900">{userData.vendorDetails?.description}</p>
+                    <p className="mt-1 text-sm text-gray-900">{userData?.vendorDetails?.description || "N/A"}</p>
                 </div>
 
                 <div className="mt-6">
@@ -62,5 +62,6 @@ const ProfileInfo = () => {
         </div>
     );
 };
+
 
 export default ProfileInfo;

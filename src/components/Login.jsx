@@ -5,6 +5,7 @@ import Button from "./ui/button";
 import ToastComponent from "./ui/ToastComponent";
 import { toast } from "react-toastify";
 import { AppContent } from "../context/AppContext";
+import Loading from "./ui/Loading";
 import "../components/styles.css";
 
 const Login = () => {
@@ -95,7 +96,7 @@ const Login = () => {
 
           <Button
             text="Login with google"
-            // onClick={}
+            // onClick={/* Google login logic */}
             variant="secondary" />
 
           <p className="text-center text-base font-medium mt-7 mb-1">
@@ -103,6 +104,10 @@ const Login = () => {
           </p>
         </div>
       </div>
+
+      {/* Show the loading spinner when logging in */}
+      {isLoading && <Loading text="Logging you in..." />}
+
       <ToastComponent />
     </>
   );

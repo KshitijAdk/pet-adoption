@@ -4,6 +4,7 @@ import Tabs from '../Admin/Tabs';
 import PetForm from './PetForm';
 import PetList from './PetList';
 import { AppContent } from '../context/AppContext';
+import Loading from '../components/ui/Loading';
 
 const PetManagement = () => {
     const { userData, loading: userLoading } = useContext(AppContent); // Rename loading to userLoading
@@ -29,8 +30,6 @@ const PetManagement = () => {
         { id: 'pending', label: 'Adoption Requests', link: '/pets/pending' },
         { id: 'adopted', label: 'Adopted', link: '/pets/adopted' },
     ];
-
-
 
     useEffect(() => {
         if (userLoading || !userData || !userData.vendorDetails) {
@@ -64,7 +63,7 @@ const PetManagement = () => {
     }, [userData, userLoading]);
 
     if (loading) {
-        return <div>Loading pets...</div>; // Show a loading message while fetching
+        return <Loading />; // Use the Loading component here
     }
 
     const handleInputChange = (e) => {
@@ -136,7 +135,6 @@ const PetManagement = () => {
         }
     };
 
-
     const handleEditPet = (pet) => {
         setFormData(pet);
         setEditingPetId(pet.id);
@@ -171,7 +169,6 @@ const PetManagement = () => {
             return updatedPets;
         });
     };
-
 
     const handleTabChange = (tabId) => {
         setFilter(tabId);
@@ -209,9 +206,7 @@ const PetManagement = () => {
             )}
 
             {/* Render PetList or empty state */}
-            {loading ? (
-                <div>Loading pets...</div>
-            ) : pets.length > 0 ? (
+            {pets.length > 0 ? (
                 <PetList
                     pets={pets}
                     handleEditPet={handleEditPet}

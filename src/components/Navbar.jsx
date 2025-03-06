@@ -15,7 +15,9 @@ const Navbar = () => {
   // Handle Logout
   const handleLogout = async () => {
     try {
-      const response = await axios.post(backendUrl + "/api/auth/logout");
+      const response = await axios.post(backendUrl + "/api/auth/logout", {}, { withCredentials: true });
+      console.log(response.data);
+
       if (response.data.success) {
         setIsLoggedin(false);
         setUserData({});
@@ -26,9 +28,11 @@ const Navbar = () => {
         toast.error("Logout failed. Please try again.");
       }
     } catch (error) {
+      console.error("Logout Error:", error.response?.data || error.message);
       toast.error("An error occurred during logout. Please try again.");
     }
   };
+
 
   return (
     <>
@@ -89,7 +93,7 @@ const Navbar = () => {
                   src={userData?.image}
                   alt={userData?.name}
                   className="rounded-full w-full h-full object-cover border-2 border-amber-400"
-                  />
+                />
               </button>
 
               {/* Dropdown Menu */}

@@ -1,11 +1,11 @@
-// src/components/Signup.jsx
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
-import ToastComponent from './ui/ToastComponent'
+import ToastComponent from './ui/ToastComponent';
+import Loading from "./ui/Loading";
 
 const Signup = () => {
     const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -58,8 +58,6 @@ const Signup = () => {
             if (data.success) {
                 toast.success("Signup successful! Sending OTP...");
                 await sendOtp(data.userId);
-                // setIsLoggedin(true)
-                // getUserData();
             } else {
                 toast.error(data.message || "Signup failed. Try again.");
             }
@@ -143,10 +141,9 @@ const Signup = () => {
                         />
                     </form>
 
-
                     <Button
                         text="Login with google"
-                        // onClick={}
+                        // onClick={/* Google login logic */}
                         variant="secondary" />
 
                     <p className="text-center text-base font-medium mt-5 mb-1">
@@ -157,6 +154,9 @@ const Signup = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Show the loading spinner when the form is submitting */}
+            {isLoading && <Loading text="Creating your Account..." />}
 
             {/* Use ToastComponent for toast notifications */}
             <ToastComponent />

@@ -66,6 +66,7 @@ export const AppContextProvider = (props) => {
     const value = {
         backendUrl,
         isLoggedin,
+        setIsLoggedin,
         userData,
         setUserData,
         getUserData,
