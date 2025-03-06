@@ -80,7 +80,6 @@ const PetForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isOp
                   type="number"
                   name="age"
                   min="0"
-                  placeholder="Enter age in years"
                   required
                   value={formData.age}
                   onChange={handleInputChange}

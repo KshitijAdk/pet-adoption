@@ -9,6 +9,7 @@ export const AppContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const [isLoggedin, setIsLoggedin] = useState(false);
     const [userData, setUserData] = useState(null); // Set default to null
+    const [loading, setLoading] = useState(true); // Add loading state
 
     axios.defaults.withCredentials = true;
 
@@ -19,6 +20,7 @@ export const AppContextProvider = (props) => {
         } else {
             setIsLoggedin(false);
             setUserData(null);
+            setLoading(false); // Stop loading if no token
         }
     }, []);
 
@@ -26,17 +28,18 @@ export const AppContextProvider = (props) => {
         try {
             const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`)
             if (data.success) {
-                setIsLoggedin(true)
-                getUserData()
+                setIsLoggedin(true);
+                getUserData();
             }
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.message);
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         getAuthState();
-    }, [])
+    }, []);
 
     const getUserData = async () => {
         try {
@@ -55,16 +58,18 @@ export const AppContextProvider = (props) => {
             console.error("Error fetching user data:", error);
             toast.error(error.response?.data?.message || "An error occurred");
             setIsLoggedin(false);
+        } finally {
+            setLoading(false); // Stop loading once the request completes
         }
     };
 
-
-
     const value = {
         backendUrl,
-        isLoggedin, setIsLoggedin,
-        userData, setUserData,
+        isLoggedin,
+        userData,
+        setUserData,
         getUserData,
+        loading, // Pass loading state to context
     };
 
     return <AppContent.Provider value={value}>{props.children}</AppContent.Provider>;

@@ -1,38 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { PlusCircle } from 'lucide-react';
 import Tabs from '../Admin/Tabs';
 import PetForm from './PetForm';
 import PetList from './PetList';
+import { AppContent } from '../context/AppContext';
 
 const PetManagement = () => {
-    const [pets, setPets] = useState([
-        {
-            id: '1',
-            name: 'Buddy',
-            species: 'Dog',
-            breed: 'Golden Retriever',
-            age: 3,
-            gender: 'Male',
-            description: 'Friendly and loves to play fetch.',
-            imageUrl: 'https://example.com/buddy.jpg',
-            status: 'Available',
-        },
-        {
-            id: '2',
-            name: 'Mittens',
-            species: 'Cat',
-            breed: 'Siamese',
-            age: 2,
-            gender: 'Female',
-            description: 'Loves to cuddle and nap in the sun.',
-            imageUrl: 'https://example.com/mittens.jpg',
-            status: 'Pending',
-        },
-    ]);
-
+    const { userData, loading: userLoading } = useContext(AppContent); // Rename loading to userLoading
+    const [pets, setPets] = useState([]);
     const [isAddingPet, setIsAddingPet] = useState(false);
     const [editingPetId, setEditingPetId] = useState(null);
-    const [filter, setFilter] = useState('all'); // State for filtering pets
+    const [filter, setFilter] = useState('all');
     const [formData, setFormData] = useState({
         name: '',
         species: '',
@@ -43,14 +21,51 @@ const PetManagement = () => {
         imageUrl: '',
         status: 'Available',
     });
+    const [loading, setLoading] = useState(true); // Add a loading state
 
-    // Define tabs for the Tabs component
     const tabs = [
         { id: 'all', label: 'All Pets', link: '/pets/all' },
         { id: 'available', label: 'Available', link: '/pets/available' },
         { id: 'pending', label: 'Adoption Requests', link: '/pets/pending' },
         { id: 'adopted', label: 'Adopted', link: '/pets/adopted' },
     ];
+
+
+
+    useEffect(() => {
+        if (userLoading || !userData || !userData.vendorDetails) {
+            return; // Don't fetch pets until user data is loaded
+        }
+
+        const fetchPets = async () => {
+            const vendorId = userData.vendorDetails.vendorId;
+
+            if (!vendorId) {
+                console.error('Vendor ID not found');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/pets/${vendorId}/pets`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setPets(data.pets); // Set the fetched pets
+                } else {
+                    console.error('Failed to fetch pets');
+                }
+            } catch (error) {
+                console.error('Error fetching pets:', error);
+            } finally {
+                setLoading(false); // Set loading to false after fetching
+            }
+        };
+
+        fetchPets();
+    }, [userData, userLoading]);
+
+    if (loading) {
+        return <div>Loading pets...</div>; // Show a loading message while fetching
+    }
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -60,41 +75,82 @@ const PetManagement = () => {
         });
     };
 
-    const handleAddPet = (e) => {
+    const handleAddPet = async (e) => {
         e.preventDefault();
-        const newPet = { ...formData, id: String(pets.length + 1) };
-        setPets([...pets, newPet]);
-        setFormData({
-            name: '',
-            species: '',
-            breed: '',
-            age: 0,
-            gender: 'Male',
-            description: '',
-            imageUrl: '',
-            status: 'Available',
-        });
-        setIsAddingPet(false);
+        const vendorId = userData.vendorDetails?.vendorId; // Get vendorId
+
+        if (!vendorId) {
+            console.error('Vendor ID not found');
+            return;
+        }
+
+        if (!formData.imageUrl) {
+            console.error('Image URL is required');
+            return;
+        }
+
+        const newPet = {
+            name: formData.name,
+            species: formData.species,
+            breed: formData.breed,
+            age: formData.age,
+            gender: formData.gender,
+            description: formData.description,
+            image: formData.imageUrl, // Ensure this is sent
+            status: formData.status,
+        };
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/pets/add/${vendorId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newPet),
+            });
+
+            if (response.ok) {
+                const addedPet = await response.json();
+                // Update the pets state with the new pet
+                // After adding a pet
+                setPets((prevPets) => {
+                    const updatedPets = [...prevPets, addedPet.pet];
+                    console.log("Updated Pets after adding:", updatedPets); // Debugging
+                    return updatedPets;
+                });
+
+                setIsAddingPet(false);
+                setFormData({
+                    name: '',
+                    species: '',
+                    breed: '',
+                    age: 0,
+                    gender: 'Male',
+                    description: '',
+                    imageUrl: '',
+                    status: 'Available',
+                });
+            } else {
+                console.error('Failed to add pet:', await response.json());
+            }
+        } catch (error) {
+            console.error('Error adding pet:', error);
+        }
     };
+
 
     const handleEditPet = (pet) => {
         setFormData(pet);
         setEditingPetId(pet.id);
     };
 
-    const handleUpdatePet = (e) => {
+    const handleUpdatePet = async (e) => {
         e.preventDefault();
-        if (editingPetId) {
-            const updatedPets = pets.map((pet) =>
-                pet.id === editingPetId ? { ...pet, ...formData } : pet
-            );
-            setPets(updatedPets);
-            setEditingPetId(null);
-        }
+        console.log("Update clicked");
+        // Add your update logic here if necessary
     };
 
     const handleCancelEdit = () => {
         setEditingPetId(null);
+        setIsAddingPet(false);
         setFormData({
             name: '',
             species: '',
@@ -105,33 +161,29 @@ const PetManagement = () => {
             imageUrl: '',
             status: 'Available',
         });
-        setIsAddingPet(false);
     };
 
-    const handleDeletePet = (id) => {
-        setPets(pets.filter((pet) => pet.id !== id));
+    const handleDeletePet = (petId) => {
+        // After deleting a pet
+        setPets((prevPets) => {
+            const updatedPets = prevPets.filter((pet) => pet._id !== petId);
+            console.log("Updated Pets after deleting:", updatedPets); // Debugging
+            return updatedPets;
+        });
     };
 
-    // Handle tab changes
+
     const handleTabChange = (tabId) => {
         setFilter(tabId);
     };
 
-    // Filter pets based on the selected tab
     const filteredPets =
-        filter === 'all'
-            ? pets
-            : pets.filter((pet) => pet.status.toLowerCase() === filter);
+        filter === 'all' ? pets : pets.filter((pet) => pet.status.toLowerCase() === filter);
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            {/* Tabs Component with Design */}
             <div className="bg-white shadow-md mb-4 p-4 rounded-lg">
-                <Tabs
-                    tabs={tabs}
-                    initialActiveTab={filter}
-                    onTabChange={handleTabChange} // Pass the tab change handler
-                />
+                <Tabs tabs={tabs} initialActiveTab={filter} onTabChange={handleTabChange} />
             </div>
 
             <div className="flex items-center justify-between mb-4">
@@ -145,24 +197,29 @@ const PetManagement = () => {
                 </button>
             </div>
 
-            {/* Add/Edit Pet Form as Modal */}
             {(isAddingPet || editingPetId) && (
                 <PetForm
                     formData={formData}
                     handleInputChange={handleInputChange}
                     handleSubmit={editingPetId ? handleUpdatePet : handleAddPet}
                     editingPetId={editingPetId}
-                    handleCancel={editingPetId ? handleCancelEdit : () => setIsAddingPet(false)}
-                    isOpen={isAddingPet || editingPetId} // Pass isOpen prop to PetForm for modal visibility
+                    handleCancel={handleCancelEdit}
+                    isOpen={isAddingPet || editingPetId}
                 />
             )}
 
-            {/* Pet List */}
-            <PetList
-                pets={filteredPets}
-                handleEditPet={handleEditPet}
-                handleDeletePet={handleDeletePet}
-            />
+            {/* Render PetList or empty state */}
+            {loading ? (
+                <div>Loading pets...</div>
+            ) : pets.length > 0 ? (
+                <PetList
+                    pets={pets}
+                    handleEditPet={handleEditPet}
+                    handleDeletePet={handleDeletePet}
+                />
+            ) : (
+                <div className="text-center text-gray-500">No pets found. Add a new pet to get started.</div>
+            )}
         </div>
     );
 };
