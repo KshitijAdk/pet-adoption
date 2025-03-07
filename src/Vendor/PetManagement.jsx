@@ -74,8 +74,12 @@ const PetManagement = () => {
         });
     };
 
+
     const handleAddPet = async (e) => {
         e.preventDefault();
+
+        console.log('Form Data before submission:', formData); // Debugging
+
         const vendorId = userData.vendorDetails?.vendorId; // Get vendorId
 
         if (!vendorId) {
@@ -94,6 +98,7 @@ const PetManagement = () => {
             breed: formData.breed,
             age: formData.age,
             gender: formData.gender,
+            size: formData.size, // Make sure 'size' is included here
             description: formData.description,
             image: formData.imageUrl, // Ensure this is sent
             status: formData.status,
@@ -109,7 +114,6 @@ const PetManagement = () => {
             if (response.ok) {
                 const addedPet = await response.json();
                 // Update the pets state with the new pet
-                // After adding a pet
                 setPets((prevPets) => {
                     const updatedPets = [...prevPets, addedPet.pet];
                     console.log("Updated Pets after adding:", updatedPets); // Debugging
@@ -123,6 +127,7 @@ const PetManagement = () => {
                     breed: '',
                     age: 0,
                     gender: 'Male',
+                    size: '',  // Ensure the size is reset here
                     description: '',
                     imageUrl: '',
                     status: 'Available',
@@ -155,6 +160,7 @@ const PetManagement = () => {
             breed: '',
             age: 0,
             gender: 'Male',
+            size: '',
             description: '',
             imageUrl: '',
             status: 'Available',
@@ -197,6 +203,7 @@ const PetManagement = () => {
             {(isAddingPet || editingPetId) && (
                 <PetForm
                     formData={formData}
+                    setFormData={setFormData} // Ensure this is passed
                     handleInputChange={handleInputChange}
                     handleSubmit={editingPetId ? handleUpdatePet : handleAddPet}
                     editingPetId={editingPetId}
@@ -204,6 +211,7 @@ const PetManagement = () => {
                     isOpen={isAddingPet || editingPetId}
                 />
             )}
+
 
             {/* Render PetList or empty state */}
             {pets.length > 0 ? (
