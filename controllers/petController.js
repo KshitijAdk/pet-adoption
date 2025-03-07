@@ -1,26 +1,27 @@
 import Vendor from "../models/Vendor.js";
 
+// Example backend route to handle pet addition
 export const addPetToVendor = async (req, res) => {
     try {
-        const { vendorId } = req.params; // Get vendorId from request params
-        const petData = req.body; // Get pet data from request body
+        // Debug log to check request body
+        console.log("Pet data received in backend:", req.body); // Ensure `size` is here
+        const vendor = await Vendor.findById(req.params.vendorId);
 
-        // Find the vendor by ID
-        const vendor = await Vendor.findById(vendorId);
         if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
+            return res.status(404).json({ message: 'Vendor not found' });
         }
 
-        // Add the new pet to the vendor's pets array
-        vendor.pets.push(petData);
+        // Add the pet to the vendor's pets array
+        vendor.pets.push(req.body);
         await vendor.save();
 
-        res.status(201).json({ message: "Pet added successfully", pet: petData });
+        res.status(201).json({ message: 'Pet added successfully' });
     } catch (error) {
         console.error("Error adding pet:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 // Fetch all pets of a specific vendor by vendorId

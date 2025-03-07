@@ -5,6 +5,7 @@ const petSchema = new mongoose.Schema({
   species: { type: String, required: true },
   breed: { type: String, required: true },
   age: { type: Number, required: true },
+  size: { type: String, required: true },
   gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
   status: { type: String, enum: ['Available', 'Adopted', 'Pending'], default: 'Available' },
   image: { type: String, required: true },

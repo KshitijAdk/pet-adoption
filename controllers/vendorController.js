@@ -155,3 +155,15 @@ export const getPendingVendors = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch pending vendors, please try again.' });
     }
 };
+
+
+
+// Fetch all vendors
+export const getAllVendors = async (req, res) => {
+    try {
+        const vendors = await Vendor.find(); // Fetch all vendors from DB
+        res.status(200).json({ success: true, data: vendors });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching vendors", error: error.message });
+    }
+};

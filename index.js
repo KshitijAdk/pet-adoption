@@ -125,14 +125,14 @@ app.get('/api/pets/:vendorId/pets', async (req, res) => {
   console.log(`Querying for vendor with vendorId: ${vendorId}`);
 
   try {
-    // Querying the Vendor collection directly with vendorId
-    const vendor = await Vendor.findOne({ _id: vendorId }).populate('pets');
-    console.log('Found vendor:', vendor);  // Log the result
+    // Query the Vendor collection directly by vendorId
+    const vendor = await Vendor.findOne({ _id: vendorId });
 
     if (!vendor) {
       return res.status(404).json({ message: 'Vendor not found' });
     }
 
+    // Return the pets associated with the vendor
     res.status(200).json({ pets: vendor.pets });
   } catch (error) {
     console.error('Error fetching pets:', error);
