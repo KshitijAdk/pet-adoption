@@ -113,12 +113,20 @@ const PetManagement = () => {
 
             if (response.ok) {
                 const addedPet = await response.json();
+                console.log("Full backend response:", addedPet); // Log the full response
+
                 // Update the pets state with the new pet
                 setPets((prevPets) => {
+                    if (!addedPet || !addedPet.pet || !addedPet.pet._id) {
+                        console.error("Invalid pet data received:", addedPet);
+                        return prevPets; // Prevent updating state with undefined values
+                    }
+
                     const updatedPets = [...prevPets, addedPet.pet];
                     console.log("Updated Pets after adding:", updatedPets); // Debugging
                     return updatedPets;
                 });
+
 
                 setIsAddingPet(false);
                 setFormData({
