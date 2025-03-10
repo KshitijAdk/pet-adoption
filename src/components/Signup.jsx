@@ -157,8 +157,6 @@ const Signup = () => {
 
             {/* Show the loading spinner when the form is submitting */}
             {isLoading && <Loading text="Creating your Account..." />}
-
-            {/* Use ToastComponent for toast notifications */}
             <ToastComponent />
         </>
     );
