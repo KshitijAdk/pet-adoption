@@ -21,6 +21,9 @@ import PetListing from "./components/PetListing";
 import Profile from "./components/profile/Profile";
 import VendorDashboard from "./Vendor/VendorDashboard";
 import PetManagement from "./Vendor/PetManagement";
+import PetDetails from "./components/PetDetails";
+import AdoptionForm from "./components/AdoptionForm";
+import AdoptionStatus from "./components/AdoptionStatus";
 
 const App = () => {
   return (
@@ -32,7 +35,14 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
+
         <Route path="/pets" element={<PetListing />} />
+        <Route path="/pets/:id" element={<PetDetails />} />
+        <Route path="/adoption-form" element={<AdoptionForm />} />
+        <Route path="/adoption-status/:adoptionId" element={<AdoptionStatus />} />
+
+
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
