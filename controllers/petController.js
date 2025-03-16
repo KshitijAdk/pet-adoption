@@ -4,7 +4,6 @@ import Vendor from "../models/Vendor.js";
 export const addPetToVendor = async (req, res) => {
     try {
         // Debug log to check request body
-        console.log("Pet data received in backend:", req.body); // Ensure `size` is here
         const vendor = await Vendor.findById(req.params.vendorId);
 
         if (!vendor) {
@@ -79,5 +78,32 @@ export const deletePet = async (req, res) => {
     } catch (error) {
         console.error("Error deleting pet:", error);
         res.status(500).json({ success: false, message: "Server error. Please try again later." });
+    }
+};
+
+
+// Controller to fetch pet details by petId
+export const getPetData = async (req, res) => {
+    try {
+        const { petId } = req.params;
+
+        // Find the vendor containing the pet with the specified petId
+        const vendor = await Vendor.findOne({ "pets._id": petId });
+
+        if (!vendor) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+
+        // Find the specific pet within the vendor's pets array
+        const pet = vendor.pets.id(petId);
+
+        if (!pet) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+
+        res.status(200).json({ pet });
+    } catch (error) {
+        console.error("Error fetching pet data:", error);
+        res.status(500).json({ message: "Server error" });
     }
 };

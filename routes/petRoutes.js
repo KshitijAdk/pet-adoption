@@ -1,5 +1,5 @@
 import express from "express";
-import { addPetToVendor, getPetsByVendor, deletePet } from "../controllers/petController.js";
+import { addPetToVendor, getPetData, deletePet } from "../controllers/petController.js";
 
 const router = express.Router();
 
@@ -7,6 +7,7 @@ const router = express.Router();
 router.post("/add/:vendorId", addPetToVendor);
 // router.get('/:vendorId/pets', getPetsByVendor);
 router.delete("/delete-pet", deletePet); // DELETE request to remove a pet
+router.get("/:petId", getPetData);
 
 
 export default router;

@@ -19,6 +19,7 @@ export const getUserData = async (req, res) => {
 
         // Initialize user data object
         const userData = {
+            userId: user._id,
             name: user.name,
             email: user.email,
             isAccountVerified: user.isAccountVerified,

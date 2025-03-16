@@ -8,6 +8,7 @@ import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import vendorRoutes from './routes/vendorRoutes.js'
 import petRoutes from './routes/petRoutes.js'
+import adoptionRoutes from './routes/adoptionRoutes.js'
 // import session from 'express-session';
 // import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // import passport from 'passport';
@@ -117,6 +118,7 @@ app.use('/api/user', userRouter);
 // app.use('/auth', oauthRouter);
 app.use("/api/vendors", vendorRoutes);  // All vendor routes will be prefixed with /api/vendors
 app.use("/api/pets", petRoutes); // Mount pet routes
+app.use("/api/adoption", adoptionRoutes); // Mount pet routes
 
 
 
@@ -142,6 +144,55 @@ app.get('/api/pets/:vendorId/pets', async (req, res) => {
 
 
 
+
+// API to get pet details by petId and vendorId
+app.get("/api/vendors/pet-details/:vendorId/:petId", async (req, res) => {
+  const { vendorId, petId } = req.params;
+
+  try {
+    // Find the vendor by vendorId
+    const vendor = await Vendor.findById(vendorId).populate('pets').populate('adoptionRequests');
+
+    if (!vendor) {
+      return res.status(404).json({ success: false, message: "Vendor not found" });
+    }
+
+    // Find the pet by petId inside the vendor's pets array
+    const pet = vendor.pets.find((pet) => pet._id.toString() === petId);
+
+    if (!pet) {
+      return res.status(404).json({ success: false, message: "Pet not found" });
+    }
+
+    // Return the full details of the vendor and the pet
+    return res.status(200).json({
+      success: true,
+      vendor: {
+        organization: vendor.organization,
+        address: vendor.address,
+      },
+      pet: {
+        name: pet.name,
+        species: pet.species,
+        breed: pet.breed,
+        age: pet.age,
+        size: pet.size,
+        weight: pet.weight,
+        gender: pet.gender,
+        health: pet.health,
+        goodWith: pet.goodWith,
+        traits: pet.traits,
+        imageUrl: pet.imageUrl,
+        description: pet.description,
+        status: pet.status,
+        createdAt: pet.createdAt
+      }
+    });
+  } catch (error) {
+    console.error("Error retrieving vendor or pet:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
 
 
