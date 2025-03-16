@@ -22,8 +22,8 @@ import Profile from "./components/profile/Profile";
 import VendorDashboard from "./Vendor/VendorDashboard";
 import PetManagement from "./Vendor/PetManagement";
 import PetDetails from "./components/PetDetails";
-import AdoptionForm from "./components/AdoptionForm";
 import AdoptionStatus from "./components/AdoptionStatus";
+import AdoptionRequests from "./Vendor/AdoptionRequests";
 
 const App = () => {
   return (
@@ -39,7 +39,6 @@ const App = () => {
 
         <Route path="/pets" element={<PetListing />} />
         <Route path="/pets/:id" element={<PetDetails />} />
-        <Route path="/adoption-form" element={<AdoptionForm />} />
         <Route path="/adoption-status/:adoptionId" element={<AdoptionStatus />} />
 
 
@@ -61,6 +60,7 @@ const App = () => {
 
         <Route path="/vendor-dashboard" element={<VendorDashboard />} />
         <Route path="/pets-listing" element={<PetManagement />} />
+        <Route path="/vendor/adoption-requests" element={<AdoptionRequests />} />
 
 
 

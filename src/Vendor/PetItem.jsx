@@ -47,7 +47,7 @@ const PetItem = ({ pet, handleEditPet, handleDeletePet }) => {
                         <div className="flex-shrink-0 h-16 w-16">
                             <img
                                 className="h-16 w-16 rounded-full object-cover"
-                                src={pet.image}
+                                src={pet.imageUrl}
                                 alt={pet.name}
                             />
                         </div>

@@ -10,6 +10,7 @@ export const AppContextProvider = (props) => {
     const [isLoggedin, setIsLoggedin] = useState(false);
     const [userData, setUserData] = useState(null); // Set default to null
     const [loading, setLoading] = useState(true); // Add loading state
+    const [petData, setPetData] = useState(null); // Add pet data state
 
     axios.defaults.withCredentials = true;
 
@@ -26,7 +27,7 @@ export const AppContextProvider = (props) => {
 
     const getAuthState = async () => {
         try {
-            const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`)
+            const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
             if (data.success) {
                 setIsLoggedin(true);
                 getUserData();
@@ -44,7 +45,7 @@ export const AppContextProvider = (props) => {
     const getUserData = async () => {
         try {
             const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-                withCredentials: true, // ✅ Important! Ensures cookies (token) are sent
+                withCredentials: true,
             });
 
             if (data.success) {
@@ -63,6 +64,24 @@ export const AppContextProvider = (props) => {
         }
     };
 
+    // ✅ New function to fetch pet data using petId
+    const getPetData = async (petId) => {
+        try {
+            const { data } = await axios.get(`${backendUrl}/api/pets/${petId}`);
+            if (data) {
+                setPetData(data.pet); // ✅ Set the fetched pet data
+                return data.pet;
+            } else {
+                toast.error("Pet not found");
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching pet data:", error);
+            toast.error(error.response?.data?.message || "Failed to fetch pet data");
+            return null;
+        }
+    };
+
     const value = {
         backendUrl,
         isLoggedin,
@@ -70,7 +89,9 @@ export const AppContextProvider = (props) => {
         userData,
         setUserData,
         getUserData,
-        loading, // Pass loading state to context
+        loading,
+        petData, // Expose pet data
+        getPetData, // Expose the pet data fetching function
     };
 
     return <AppContent.Provider value={value}>{props.children}</AppContent.Provider>;

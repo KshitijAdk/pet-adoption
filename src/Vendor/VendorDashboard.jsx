@@ -106,7 +106,7 @@ const VendorDashboard = () => {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link to="/requests" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/vendor/adoption-requests" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Review requests
               </Link>
             </div>
