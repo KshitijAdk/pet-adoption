@@ -35,7 +35,7 @@ export const register = async (req, res) => {
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Welcome to NayaSathi Pet Adoption',
+            subject: 'Welcome to NayaSathi Pet Adoption🐕',
             text: `Welcome to NayaSathi. Your account has been created with email id: ${email}`,
         }
 

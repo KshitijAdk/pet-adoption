@@ -12,8 +12,11 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: 'user' },  // Role field (user or vendor or admin)
     contact: { type: String, default: "" },
     address: { type: String, default: "" },
-    image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" }
+    image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" },
+    adoptedPets: [{ type: mongoose.Schema.Types.ObjectId }],  // Array of adopted pet IDs
+    favoritePets: [{ type: mongoose.Schema.Types.ObjectId }],  // Array of favorite pet IDs
 });
 
-const userModel = mongoose.models.user || mongoose.model('user', userSchema);
+const userModel = mongoose.models.User || mongoose.model('User', userSchema);
+
 export default userModel;

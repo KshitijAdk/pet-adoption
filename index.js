@@ -9,6 +9,7 @@ import userRouter from './routes/userRoutes.js';
 import vendorRoutes from './routes/vendorRoutes.js'
 import petRoutes from './routes/petRoutes.js'
 import adoptionRoutes from './routes/adoptionRoutes.js'
+import favouriteRoutes from './routes/favoriteRoutes.js'
 // import session from 'express-session';
 // import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // import passport from 'passport';
@@ -119,6 +120,7 @@ app.use('/api/user', userRouter);
 app.use("/api/vendors", vendorRoutes);  // All vendor routes will be prefixed with /api/vendors
 app.use("/api/pets", petRoutes); // Mount pet routes
 app.use("/api/adoption", adoptionRoutes); // Mount pet routes
+app.use("/api/favorites", favouriteRoutes)
 
 
 

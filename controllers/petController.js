@@ -1,4 +1,5 @@
 import Vendor from "../models/Vendor.js";
+import userModel from "../models/userModel.js";
 
 // Example backend route to handle pet addition
 export const addPetToVendor = async (req, res) => {
@@ -105,5 +106,48 @@ export const getPetData = async (req, res) => {
     } catch (error) {
         console.error("Error fetching pet data:", error);
         res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+// Toggle Favorite Pet
+export const toggleFavorite = async (req, res) => {
+    try {
+        const { userId, petId } = req.body;
+
+        // Check if both userId and petId are provided
+        if (!userId || !petId) {
+            return res.status(400).json({ message: "User ID and Pet ID are required" });
+        }
+
+        // Find the user by ID
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Find the pet in all vendors' pet arrays
+        const vendor = await Vendor.findOne({ "pets._id": petId });
+        if (!vendor) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+
+        // Check if the pet is already in the favorites
+        const isFavorite = user.favoritePets.includes(petId);
+
+        if (isFavorite) {
+            // Remove the pet from favorites
+            user.favoritePets = user.favoritePets.filter(id => id.toString() !== petId);
+            await user.save();
+            return res.status(200).json({ message: "Pet removed from favorites", user });
+        } else {
+            // Add the pet to the favorites
+            user.favoritePets.push(petId);
+            await user.save();
+            return res.status(200).json({ message: "Pet added to favorites", user });
+        }
+    } catch (error) {
+        console.error("Error toggling favorite pet:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
