@@ -1,8 +1,34 @@
-// FavoritePets.js
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
+import { AppContent } from '../../context/AppContext';
+import axios from 'axios';
+import { Link } from 'react-router-dom';  // If you're using react-router for navigation
 
-const FavoritePets = ({ favoritePets }) => {
+const FavoritePets = () => {
+    const { userData } = useContext(AppContent);
+    const [favoritePets, setFavoritePets] = useState([]);
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(null); // Error state
+
+    useEffect(() => {
+        const fetchFavoritePets = async () => {
+            try {
+                setLoading(true);  // Set loading state to true when fetching
+                const response = await axios.get(`http://localhost:3000/api/favorites/${userData.userId}`);
+                setFavoritePets(response.data.favoritePets);  // Set favorite pets
+                setLoading(false);  // Set loading state to false after fetching
+            } catch (error) {
+                setLoading(false);  // Set loading to false even if error occurs
+                setError('Error fetching favorite pets');  // Set error message
+                console.error("Error fetching favorite pets", error);
+            }
+        };
+
+        if (userData && userData.userId) {
+            fetchFavoritePets();
+        }
+    }, [userData]);
+
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-200">
@@ -13,13 +39,17 @@ const FavoritePets = ({ favoritePets }) => {
             </div>
 
             <div className="px-6 py-5">
+                {loading && <div className="text-center py-12">Loading...</div>}  {/* Show loading state */}
+
+                {error && !loading && <div className="text-center py-12 text-red-500">{error}</div>}  {/* Show error state */}
+
                 {favoritePets.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {favoritePets.map(pet => (
-                            <div key={pet.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div key={pet._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <div className="h-48 w-full relative">
                                     <img
-                                        src={pet.image}
+                                        src={pet.imageUrl}
                                         alt={pet.name}
                                         className="h-full w-full object-cover"
                                     />
@@ -39,12 +69,12 @@ const FavoritePets = ({ favoritePets }) => {
                                         <span>•</span>
                                         <span className="mx-2">{pet.age}</span>
                                         <span>•</span>
-                                        <span className="ml-2">{pet.type}</span>
+                                        <span className="ml-2">{pet.species}</span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
-                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                        <Link to={`/pets/${pet._id}`} className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
                                             View Details
-                                        </button>
+                                        </Link>
                                         <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                             Apply to Adopt
                                         </button>

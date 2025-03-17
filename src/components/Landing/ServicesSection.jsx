@@ -1,5 +1,6 @@
 import React from 'react';
 import { PawPrint, Heart, Phone, Info, Users, MessageSquare, ChevronRight } from 'lucide-react';
+import AnimateOnScroll, { AnimatedChild } from '../ui/AnimateOnScroll'
 
 const services = [
   {
@@ -44,25 +45,31 @@ const ServicesSection = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Our Services</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">We offer a range of services to help pets and their owners live their best lives together.</p>
-        </div>
+        <AnimateOnScroll animation="fadeInUp">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Our Services</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">We offer a range of services to help pets and their owners live their best lives together.</p>
+          </div>
+        </AnimateOnScroll>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
-            <div key={index} className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-amber-100 p-4 rounded-full inline-block mb-6">
-                {service.icon}
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">{service.title}</h3>
-              <p className="text-gray-600 mb-4">{service.description}</p>
-              <a href={service.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
-                Learn More <ChevronRight className="ml-1 h-5 w-5" />
-              </a>
-            </div>
-          ))}
-        </div>
+        <AnimateOnScroll staggerChildren={0.1}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <AnimatedChild key={index} animation="scaleUp">
+                <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="bg-amber-100 p-4 rounded-full inline-block mb-6">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">{service.title}</h3>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <a href={service.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
+                    Learn More <ChevronRight className="ml-1 h-5 w-5" />
+                  </a>
+                </div>
+              </AnimatedChild>
+            ))}
+          </div>
+        </AnimateOnScroll>
       </div>
     </section>
   );

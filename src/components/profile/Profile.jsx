@@ -46,15 +46,6 @@ const user = {
             age: '8 months',
             status: 'Available',
             image: 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-        },
-        {
-            id: 4,
-            name: 'Max',
-            type: 'Dog',
-            breed: 'Beagle',
-            age: '2 years',
-            status: 'Available',
-            image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-1.2.1&auto=format&fit=crop&w=639&q=80'
         }
     ],
     applications: [

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight, ArrowRight } from 'lucide-react';
+import AnimateOnScroll, { AnimatedChild } from '../ui/AnimateOnScroll';
 
 const blogPosts = [
   {
@@ -32,38 +33,46 @@ const BlogSection = () => {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Latest From Our Blog</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Tips, stories, and updates from the world of pet adoption and animal welfare.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
-            <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-              <div className="h-48 overflow-hidden">
-                <img 
-                  src={post.imageUrl} 
-                  alt={post.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="text-xs text-gray-500 mb-2">{post.date} • {post.category}</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">{post.title}</h3>
-                <p className="text-gray-600 mb-4">{post.description}</p>
-                <a href={post.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
-                  Read More <ChevronRight className="ml-1 h-5 w-5" />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
+        <AnimateOnScroll animation="fadeInUp">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Latest From Our Blog</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Tips, stories, and updates from the world of pet adoption and animal welfare.</p>
+          </div>
+        </AnimateOnScroll>
 
-        <div className="text-center mt-10">
-          <a href="#" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
-            View All Blog Posts <ArrowRight className="ml-2 h-5 w-5" />
-          </a>
-        </div>
+        <AnimateOnScroll staggerChildren={0.15}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post, index) => (
+              <AnimatedChild key={index} animation="fadeInUp">
+                <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={post.imageUrl}
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="text-xs text-gray-500 mb-2">{post.date} • {post.category}</div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">{post.title}</h3>
+                    <p className="text-gray-600 mb-4">{post.description}</p>
+                    <a href={post.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
+                      Read More <ChevronRight className="ml-1 h-5 w-5" />
+                    </a>
+                  </div>
+                </div>
+              </AnimatedChild>
+            ))}
+          </div>
+        </AnimateOnScroll>
+
+        <AnimateOnScroll animation="fadeInUp" delay={0.3}>
+          <div className="text-center mt-10">
+            <a href="#" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
+              View All Blog Posts <ArrowRight className="ml-2 h-5 w-5" />
+            </a>
+          </div>
+        </AnimateOnScroll>
       </div>
     </section>
   );

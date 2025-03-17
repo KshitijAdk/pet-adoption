@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import Button from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import FavoriteButton from "./ui/FavouriteButton";
+import { AppContent } from "../context/AppContext";
 
 const PetListing = () => {
+  const { userData } = useContext(AppContent)
   const [pets, setPets] = useState([]); // Initialize as an empty array
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
