@@ -6,7 +6,7 @@ import FavoriteButton from "./ui/FavouriteButton";
 import { AppContent } from "../context/AppContext";
 
 const PetListing = () => {
-  const { userData } = useContext(AppContent)
+  const { userData } = useContext(AppContent);
   const [pets, setPets] = useState([]); // Initialize as an empty array
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -26,12 +26,11 @@ const PetListing = () => {
         const result = await response.json();
 
         if (result.success && Array.isArray(result.data)) {
-          // Flatten all pets from different vendors and include the vendor's address and ID as the pet's data
+          // Flatten all pets from different vendors and remove vendorId
           const allPets = result.data.flatMap((vendor) =>
             vendor.pets.map((pet) => ({
               ...pet,
               location: vendor.address, // Add vendor address as pet location
-              vendorId: vendor._id,      // Add vendor ID to the pet object
             }))
           );
 
@@ -49,13 +48,10 @@ const PetListing = () => {
     fetchPets();
   }, []);
 
-  const handleMeetClick = (pet) => {
-    console.log("Navigating to Pet ID:", pet._id);
-    navigate(`/pets/${pet._id}`, {
-      state: { petId: pet._id, vendorId: pet.vendorId } // Passing petId and vendorId
-    });
+  const handleMeetClick = (petId) => {
+    console.log("Navigating to Pet ID:", petId); // Add console log to check petId
+    navigate(`/pets/${petId}`);
   };
-
 
   // Filter & Search Logic
   const filteredPets = pets
@@ -65,8 +61,6 @@ const PetListing = () => {
     .filter((pet) => (filters.age === "All" ? true : pet.age === filters.age))
     .filter((pet) => (filters.gender === "All" ? true : pet.gender === filters.gender))
     .filter((pet) => (filters.size === "All" ? true : pet.size === filters.size));
-
-
 
   return (
     <div className="bg-gray-100 min-h-screen py-10 px-5">
@@ -100,29 +94,29 @@ const PetListing = () => {
             </button>
           </div>
 
-          {[
-            { label: "Pet Type", key: "type", options: ["All", "Dog", "Cat"] },
-            { label: "Breed", key: "breed", options: ["All", "Golden", "Siamese", "German Shepherd"] },
-            { label: "Age", key: "age", options: ["All", "Puppy", "Young", "Adult"] },
-            { label: "Gender", key: "gender", options: ["All", "Male", "Female"] },
-            { label: "Size", key: "size", options: ["All", "Small", "Medium", "Large"] },
-          ].map(({ label, key, options }) => (
-            <div key={key} className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">{label}</label>
-              <div className="relative">
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-md appearance-none"
-                  value={filters[key]}
-                  onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
-                >
-                  {options.map((option) => (
-                    <option key={option}>{option}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-3 text-gray-400" />
+          {[{ label: "Pet Type", key: "type", options: ["All", "Dog", "Cat"] },
+          { label: "Breed", key: "breed", options: ["All", "Golden", "Siamese", "German Shepherd"] },
+          { label: "Age", key: "age", options: ["All", "Puppy", "Young", "Adult"] },
+          { label: "Gender", key: "gender", options: ["All", "Male", "Female"] },
+          { label: "Size", key: "size", options: ["All", "Small", "Medium", "Large"] }].map(
+            ({ label, key, options }) => (
+              <div key={key} className="mb-3">
+                <label className="block text-gray-700 font-medium mb-1">{label}</label>
+                <div className="relative">
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded-md appearance-none"
+                    value={filters[key]}
+                    onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
+                  >
+                    {options.map((option) => (
+                      <option key={option}>{option}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 text-gray-400" />
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
 
         <div className="w-3/4">
@@ -146,14 +140,14 @@ const PetListing = () => {
           </div>
 
           {/* Pet Cards */}
-          <div className="grid grid-cols-3 gap-6"> {/* Changed to 2 columns for wider cards */}
+          <div className="grid grid-cols-3 gap-6">
             {filteredPets.map((pet) => (
               <div key={pet._id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="relative">
-                  <img src={pet.imageUrl} alt={pet.name} className="w-full h-40 object-cover" /> {/* Reduced height */}
-                  <FavoriteButton petId={pet._id} /> {/* Favorite Button */}
+                  <img src={pet.imageUrl} alt={pet.name} className="w-full h-40 object-cover" />
+                  <FavoriteButton petId={pet._id} />
                 </div>
-                <div className="p-3"> {/* Reduced padding */}
+                <div className="p-3">
                   <h3 className="text-lg font-bold">{pet.name}</h3>
                   <p className="text-gray-500">{pet.breed}</p>
                   <p className="text-sm text-gray-600 flex items-center">📍 {pet.location}</p>
@@ -162,7 +156,7 @@ const PetListing = () => {
                     <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.gender}</span>
                     <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.size}</span>
                   </div>
-                  <Button onClick={() => handleMeetClick(pet)} className="mt-3 w-full"> {/* Full width button */}
+                  <Button onClick={() => handleMeetClick(pet._id)} className="mt-3 w-full">
                     Meet {pet.name}
                   </Button>
                 </div>
@@ -174,7 +168,7 @@ const PetListing = () => {
           {filteredPets.length === 0 && <p className="text-center text-gray-500 mt-6">No pets found.</p>}
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

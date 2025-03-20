@@ -45,7 +45,7 @@ const Navbar = () => {
               className="rounded-full"
               height="60px"
               width="60px"
-              alt="sano sansar logo"
+              alt="logo"
             />
           </Link>
         </div>

@@ -1,44 +1,55 @@
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Heart, MapPin, ChevronLeft, CheckCircle } from "lucide-react";
 import Loading from "./ui/Loading";
 import AdoptionFormModal from "./AdoptionForm";
 
 const PetDetails = () => {
-  const location = useLocation();
-  const { petId, vendorId } = location.state || {}; // Getting petId and vendorId from state
-  const [pet, setPet] = useState(null); // Store pet details
-  const [vendor, setVendor] = useState(null); // Store vendor details
-  const [loading, setLoading] = useState(true); // Loading state
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
+  const { petId } = useParams(); // Get petId from URL params
+
+  const [pet, setPet] = useState(null);
+  const [vendorLocation, setVendorLocation] = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
 
   useEffect(() => {
-    if (petId && vendorId) {
-      const fetchPetDetails = async () => {
-        try {
-          // Fetch pet details using the petId and vendorId
-          const response = await fetch(`http://localhost:3000/api/vendors/pet-details/${vendorId}/${petId}`);
-          const result = await response.json();
+    const fetchPetDetails = async () => {
+      console.log("Fetching details for Pet ID:", petId); // Log petId for debugging
+      try {
+        const response = await fetch(`http://localhost:3000/api/pets/${petId}`);
+        const result = await response.json();
 
-          if (result.success) {
-            setPet(result.pet); // Set pet data
-            setVendor(result.vendor); // Set vendor data
-          } else {
-            console.error("Pet details not found");
-          }
-        } catch (error) {
-          console.error("Error fetching pet details:", error);
-        } finally {
-          setLoading(false); // Set loading to false after data is fetched
+        if (result.pet) {
+          console.log("Pet details fetched:", result); // Log API response
+          setPet(result.pet); // Set pet data
+          setVendorLocation(result.vendorLocation); // Set vendor location
+          setVendorName(result.vendorName); // Set vendor name
+        } else {
+          setError("Pet details not found");
         }
-      };
+      } catch (error) {
+        console.error("Error fetching pet details:", error);
+        setError("Error fetching pet details.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchPetDetails();
-    }
-  }, [petId, vendorId]);
+    fetchPetDetails();
+  }, [petId]);
 
   if (loading) {
-    return <Loading text="Fetching pet details..." />; // Show loading component while fetching data
+    return <Loading />; // Show loading indicator while data is being fetched
+  }
+
+  if (error) {
+    return <div>{error}</div>; // Show error message if something goes wrong
+  }
+
+  if (!pet) {
+    return <div>Pet details are not available.</div>; // Show fallback UI if pet is not available
   }
 
   const handleAdoptNowClick = () => {
@@ -74,9 +85,9 @@ const PetDetails = () => {
             </div>
             <div className="flex items-center text-gray-600 mb-6">
               <MapPin className="h-5 w-5 mr-2" />
-              {vendor.address}
+              {vendorLocation} {/* Display the vendor location */}
             </div>
-            <p className="text-gray-600 text-right">Posted by : <br></br> <b>{vendor?.organization}</b></p>
+            <p className="text-gray-600 text-right">Posted by : <br /> <b>{vendorName}</b></p> {/* Display the vendor name */}
             <div className="border-t border-b border-gray-200 py-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">About {pet.name}</h2>
               <p className="text-gray-600 leading-relaxed">{pet.description}</p>
@@ -122,7 +133,7 @@ const PetDetails = () => {
             </div>
             <div className="flex gap-4">
               <button
-                onClick={handleAdoptNowClick} // Open the modal when clicked
+                onClick={handleAdoptNowClick}
                 className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300"
               >
                 Adopt Now
@@ -134,8 +145,6 @@ const PetDetails = () => {
           </div>
         </div>
       </div>
-
-      {/* Render the modal here */}
       <AdoptionFormModal isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );

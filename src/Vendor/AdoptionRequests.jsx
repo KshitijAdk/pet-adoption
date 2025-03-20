@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Eye, Search } from 'lucide-react';
 import { AppContent } from '../context/AppContext';
+import axios from 'axios';  // Import axios for API calls
 
 const AdoptionRequests = () => {
     const { userData } = useContext(AppContent);
@@ -16,6 +17,7 @@ const AdoptionRequests = () => {
                 petName: req.petName,
                 petId: req.petId,
                 applicant: req.applicantName,
+                applicantId: req.applicantId, 
                 email: req.applicantEmail,
                 phone: req.applicantContact,
                 status: req.status.toLowerCase(),
@@ -35,12 +37,53 @@ const AdoptionRequests = () => {
         request.petName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleStatusChange = (requestId, newStatus) => {
-        setRequests(reqs =>
-            reqs.map(req =>
-                req.id === requestId ? { ...req, status: newStatus } : req
-            )
-        );
+    const handleApprove = async (requestId, petId, applicantId) => {
+        try {
+            console.log("Approving adoption request with the following data:");
+            console.log("Request ID:", requestId);
+            console.log("Pet ID:", petId);
+            console.log("Applicant ID:", applicantId);
+
+            const response = await axios.post('http://localhost:3000/api/adoption/approve', {
+                adoptionId: requestId,
+                petId,
+                applicantId
+            });
+
+            console.log("Backend response:", response.data);
+
+            if (response.status === 200) {
+                setRequests(reqs =>
+                    reqs.map(req =>
+                        req.id === requestId ? { ...req, status: 'approved' } : req
+                    )
+                );
+                alert('Adoption request approved successfully!');
+            }
+        } catch (error) {
+            console.error("Error approving request:", error);
+            alert('Failed to approve adoption request.');
+        }
+    };
+
+    // Function to reject the adoption request
+    const handleReject = async (requestId, petId) => {
+        try {
+            const response = await axios.post('http://localhost:3000/api/adoption/reject', { adoptionId: requestId, petId });
+
+            if (response.status === 200) {
+                // Update the status locally to 'rejected'
+                setRequests(reqs =>
+                    reqs.map(req =>
+                        req.id === requestId ? { ...req, status: 'rejected' } : req
+                    )
+                );
+                alert('Adoption request rejected successfully!');
+            }
+        } catch (error) {
+            console.error("Error rejecting request:", error);
+            alert('Failed to reject adoption request.');
+        }
     };
 
     const getStatusBadge = (status) => {
@@ -100,10 +143,11 @@ const AdoptionRequests = () => {
                                         </button>
                                         {request.status === 'pending' && (
                                             <>
-                                                <button onClick={() => handleStatusChange(request.id, 'approved')}>
+                                                <button onClick={() => handleApprove(request.id, request.petId, request.applicantId)}>
                                                     <CheckCircle className="h-5 w-5 text-green-600" />
                                                 </button>
-                                                <button onClick={() => handleStatusChange(request.id, 'rejected')}>
+
+                                                <button onClick={() => handleReject(request.id, request.petId)}>
                                                     <XCircle className="h-5 w-5 text-red-600" />
                                                 </button>
                                             </>
@@ -119,7 +163,6 @@ const AdoptionRequests = () => {
                     </div>
                 )}
             </div>
-
 
             {/* Modal for Request Details */}
             {showModal && selectedRequest && (

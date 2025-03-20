@@ -4,14 +4,16 @@ import { AlertCircle, XCircle } from 'lucide-react';
 import InputField from './ui/InputField';
 import Button from './ui/button';
 import { AppContent } from '../context/AppContext';
+import Label from './ui/label';
 
 const AdoptionFormModal = ({ isOpen, onClose }) => {
-  const { userData, backendUrl } = useContext(AppContent)
-  const { id } = useParams();
+  const { userData, backendUrl } = useContext(AppContent);
+  const { petId } = useParams();
   const navigate = useNavigate();
+
+
+  // Initialize form data with userData, but allow updates for other fields
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
     phone: '',
     address: '',
     reasonForAdoption: '',
@@ -25,15 +27,18 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
     try {
       const adoptionId = Math.random().toString(36).substr(2, 9);
 
-      // Prepare the payload to send to the backend
       const payload = {
         adoptionId,
-        petId: id,
-        userId: userData?.userId,
+        petId,
+        applicantId: userData?.userId,  // Updated to include applicantId
+        fullName: userData?.name,
+        email: userData?.email,
         ...formData,
       };
 
-      // Make an API request to submit the adoption application
+
+      console.log('Payload:', payload); // Log the payload to debug
+
       const response = await fetch(backendUrl + '/api/adoption/apply', {
         method: 'POST',
         headers: {
@@ -43,14 +48,14 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit the application');
+        const errorResponse = await response.json(); // Capture any error response
+        throw new Error(`Failed to submit the application: ${errorResponse.message || 'Unknown error'}`);
       }
 
       const result = await response.json();
       console.log('Adoption Submission Response:', result);
 
       setSubmitted(true);
-
       setTimeout(() => {
         navigate(`/adoption-status/${adoptionId}`);
         onClose(); // Close the modal after successful submission
@@ -61,7 +66,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
     }
   };
 
-
+  // Handle input change for editable fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -70,6 +75,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
     }));
   };
 
+  // Prevent rendering if modal is not open
   if (!isOpen) return null;
 
   return (
@@ -97,28 +103,40 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Personal Information</h2>
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <Label htmlFor="fullName">Full Name</Label>
                 <InputField
+                  id="fullName"
                   type="text"
                   name="fullName"
                   required
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="Enter your full name"
+                  value={userData?.name || ''}
+                  disabled // Make it read-only
                 />
               </div>
 
-              {['email', 'phone', 'address', 'reasonForAdoption'].map((key) => (
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <InputField
+                  id="email"
+                  type="email"
+                  name="email"
+                  required
+                  value={userData?.email || ''}
+                  disabled // Make it read-only
+                />
+              </div>
+
+              {['phone', 'address', 'reasonForAdoption'].map((key) => (
                 <div key={key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Label htmlFor={key}>
                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
-                  </label>
+                  </Label>
                   <InputField
                     type="text"
                     name={key}
                     required
                     value={formData[key]}
-                    onChange={handleChange}
+                    onChange={handleChange}  // Allow the user to update these fields
                     placeholder={`Enter your ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
                   />
                 </div>

@@ -57,12 +57,12 @@ const InputField = ({
 
 // PropTypes for type checking (optional)
 InputField.propTypes = {
-    id: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    label: PropTypes.string,
     type: PropTypes.string,
     placeholder: PropTypes.string,
     value: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
+    onChange: PropTypes.func,
     isPasswordShown: PropTypes.bool,
     togglePasswordVisibility: PropTypes.func,
     error: PropTypes.string,

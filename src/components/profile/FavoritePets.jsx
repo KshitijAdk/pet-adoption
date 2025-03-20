@@ -2,24 +2,24 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
 import axios from 'axios';
-import { Link } from 'react-router-dom';  // If you're using react-router for navigation
+import { Link } from 'react-router-dom';
 
 const FavoritePets = () => {
     const { userData } = useContext(AppContent);
     const [favoritePets, setFavoritePets] = useState([]);
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(null); // Error state
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchFavoritePets = async () => {
             try {
-                setLoading(true);  // Set loading state to true when fetching
+                setLoading(true);
                 const response = await axios.get(`http://localhost:3000/api/favorites/${userData.userId}`);
-                setFavoritePets(response.data.favoritePets);  // Set favorite pets
-                setLoading(false);  // Set loading state to false after fetching
+                setFavoritePets(response.data.favoritePets);
+                setLoading(false);
             } catch (error) {
-                setLoading(false);  // Set loading to false even if error occurs
-                setError('Error fetching favorite pets');  // Set error message
+                setLoading(false);
+                setError('Error fetching favorite pets');
                 console.error("Error fetching favorite pets", error);
             }
         };
@@ -39,13 +39,15 @@ const FavoritePets = () => {
             </div>
 
             <div className="px-6 py-5">
-                {loading && <div className="text-center py-12">Loading...</div>}  {/* Show loading state */}
+                {loading && <div className="text-center py-12">Loading...</div>}
 
-                {error && !loading && <div className="text-center py-12 text-red-500">{error}</div>}  {/* Show error state */}
+                {error && !loading && (
+                    <div className="text-center py-12 text-red-500">{error}</div>
+                )}
 
                 {favoritePets.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {favoritePets.map(pet => (
+                        {favoritePets.map((pet) => (
                             <div key={pet._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <div className="h-48 w-full relative">
                                     <img
@@ -72,7 +74,10 @@ const FavoritePets = () => {
                                         <span className="ml-2">{pet.species}</span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
-                                        <Link to={`/pets/${pet._id}`} className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                        <Link
+                                            to={`/pets/${pet._id}`}  // Fixed navigation to pet details page
+                                            className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700"
+                                        >
                                             View Details
                                         </Link>
                                         <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
@@ -91,9 +96,12 @@ const FavoritePets = () => {
                             Save pets you're interested in to your favorites list.
                         </p>
                         <div className="mt-6">
-                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                            <Link
+                                to="/pets"  // Link to the browse pets page
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+                            >
                                 Browse Available Pets
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 )}
