@@ -1,5 +1,5 @@
 // controllers/vendorController.js
-import VendorApplication from '../models/venderapplication.js';
+import VendorApplication from '../models/venderApplication.js';
 import userModel from '../models/userModel.js';
 import Vendor from '../models/Vendor.js';
 

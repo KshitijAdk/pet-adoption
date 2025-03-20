@@ -81,31 +81,35 @@ export const deletePet = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error. Please try again later." });
     }
 };
-
-
 // Controller to fetch pet details by petId
 export const getPetData = async (req, res) => {
     try {
         const { petId } = req.params;
 
         // Find the vendor containing the pet with the specified petId
-        const vendor = await Vendor.findOne({ "pets._id": petId });
+        const vendor = await Vendor.findOne({ "pets._id": petId }).populate('pets');
 
         if (!vendor) {
-            return res.status(404).json({ message: "Pet not found" });
+            return res.status(404).json({ message: "Pet not found in any vendor" });
         }
 
         // Find the specific pet within the vendor's pets array
         const pet = vendor.pets.id(petId);
 
         if (!pet) {
-            return res.status(404).json({ message: "Pet not found" });
+            return res.status(404).json({ message: "Pet not found within vendor's pet list" });
         }
 
-        res.status(200).json({ pet });
+        // Include the vendor ID and vendor name (organization) in the response
+        res.status(200).json({
+            pet,
+            vendorId: vendor._id,
+            vendorName: vendor.organization,
+            vendorLocation: vendor.address, // Make sure the field here is 'organization' in the database
+        });
     } catch (error) {
         console.error("Error fetching pet data:", error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Internal server error while fetching pet data" });
     }
 };
 
@@ -151,3 +155,5 @@ export const toggleFavorite = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+

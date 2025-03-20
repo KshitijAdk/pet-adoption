@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 
-
 const adoptionRequestSchema = new mongoose.Schema({
+  adoptionId: { type: String, required: true },
+  applicantId: { type: String, required: true },  // Added applicantId
   applicantName: { type: String, required: true },
   applicantEmail: { type: String, required: true },
   applicantContact: { type: String, required: true },
   applicantAddress: { type: String, required: true },
   petId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pet', required: true },
-  petName: { type: String, required: true }, // Pet name added
-  adoptionReason: { type: String, required: true }, // Reason for adoption added
+  petName: { type: String, required: true },
+  adoptionReason: { type: String, required: true },
   status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
   createdAt: { type: Date, default: Date.now },
 });
@@ -32,9 +33,6 @@ const petSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-
-
-
 const vendorSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   organization: { type: String, required: true },
@@ -44,7 +42,6 @@ const vendorSchema = new mongoose.Schema({
   description: { type: String, required: true },
   image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" },
   pets: [petSchema], // Array of pets associated with the vendor
-  adoptionRequests: [adoptionRequestSchema], // Array of adoption requests
 }, { timestamps: true }); // This adds createdAt and updatedAt automatically
 
 const Vendor = mongoose.models.Vendor || mongoose.model('Vendor', vendorSchema);
