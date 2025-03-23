@@ -158,11 +158,23 @@ export const getPendingVendors = async (req, res) => {
 
 
 
-// Fetch all vendors
+// Fetch all vendors with only available pets
 export const getAllVendors = async (req, res) => {
     try {
-        const vendors = await Vendor.find(); // Fetch all vendors from DB
-        res.status(200).json({ success: true, data: vendors });
+        // Fetch all vendors
+        const vendors = await Vendor.find();
+
+        // Filter pets for each vendor to only include pets with status 'Available'
+        const filteredVendors = vendors.map(vendor => {
+            const availablePets = vendor.pets.filter(pet => pet.status === 'Available');
+            return {
+                ...vendor.toObject(), // Convert the vendor document to a plain object
+                pets: availablePets, // Replace the pets array with only available pets
+            };
+        });
+
+        // Return the filtered vendors with only available pets
+        res.status(200).json({ success: true, data: filteredVendors });
     } catch (error) {
         res.status(500).json({ success: false, message: "Error fetching vendors", error: error.message });
     }
