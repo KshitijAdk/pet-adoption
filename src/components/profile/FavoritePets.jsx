@@ -75,13 +75,13 @@ const FavoritePets = () => {
                                     </div>
                                     <div className="mt-4 flex space-x-3">
                                         <Link
-                                            to={`/pets/${pet._id}`}  // Fixed navigation to pet details page
-                                            className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700"
-                                        >
-                                            View Details
+                                            to={`/pets/${pet._id}`} >
+                                            <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                                View Details
+                                            </button>
                                         </Link>
                                         <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                                            Apply to Adopt
+                                            Adopt
                                         </button>
                                     </div>
                                 </div>

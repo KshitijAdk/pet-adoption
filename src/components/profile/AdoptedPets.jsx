@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Calendar, PawPrint } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const AdoptedPets = () => {
     const { userData } = useContext(AppContent);
@@ -29,7 +30,11 @@ const AdoptedPets = () => {
                     });
 
                     const petData = await Promise.all(petDataPromises);
-                    const validPets = petData.filter((pet) => pet !== null);
+                    // Extract the pet object from each response item if needed
+                    const validPets = petData.filter((item) => item !== null).map(item => {
+                        // If the response has a pet property, use it, otherwise use the item itself
+                        return item.pet || item;
+                    });
                     console.log("Final Adopted Pets Data:", validPets);
                     setAdoptedPets(validPets);
                 } else {
@@ -75,16 +80,19 @@ const AdoptedPets = () => {
                                         <span>•</span>
                                         <span className="mx-2">{pet.age}</span>
                                         <span>•</span>
-                                        <span className="ml-2">{pet.species}</span>  {/* Updated to use species */}
+                                        <span className="ml-2">{pet.species}</span>
                                     </div>
                                     <div className="mt-3 flex items-center text-sm">
                                         <Calendar className="mr-2 h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600">Adopted on {new Date(pet.createdAt).toLocaleDateString()}</span>  {/* Format date */}
+                                        <span className="text-gray-600">Adopted on {new Date(pet.createdAt).toLocaleDateString()}</span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
-                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
-                                            View Details
-                                        </button>
+                                        <Link
+                                            to={`/pets/${pet._id}`} >
+                                            <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                                View Details
+                                            </button>
+                                        </Link>
                                         <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                             Care Info
                                         </button>
