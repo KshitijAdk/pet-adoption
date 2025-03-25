@@ -1,17 +1,30 @@
-/* eslint-disable react/prop-types */
+// PetCard.js
+import React from "react";
+import Button from "./button";
+import FavoriteButton from "./FavouriteButton";
 
-const PetTypeCard = ({ petType, petIcon }) => {
+const PetCard = ({ pet, onMeetClick }) => {
   return (
-    <>
-      <div className=" bg-white hover:cursor-pointer  border-[0.5px] border-grey-250 drop-shadow-2xl bg-transparent backdrop-blur-lg p-2 rounded-lg transition-transform duration-300 transform hover:scale-110">
-        <div className="px-20">
-          {petIcon}
-        </div>
-
-        <h2 className="text-2xl  text-center text-black font-extralight">{petType}</h2>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="relative">
+        <img src={pet.imageUrl} alt={pet.name} className="w-full h-40 object-cover" />
+        <FavoriteButton petId={pet._id} />
       </div>
-    </>
+      <div className="p-3">
+        <h3 className="text-lg font-bold">{pet.name}</h3>
+        <p className="text-gray-500">{pet.breed}</p>
+        <p className="text-sm text-gray-600 flex items-center">📍 {pet.location}</p>
+        <div className="mt-2 flex flex-wrap gap-1">
+          <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.age} years old</span>
+          <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.gender}</span>
+          <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.size}</span>
+        </div>
+        <Button onClick={() => onMeetClick(pet._id)} className="mt-3 w-full">
+          Meet {pet.name}
+        </Button>
+      </div>
+    </div>
   );
 };
 
-export default PetTypeCard;
+export default PetCard;
