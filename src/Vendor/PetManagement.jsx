@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { PlusCircle } from 'lucide-react';
-import Tabs from '../Admin/Tabs';
+import { PlusCircle, Home, PawPrint, ListChecks } from 'lucide-react';
 import PetForm from './PetForm';
 import PetList from './PetList';
 import { AppContent } from '../context/AppContext';
 import Loading from '../components/ui/Loading';
+import Sidebar from '../components/ui/Sidebar'; // Import Sidebar component
 
 const PetManagement = () => {
     const { userData, loading: userLoading } = useContext(AppContent);
@@ -28,13 +28,14 @@ const PetManagement = () => {
         status: 'Available',
     });
     const [loading, setLoading] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Manage Sidebar open state
 
-    const tabs = [
-        { id: 'all', label: 'All Pets', link: '/pets/all' },
-        { id: 'available', label: 'Available', link: '/pets/available' },
-        { id: 'pending', label: 'Adoption Requests', link: '/pets/pending' },
-        { id: 'adopted', label: 'Adopted', link: '/pets/adopted' },
+    const vendorMenuItems = [
+        { path: "/vendor-dashboard", label: "Dashboard", icon: Home },
+        { path: "/pets-listing", label: "Manage Pets", icon: PawPrint },
+        { path: "/vendor/adoption-requests", label: "Adoption Requests", icon: ListChecks }
     ];
+
 
     // Fetch pets based on vendor ID
     useEffect(() => {
@@ -85,8 +86,6 @@ const PetManagement = () => {
     const handleAddPet = async (e) => {
         e.preventDefault();
 
-        console.log('Form Data before submission:', formData);
-
         const vendorId = userData.vendorDetails?.vendorId;
 
         if (!vendorId || !formData.imageUrl) {
@@ -107,7 +106,6 @@ const PetManagement = () => {
             });
 
             const result = await response.json();
-            console.log('Backend Response:', result);
 
             if (response.ok && result.pet) {
                 setPets((prev) => [...prev, result.pet]);
@@ -145,8 +143,6 @@ const PetManagement = () => {
     const handleUpdatePet = async (e) => {
         e.preventDefault();
 
-        console.log('Updating Pet:', formData);
-
         try {
             const response = await fetch(`http://localhost:3000/api/pets/update/${editingPetId}`, {
                 method: 'PUT',
@@ -155,7 +151,6 @@ const PetManagement = () => {
             });
 
             const result = await response.json();
-            console.log('Update Response:', result);
 
             if (response.ok && result.pet) {
                 setPets((prevPets) =>
@@ -208,45 +203,47 @@ const PetManagement = () => {
         }
     };
 
-    // Tab Filtering
-    const handleTabChange = (tabId) => setFilter(tabId);
-
     const filteredPets = filter === 'all' ? pets : pets.filter((pet) => pet.status.toLowerCase() === filter);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <div className="bg-white shadow-md mb-4 p-4 rounded-lg">
-                <Tabs tabs={tabs} initialActiveTab={filter} onTabChange={handleTabChange} />
+        <div className="flex h-screen">
+            <Sidebar
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                menuItems={vendorMenuItems}
+                title="Vendor Panel"
+            />
+
+            <div className={`flex-1 p-6 transition-all duration-300 ${isSidebarOpen ? 'ml-8' : 'ml-8'}`}>
+                <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-2xl font-bold text-gray-900">Pet Listings</h1>
+                    <button
+                        onClick={() => setIsAddingPet(true)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                    >
+                        <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+                        Add New Pet
+                    </button>
+                </div>
+
+                {(isAddingPet || editingPetId) && (
+                    <PetForm
+                        formData={formData}
+                        setFormData={setFormData}
+                        handleInputChange={handleInputChange}
+                        handleSubmit={editingPetId ? handleUpdatePet : handleAddPet}
+                        editingPetId={editingPetId}
+                        handleCancel={handleCancelEdit}
+                        isOpen={isAddingPet || !!editingPetId}
+                    />
+                )}
+
+                {filteredPets.length > 0 ? (
+                    <PetList pets={filteredPets} handleEditPet={handleEditPet} handleDeletePet={handleDeletePet} />
+                ) : (
+                    <div className="text-center text-gray-500">No pets found. Add a new pet to get started.</div>
+                )}
             </div>
-
-            <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-gray-900">Pet Listings</h1>
-                <button
-                    onClick={() => setIsAddingPet(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                    <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
-                    Add New Pet
-                </button>
-            </div>
-
-            {(isAddingPet || editingPetId) && (
-                <PetForm
-                    formData={formData}
-                    setFormData={setFormData}
-                    handleInputChange={handleInputChange}
-                    handleSubmit={editingPetId ? handleUpdatePet : handleAddPet}
-                    editingPetId={editingPetId}
-                    handleCancel={handleCancelEdit}
-                    isOpen={isAddingPet || !!editingPetId}
-                />
-            )}
-
-            {filteredPets.length > 0 ? (
-                <PetList pets={filteredPets} handleEditPet={handleEditPet} handleDeletePet={handleDeletePet} />
-            ) : (
-                <div className="text-center text-gray-500">No pets found. Add a new pet to get started.</div>
-            )}
         </div>
     );
 };

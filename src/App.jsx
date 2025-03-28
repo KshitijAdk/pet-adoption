@@ -24,6 +24,7 @@ import PetManagement from "./Vendor/PetManagement";
 import PetDetails from "./components/PetDetails";
 import AdoptionStatus from "./components/AdoptionStatus";
 import AdoptionRequests from "./Vendor/AdoptionRequests";
+import AboutUs from "./components/AboutUs";
 
 const App = () => {
   return (
@@ -46,6 +47,7 @@ const App = () => {
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/fullblogs" element={<BlogPage />} />
+        <Route path="/aboutUs" element={<AboutUs />} />
         <Route path="/vendor-registration" element={<VendorRegistration />} />
 
 

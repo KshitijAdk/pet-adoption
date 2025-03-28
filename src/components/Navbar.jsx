@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import logo from "../assests/image.png";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
+import { PawPrint, Menu, X, User, LogOut, Settings } from "lucide-react";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import ToastComponent from "./ui/ToastComponent";
@@ -10,13 +10,16 @@ import axios from "axios";
 const Navbar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } = useContext(AppContent);
   const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  // Handle Logout
   const handleLogout = async () => {
     try {
-      const response = await axios.post(backendUrl + "/api/auth/logout", {}, { withCredentials: true });
-      console.log(response.data);
+      const response = await axios.post(
+        `${backendUrl}/api/auth/logout`, 
+        {}, 
+        { withCredentials: true }
+      );
 
       if (response.data.success) {
         setIsLoggedin(false);
@@ -33,90 +36,127 @@ const Navbar = () => {
     }
   };
 
+  const navLinks = [
+    { path: "/", label: "Home" },
+    { path: "/pets", label: "Pets" },
+    { path: "/aboutUs", label: "About Us" },
+    { path: "/fullblogs", label: "Blogs" },
+    { path: "/faq", label: "FAQ" },
+  ];
 
   return (
     <>
-      <div className="font-medium text-black bg-amber-100 flex flex-wrap justify-evenly items-center p-2 backdrop-blur-lg sticky top-0 left-0 w-full z-50">
-        {/* Logo */}
-        <div className="rounded-full">
-          <Link to={"/"}>
-            <img
-              src={logo}
-              className="rounded-full"
-              height="60px"
-              width="60px"
-              alt="logo"
-            />
-          </Link>
-        </div>
-
-        {/* Navigation Links */}
-        <div className="text-black text-xs md:text-sm flex rounded-full px-5 py-3">
-          <ul className="flex justify-center gap-10 font-bold">
-            <li>
-              <Link to="/" className="transform transition duration-500 hover:underline underline-offset-4">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/pets" className="transform transition duration-500 hover:underline underline-offset-4">
-                Pets
-              </Link>
-            </li>
-            <li>
-              <Link to="/aboutUs" className="transform transition duration-500 hover:underline underline-offset-4">
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link to="/fullblogs" className="transform transition duration-500 hover:underline underline-offset-4">
-                Blogs
-              </Link>
-            </li>
-            <li>
-              <Link to="/faq" className="transform transition duration-500 hover:underline underline-offset-4">
-                FAQ
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* User Profile / Login */}
-        <div className="flex items-center relative">
-          {isLoggedin ? (
-            <div className="relative group">
-              <button
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold"
-              >
-                <img
-                  src={userData?.image}
-                  alt={userData?.name}
-                  className="rounded-full w-full h-full object-cover border-2 border-amber-400"
-                />
-              </button>
-
-              {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-                <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                  Profile
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                >
-                  Log Out
-                </button>
+      <nav className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+                <PawPrint className="w-6 h-6 text-white" />
               </div>
-            </div>
-          ) : (
-            <Link to="/login">
-              <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition duration-100">
-                Log In
-              </button>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-800">
+                PawsAndHearts
+              </span>
             </Link>
-          )}
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-gray-600 hover:text-purple-600 font-medium transition-colors duration-200"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* User Menu / Login Button */}
+            <div className="flex items-center space-x-4">
+              {isLoggedin ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="flex items-center space-x-2 focus:outline-none"
+                  >
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-colors">
+                      {userData?.image ? (
+                        <img
+                          src={userData.image}
+                          alt={userData.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                          <User className="w-5 h-5 text-purple-600" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Profile Dropdown */}
+                  {isProfileMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Log Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
+                >
+                  Sign In
+                </Link>
+              )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 text-gray-600" />
+                ) : (
+                  <Menu className="w-6 h-6 text-gray-600" />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white border-t">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </nav>
       <ToastComponent />
     </>
   );

@@ -6,7 +6,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, menuItems, title }) => {
     return (
         <div
             className={`${isSidebarOpen ? "w-64" : "w-16"
-                } bg-amber-500 text-white flex flex-col transition-all duration-300`}
+                } bg-gray-800 text-white flex flex-col transition-all duration-300`}
         >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4">
@@ -28,7 +28,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, menuItems, title }) => {
                     <Link
                         key={index}
                         to={item.path}
-                        className="flex items-center space-x-4 px-4 py-2 hover:bg-amber-400"
+                        className="flex items-center space-x-4 px-4 py-2 hover:bg-gray-500 active:bg-gray-600"
                     >
                         <item.icon size={20} />
                         {isSidebarOpen && <span>{item.label}</span>}

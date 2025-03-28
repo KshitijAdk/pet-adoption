@@ -11,9 +11,23 @@ const HeroSection = () => {
     >
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="relative container mx-auto px-6 h-full flex flex-col justify-center items-start">
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 max-w-2xl">
-          Find Your Perfect <span className="text-amber-400">Furry</span> Companion
-        </h1>
+
+            {/* Main Heading */}
+            <h1 className="text-9xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Find Your Perfect{' '}
+              <span className="relative">
+                <span className="relative z-10 text-amber-300">Furry</span>
+                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M0 12.5C20 12.5 20 7.5 40 7.5C60 7.5 60 12.5 80 12.5C100 12.5 100 7.5 120 7.5"
+                    stroke="#FCD34D"
+                    strokeWidth="3"
+                    fill="none"
+                  />
+                </svg>
+              </span>{' '}
+              Companion
+            </h1>
         <p className="text-xl text-white mb-8 max-w-xl">
           Connecting loving homes with pets in need. Start your journey to pet parenthood today.
         </p>
