@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     resetOtpExpireAt: { type: Number, default: 0 },
     role: { type: String, default: 'user' },  // Role field (user or vendor or admin)
     contact: { type: String, default: "" },
+    description: { type: String, default: "" },
     address: { type: String, default: "" },
     image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" },
     adoptedPets: [{ type: mongoose.Schema.Types.ObjectId }],  // Array of adopted pet IDs

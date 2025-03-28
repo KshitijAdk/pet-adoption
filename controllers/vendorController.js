@@ -65,7 +65,10 @@ export const approveVendor = async (req, res) => {
             {
                 $set: {
                     role: "vendor",
-                    image: vendorApplication.image
+                    image: vendorApplication.image,
+                    address: vendorApplication.address,
+                    contact: vendorApplication.contact,
+                    description: vendorApplication.description,
                 }
             }, // Only update the role
             { new: true }
