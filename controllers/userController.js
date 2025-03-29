@@ -1,5 +1,6 @@
 import userModel from "../models/userModel.js";
 import Vendor from "../models/Vendor.js";
+import bcrypt from 'bcryptjs';
 
 export const getUserData = async (req, res) => {
     try {
@@ -27,7 +28,8 @@ export const getUserData = async (req, res) => {
             image: user.image,
             contact: user.contact,
             address: user.address,
-            
+            description: user.description,
+
         };
 
         // If the user is a vendor, fetch additional data from the Vendor collection
@@ -136,5 +138,75 @@ export const updateProfileImage = async (req, res) => {
             success: false,
             message: "Server error. Please try again later.",
         });
+    }
+};
+
+
+export const updateProfileAndVendor = async (req, res) => {
+    try {
+        const { userId, name, contact, address, description } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+
+        // Update user profile
+        const updatedUser = await userModel.findByIdAndUpdate(userId, {
+            name,
+            contact,
+            address,
+            description,
+        }, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update vendor profile if the user is a vendor
+        const updatedVendor = await Vendor.findOneAndUpdate(
+            { email: updatedUser.email }, // Assuming email is unique
+            {
+                fullName: name,
+                contact,
+                address,
+                description,
+            },
+            { new: true }
+        );
+
+        res.json({
+            message: 'Profile updated successfully',
+            user: updatedUser,
+            vendor: updatedVendor || null, // If user is not a vendor, return null
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+export const changePassword = async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    try {
+        // Fetch the current user (use token or userId to get the user from DB)
+        const user = await userModel.findById(req.body.userId);
+
+        // Verify old password
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Old password is incorrect.' });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the password in the database
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ success: true, message: 'Password updated successfully.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
