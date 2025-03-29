@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Edit, Save, X } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
+import { toast } from 'react-toastify';
 
 const ProfileInfo = () => {
     const { userData, setUserData } = useContext(AppContent);
@@ -28,19 +29,27 @@ const ProfileInfo = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSave = () => {
-        setUserData((prev) => ({
-            ...prev,
-            name: formData.name,
-            vendorDetails: {
-                ...(prev?.vendorDetails || {}),
-                contact: formData.contact,
-                address: formData.address,
-                description: formData.description,
-            },
-        }));
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/user/edit/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userData?.userId, ...formData }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setUserData(data.user);
+                setIsEditing(false);
+                toast.success("Profile updated succesfully.")
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
     };
+
 
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -97,7 +106,7 @@ const ProfileInfo = () => {
                         ) : (
                             <div className="mt-1 flex items-center text-sm text-gray-900">
                                 <Phone className="mr-2 h-4 w-4 text-gray-400" />
-                                {userData?.vendorDetails?.contact || "N/A"}
+                                {userData?.contact || "N/A"}
                             </div>
                         )}
                     </div>
@@ -115,7 +124,7 @@ const ProfileInfo = () => {
                         ) : (
                             <div className="mt-1 flex items-center text-sm text-gray-900">
                                 <MapPin className="mr-2 h-4 w-4 text-gray-400" />
-                                {userData?.vendorDetails?.address || "N/A"}
+                                {userData?.address || "N/A"}
                             </div>
                         )}
                     </div>
@@ -131,7 +140,7 @@ const ProfileInfo = () => {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                         />
                     ) : (
-                        <p className="mt-1 text-sm text-gray-900">{userData?.vendorDetails?.description || "N/A"}</p>
+                        <p className="mt-1 text-sm text-gray-900">{userData?.description || "N/A"}</p>
                     )}
                 </div>
 
