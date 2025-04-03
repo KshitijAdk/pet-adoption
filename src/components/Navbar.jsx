@@ -51,10 +51,10 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
                 <PawPrint className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-800">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-800">
                 PawsAndHearts
               </span>
             </Link>
@@ -65,7 +65,7 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-colors duration-200"
+                  className="text-gray-600 hover:text-amber-600 font-medium transition-colors duration-200"
                 >
                   {link.label}
                 </Link>
@@ -80,7 +80,7 @@ const Navbar = () => {
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     className="flex items-center space-x-2 focus:outline-none"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-colors">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-200 hover:border-amber-400 transition-colors">
                       {userData?.image ? (
                         <img
                           src={userData.image}
@@ -88,8 +88,8 @@ const Navbar = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                          <User className="w-5 h-5 text-purple-600" />
+                        <div className="w-full h-full bg-amber-100 flex items-center justify-center">
+                          <User className="w-5 h-5 text-amber-600" />
                         </div>
                       )}
                     </div>
@@ -100,7 +100,7 @@ const Navbar = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 ring-1 ring-black ring-opacity-5">
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Profile Settings
@@ -118,7 +118,7 @@ const Navbar = () => {
               ) : (
                 <Link
                   to="/login"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
                 >
                   Sign In
                 </Link>
@@ -147,7 +147,7 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-amber-600 hover:bg-amber-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}

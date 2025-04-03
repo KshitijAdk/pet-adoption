@@ -1,15 +1,17 @@
 import React, { useContext, useRef, useState } from 'react';
 import { AppContent } from '../../context/AppContext';
 import { User, PawPrint, Heart, Calendar, Settings, LogOut, Edit, ArrowRightCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import Cookies from "js-cookie";
 
 const Sidebar = ({ activeTab, setActiveTab, user }) => {
-    const { userData, setUserData, setIsLoggedin, backendUrl } = useContext(AppContent);
+    const { userData, setUserData, setIsLoggedin, backendUrl, isLoggedin } = useContext(AppContent);
 
     const fileInputRef = useRef(null); // Reference for file input
     const [isUploading, setIsUploading] = useState(false); // Track upload state
+    const navigate = useNavigate()
 
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -17,7 +19,9 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     const handleLogout = async () => {
         try {
             const response = await axios.post(backendUrl + "/api/auth/logout");
-            if (response.data.success) {
+
+            // Check if response exists and has a success flag, or just check status
+            if (response?.data?.success || response.status === 200) {
                 setIsLoggedin(false);
                 setUserData({});
                 Cookies.remove("token");
@@ -27,9 +31,11 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                 toast.error("Logout failed. Please try again.");
             }
         } catch (error) {
+            console.error("Logout Error:", error); // Debugging
             toast.error("An error occurred during logout. Please try again.");
         }
     };
+
 
     // Function to trigger file input
     const handleEditClick = () => {

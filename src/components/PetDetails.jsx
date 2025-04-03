@@ -1,31 +1,31 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { Heart, MapPin, ChevronLeft, CheckCircle } from "lucide-react";
 import Loading from "./ui/Loading";
 import AdoptionFormModal from "./AdoptionForm";
+import { AppContent } from "../context/AppContext";
 
 const PetDetails = () => {
-  const { petId } = useParams(); // Get petId from URL params
-
+  const { petId } = useParams();
+  const navigate = useNavigate(); // Initialize navigate function
+  const { isLoggedin } = useContext(AppContent);
   const [pet, setPet] = useState(null);
   const [vendorLocation, setVendorLocation] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPetDetails = async () => {
-      console.log("Fetching details for Pet ID:", petId); // Log petId for debugging
       try {
         const response = await fetch(`http://localhost:3000/api/pets/${petId}`);
         const result = await response.json();
 
         if (result.pet) {
-          console.log("Pet details fetched:", result); // Log API response
-          setPet(result.pet); // Set pet data
-          setVendorLocation(result.vendorLocation); // Set vendor location
-          setVendorName(result.vendorName); // Set vendor name
+          setPet(result.pet);
+          setVendorLocation(result.vendorLocation);
+          setVendorName(result.vendorName);
         } else {
           setError("Pet details not found");
         }
@@ -40,25 +40,19 @@ const PetDetails = () => {
     fetchPetDetails();
   }, [petId]);
 
-  if (loading) {
-    return <Loading />; // Show loading indicator while data is being fetched
-  }
-
-  if (error) {
-    return <div>{error}</div>; // Show error message if something goes wrong
-  }
-
-  if (!pet) {
-    return <div>Pet details are not available.</div>; // Show fallback UI if pet is not available
-  }
+  if (loading) return <Loading />;
+  if (error) return <div>{error}</div>;
+  if (!pet) return <div>Pet details are not available.</div>;
 
   const handleAdoptNowClick = () => {
-    setIsModalOpen(true); // Open the modal when the adopt button is clicked
+    if (!isLoggedin) {
+      navigate("/login"); // Redirect to login if not logged in
+    } else {
+      setIsModalOpen(true); // Open the modal if logged in
+    }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false); // Close the modal
-  };
+  const handleCloseModal = () => setIsModalOpen(false);
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -85,9 +79,9 @@ const PetDetails = () => {
             </div>
             <div className="flex items-center text-gray-600 mb-6">
               <MapPin className="h-5 w-5 mr-2" />
-              {vendorLocation} {/* Display the vendor location */}
+              {vendorLocation}
             </div>
-            <p className="text-gray-600 text-right">Posted by : <br /> <b>{vendorName}</b></p> {/* Display the vendor name */}
+            <p className="text-gray-600 text-right">Posted by : <br /> <b>{vendorName}</b></p>
             <div className="border-t border-b border-gray-200 py-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">About {pet.name}</h2>
               <p className="text-gray-600 leading-relaxed">{pet.description}</p>
@@ -131,17 +125,19 @@ const PetDetails = () => {
                 ))}
               </div>
             </div>
-            <div className="flex gap-4">
-              <button
-                onClick={handleAdoptNowClick}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300"
-              >
-                Adopt Now
-              </button>
-              <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-300">
-                Ask About {pet.name}
-              </button>
-            </div>
+            {pet.status === "Available" && (
+              <div className="flex gap-4">
+                <button
+                  onClick={handleAdoptNowClick}
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300"
+                >
+                  Adopt Now
+                </button>
+                <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-300">
+                  Ask About {pet.name}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

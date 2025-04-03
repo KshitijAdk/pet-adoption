@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { Upload, Building2, Phone, MapPin, FileText, User } from "lucide-react";
+import { Upload, Building2, Phone, MapPin, FileText, User, Mail } from "lucide-react";
 import InputField from "./ui/InputField";
 import Button from './ui/button';
 import defaultImg from '../assests/dog.jpg';
@@ -103,37 +103,37 @@ export default function VendorRegistration() {
     };
 
     return (
-        <div className="min-h-screen flex justify-center items-center p-6">
-            <div className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl w-full max-w-4xl">
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-purple-800 mb-2">Become a Vendor Partner</h2>
-                    <p className="text-gray-600">Join our network of trusted vendors and make a difference in animal welfare</p>
+        <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-purple-50 to-indigo-50 p-6">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl">
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-bold text-indigo-800 mb-2">Become a Vendor Partner</h2>
+                    <p className="text-gray-600 max-w-lg mx-auto">Join our network of trusted vendors and make a difference in animal welfare</p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-full md:w-1/2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div className="space-y-6">
                         <div className="relative group">
-                            <div className="overflow-hidden rounded-2xl shadow-lg aspect-[4/3]">
+                            <div className="overflow-hidden rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50 aspect-square flex items-center justify-center">
                                 {image ? (
                                     <img
                                         src={URL.createObjectURL(image)}
                                         alt="Uploaded Preview"
-                                        className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                                        className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <img
-                                        src={defaultImg}
-                                        alt="Default Preview"
-                                        className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-                                    />
+                                    <div className="text-center p-6">
+                                        <Upload size={48} className="mx-auto text-indigo-300 mb-4" />
+                                        <p className="text-indigo-500 font-medium">Upload Organization Image</p>
+                                        <p className="text-gray-500 text-sm mt-2">Recommended: 1:1 ratio, min 500x500px</p>
+                                    </div>
                                 )}
                             </div>
                             <label
                                 htmlFor="upload"
-                                className="absolute bottom-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-lg cursor-pointer flex items-center space-x-2 hover:bg-purple-700 transition duration-300 shadow-lg"
+                                className="absolute bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg cursor-pointer flex items-center space-x-2 hover:bg-indigo-700 transition shadow-md"
                             >
-                                <Upload size={18} />
-                                <span>Upload Image</span>
+                                <Upload size={16} />
+                                <span>Upload</span>
                             </label>
                             <input
                                 type="file"
@@ -145,141 +145,150 @@ export default function VendorRegistration() {
                             />
                         </div>
                         {errors.image && (
-                            <p className="text-red-500 text-sm mt-2">{errors.image}</p>
+                            <p className="text-red-500 text-sm">{errors.image}</p>
                         )}
                         {imagePath && (
-                            <p className="text-sm text-gray-600 mt-2">
+                            <p className="text-sm text-gray-600">
                                 Selected: {imagePath}
                             </p>
                         )}
+
+                        <div className="bg-indigo-50 p-6 rounded-lg">
+                            <h3 className="text-lg font-semibold text-indigo-800 mb-4">Why Partner With Us?</h3>
+                            <ul className="space-y-3">
+                                <li className="flex items-start">
+                                    <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                                        <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
+                                    </div>
+                                    <span className="ml-3 text-gray-700">Access to a network of pet lovers and animal welfare advocates</span>
+                                </li>
+                                <li className="flex items-start">
+                                    <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                                        <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
+                                    </div>
+                                    <span className="ml-3 text-gray-700">Contribute to improving animal welfare in your community</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div className="w-full md:w-1/2">
-                        <form className="space-y-4" onSubmit={handleSubmit}>
-                            <div className="space-y-1">
-                                <div className="flex items-center space-x-2 text-purple-700">
-                                    <User size={18} />
-                                    <InputField
-                                        name="fullName"
-                                        placeholder="Full Name"
-                                        onChange={handleChange}
-                                        value={formData.fullName}
-                                        required
-                                        className="border-purple-200 focus:border-purple-500"
-                                    />
+                    <div>
+                        <form className="space-y-5" onSubmit={handleSubmit}>
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <User size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">Full Name</label>
                                 </div>
+                                <InputField
+                                    name="fullName"
+                                    placeholder="Your full name"
+                                    onChange={handleChange}
+                                    value={formData.fullName}
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                />
                                 {errors.fullName && (
-                                    <p className="text-red-500 text-sm">{errors.fullName}</p>
+                                    <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
                                 )}
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="flex items-center space-x-2 text-purple-700">
-                                    <Building2 size={18} />
-                                    <InputField
-                                        name="organization"
-                                        placeholder="Organization Name"
-                                        onChange={handleChange}
-                                        value={formData.organization}
-                                        required
-                                        className="border-purple-200 focus:border-purple-500"
-                                    />
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <Building2 size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">Organization</label>
                                 </div>
+                                <InputField
+                                    name="organization"
+                                    placeholder="Your organization name"
+                                    onChange={handleChange}
+                                    value={formData.organization}
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                />
                                 {errors.organization && (
-                                    <p className="text-red-500 text-sm">{errors.organization}</p>
+                                    <p className="text-red-500 text-xs mt-1">{errors.organization}</p>
                                 )}
                             </div>
 
-                            <div className="flex items-center space-x-2 text-purple-700 bg-purple-50 rounded-lg p-3">
-                                <InputField 
-                                    type="email" 
-                                    name="email" 
-                                    value={formData.email} 
-                                    readOnly 
-                                    className="bg-transparent border-none"
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <Mail size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">Email Address</label>
+                                </div>
+                                <InputField
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    readOnly
+                                    className="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-500"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="flex items-center space-x-2 text-purple-700">
-                                    <Phone size={18} />
-                                    <InputField
-                                        type="tel"
-                                        name="contact"
-                                        placeholder="Contact Number"
-                                        onChange={handleChange}
-                                        value={formData.contact}
-                                        required
-                                        className="border-purple-200 focus:border-purple-500"
-                                    />
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <Phone size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">Contact Number</label>
                                 </div>
+                                <InputField
+                                    type="tel"
+                                    name="contact"
+                                    placeholder="Your contact number"
+                                    onChange={handleChange}
+                                    value={formData.contact}
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                />
                                 {errors.contact && (
-                                    <p className="text-red-500 text-sm">{errors.contact}</p>
+                                    <p className="text-red-500 text-xs mt-1">{errors.contact}</p>
                                 )}
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="flex items-center space-x-2 text-purple-700">
-                                    <MapPin size={18} />
-                                    <InputField
-                                        name="address"
-                                        placeholder="Organization Address"
-                                        onChange={handleChange}
-                                        value={formData.address}
-                                        required
-                                        className="border-purple-200 focus:border-purple-500"
-                                    />
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <MapPin size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">Address</label>
                                 </div>
+                                <InputField
+                                    name="address"
+                                    placeholder="Organization address"
+                                    onChange={handleChange}
+                                    value={formData.address}
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                />
                                 {errors.address && (
-                                    <p className="text-red-500 text-sm">{errors.address}</p>
+                                    <p className="text-red-500 text-xs mt-1">{errors.address}</p>
                                 )}
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="flex items-start space-x-2 text-purple-700">
-                                    <FileText size={18} className="mt-2" />
-                                    <InputField
-                                        as="textarea"
-                                        name="description"
-                                        placeholder="Tell us about your organization and how you can contribute to animal welfare..."
-                                        onChange={handleChange}
-                                        value={formData.description}
-                                        rows={4}
-                                        required
-                                        className="border-purple-200 focus:border-purple-500 resize-none"
-                                    />
+                            <div>
+                                <div className="flex items-center mb-1.5">
+                                    <FileText size={16} className="text-indigo-600 mr-2" />
+                                    <label className="text-sm font-medium text-gray-700">About Your Organization</label>
                                 </div>
+                                <InputField
+                                    as="textarea"
+                                    name="description"
+                                    placeholder="Tell us about your organization and how you can contribute to animal welfare..."
+                                    onChange={handleChange}
+                                    value={formData.description}
+                                    rows={5}
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
+                                />
                                 {errors.description && (
-                                    <p className="text-red-500 text-sm">{errors.description}</p>
+                                    <p className="text-red-500 text-xs mt-1">{errors.description}</p>
                                 )}
                             </div>
 
                             <Button
                                 type="submit"
-                                className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 shadow-lg disabled:opacity-50"
+                                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition shadow-md disabled:opacity-50 mt-4"
                                 variant="primary"
                                 text={isLoading ? "Processing..." : "Submit Application"}
                                 disabled={isLoading}
                             />
                         </form>
-                    </div>
-                </div>
-
-                <div className="mt-8 bg-purple-50 p-6 rounded-xl">
-                    <h3 className="text-lg font-semibold text-purple-800 mb-2">Why Partner With Us?</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                        <div className="flex items-start space-x-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-2"></div>
-                            <p>Access to a network of pet lovers and animal welfare advocates</p>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-2"></div>
-                            <p>Contribute to improving animal welfare in your community</p>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-2"></div>
-                            <p>Grow your business while making a positive impact</p>
-                        </div>
                     </div>
                 </div>
             </div>
