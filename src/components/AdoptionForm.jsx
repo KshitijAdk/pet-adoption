@@ -5,12 +5,12 @@ import InputField from './ui/InputField';
 import Button from './ui/button';
 import { AppContent } from '../context/AppContext';
 import Label from './ui/label';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID generator
 
 const AdoptionFormModal = ({ isOpen, onClose }) => {
   const { userData, backendUrl } = useContext(AppContent);
   const { petId } = useParams();
   const navigate = useNavigate();
-
 
   // Initialize form data with userData, but allow updates for other fields
   const [formData, setFormData] = useState({
@@ -25,21 +25,20 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const adoptionId = Math.random().toString(36).substr(2, 9);
+      const adoptionId = uuidv4(); // Generate a unique string ID
 
       const payload = {
-        adoptionId,
+        adoptionId, // Send adoptionId as a string
         petId,
-        applicantId: userData?.userId,  // Updated to include applicantId
+        applicantId: userData?.userId,
         fullName: userData?.name,
         email: userData?.email,
         ...formData,
       };
 
+      console.log('Payload:', payload); // Log the payload for debugging
 
-      console.log('Payload:', payload); // Log the payload to debug
-
-      const response = await fetch(backendUrl + '/api/adoption/apply', {
+      const response = await fetch(`${backendUrl}/api/adoption/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +47,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
       });
 
       if (!response.ok) {
-        const errorResponse = await response.json(); // Capture any error response
+        const errorResponse = await response.json();
         throw new Error(`Failed to submit the application: ${errorResponse.message || 'Unknown error'}`);
       }
 
@@ -58,7 +57,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
       setSubmitted(true);
       setTimeout(() => {
         navigate(`/adoption-status/${adoptionId}`);
-        onClose(); // Close the modal after successful submission
+        onClose();
       }, 1000);
     } catch (err) {
       console.error('Submission Error:', err);
@@ -75,7 +74,6 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
     }));
   };
 
-  // Prevent rendering if modal is not open
   if (!isOpen) return null;
 
   return (
@@ -104,26 +102,12 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
             <div className="grid grid-cols-1 gap-6">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
-                <InputField
-                  id="fullName"
-                  type="text"
-                  name="fullName"
-                  required
-                  value={userData?.name || ''}
-                  disabled // Make it read-only
-                />
+                <InputField id="fullName" type="text" name="fullName" value={userData?.name || ''} disabled />
               </div>
 
               <div>
                 <Label htmlFor="email">Email</Label>
-                <InputField
-                  id="email"
-                  type="email"
-                  name="email"
-                  required
-                  value={userData?.email || ''}
-                  disabled // Make it read-only
-                />
+                <InputField id="email" type="email" name="email" value={userData?.email || ''} disabled />
               </div>
 
               {['phone', 'address', 'reasonForAdoption'].map((key) => (
@@ -136,7 +120,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
                     name={key}
                     required
                     value={formData[key]}
-                    onChange={handleChange}  // Allow the user to update these fields
+                    onChange={handleChange}
                     placeholder={`Enter your ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
                   />
                 </div>
@@ -145,11 +129,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
           </div>
 
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300"
-              disabled={submitted}
-            >
+            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300" disabled={submitted}>
               Submit Application
             </Button>
           </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronRight, Heart, Search, PawPrint } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const generatePawPositions = () => {
   return [...Array(5)].map(() => ({
@@ -70,12 +71,19 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                <Heart className="mr-2 h-5 w-5" /> Adopt Now <ChevronRight className="ml-2 h-4 w-4" />
-              </button>
-              <button className="bg-white text-gray-800 border border-gray-200 hover:border-amber-500 hover:text-amber-500 font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center">
-                <Search className="mr-2 h-5 w-5" /> Browse Pets
-              </button>
+              <Link to="/pets">
+                <button className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                  <Heart className="mr-2 h-5 w-5" /> Adopt Now <ChevronRight className="ml-2 h-4 w-4" />
+                </button>
+              </Link>
+
+
+              <Link to="/pets">
+                <button className="bg-white text-gray-800 border border-gray-200 hover:border-amber-500 hover:text-amber-500 font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center">
+                  <Search className="mr-2 h-5 w-5" /> Browse Pets
+                </button>
+              </Link>
+
             </div>
           </div>
 

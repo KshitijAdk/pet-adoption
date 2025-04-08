@@ -1,12 +1,46 @@
 import Sidebar from "../components/ui/Sidebar";
-import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Calendar, Clock, ThumbsUp, ThumbsDown, Home, Users, ListChecks } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { CheckCircle, XCircle, Calendar, Clock, ThumbsUp, ThumbsDown, Home, Users, ListChecks, Eye, MoreHorizontal } from "lucide-react";
+import BigModal from "../components/ui/BigModal";  // Import BigModal component
 
 const ManageVendors = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedVendor, setSelectedVendor] = useState(null);  // State to store selected vendor
+    const [showModal, setShowModal] = useState(false);  // State to control modal visibility
+    const [dropdownOpen, setDropdownOpen] = useState(null); // State to manage which dropdown is open
+    const dropdownRefs = useRef({}); // Ref for the dropdown menu
+
+    const buttonRefs = useRef({});
+
+    const toggleDropdown = (vendorId, e) => {
+        e.stopPropagation();
+        setDropdownOpen(dropdownOpen === vendorId ? null : vendorId);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Check if we clicked outside any dropdown and not on any button
+            const clickedOutsideDropdown = Object.values(dropdownRefs.current).every(ref => {
+                return ref && !ref.contains(event.target);
+            });
+
+            const clickedOutsideButton = Object.values(buttonRefs.current).every(ref => {
+                return ref && !ref.contains(event.target);
+            });
+
+            if (clickedOutsideDropdown && clickedOutsideButton) {
+                setDropdownOpen(null);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchVendors = async () => {
@@ -64,6 +98,16 @@ const ManageVendors = () => {
         }
     };
 
+    const openModal = (vendor) => {
+        setSelectedVendor(vendor);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setSelectedVendor(null);
+        setShowModal(false);
+    };
+
     const adminMenuItems = [
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
         { path: "/admin/manage-users", label: "Manage Users", icon: Users },
@@ -73,10 +117,10 @@ const ManageVendors = () => {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-            <Sidebar 
-                isSidebarOpen={isSidebarOpen} 
-                setIsSidebarOpen={setIsSidebarOpen} 
-                menuItems={adminMenuItems} 
+            <Sidebar
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
             <div className="flex-1 p-6">
@@ -127,13 +171,52 @@ const ManageVendors = () => {
                                                     {vendor.status.toLowerCase() === "approved" ? <><CheckCircle size={14} className="mr-1 text-green-500" /> Approved</> : vendor.status.toLowerCase() === "rejected" ? <><XCircle size={14} className="mr-1 text-red-500" /> Rejected</> : <><Clock size={14} className="mr-1 text-yellow-500" /> Pending</>}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-gray-600 text-sm text-center">
-                                                <Calendar size={14} className="mr-1 text-gray-500" />
-                                                {new Date(vendor.createdAt).toLocaleDateString()}
+                                            <td className="px-6 py-4 text-center text-xs text-gray-500 hidden md:table-cell">
+                                                <div className="flex items-center justify-center space-x-1">
+                                                    <Calendar size={12} />
+                                                    <span>{new Date(vendor.createdAt).toLocaleDateString()}</span>
+                                                </div>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <button className="bg-green-500 text-white px-3 py-1 rounded-lg flex items-center space-x-1" onClick={() => approveVendor(vendor._id)}><ThumbsUp size={14} /><span>Approve</span></button>
-                                                <button className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center space-x-1 mt-2" onClick={() => rejectVendor(vendor._id)}><ThumbsDown size={14} /><span>Reject</span></button>
+                                                {/* 3-dot button for dropdown */}
+                                                <button
+                                                    className="text-gray-500 hover:text-gray-700"
+                                                    onClick={(e) => toggleDropdown(vendor._id, e)}>
+                                                    <MoreHorizontal size={20} />
+                                                </button>
+
+
+                                                {/* Dropdown Menu */}
+                                                {dropdownOpen === vendor._id && (
+                                                    <div
+                                                        ref={el => dropdownRefs.current[vendor._id] = el}
+                                                        className="absolute right-5 z-10 bg-white shadow-lg rounded-lg mt-2 w-46 py-3 border border-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
+                                                    >
+                                                        <button
+                                                            onClick={() => approveVendor(vendor._id)}
+                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-green-200 transition-all duration-200"
+                                                        >
+                                                            <CheckCircle className="w-5 h-5 text-green-500" />
+                                                            <span>Approve</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => rejectVendor(vendor._id)}
+                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-red-200 transition-all duration-200"
+                                                        >
+                                                            <XCircle className="w-5 h-5 text-red-500" />
+                                                            <span>Reject</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openModal(vendor)}
+                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-200 transition-all duration-200"
+                                                        >
+                                                            <Eye className="w-5 h-5 text-blue-600" />
+                                                            <span>View Details</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+
+
                                             </td>
                                         </tr>
                                     ))}
@@ -143,6 +226,36 @@ const ManageVendors = () => {
                     )}
                 </div>
             </div>
+
+            {/* BigModal - Vendor Details */}
+            <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
+                {selectedVendor && (
+                    <div className="space-y-2 text-sm">
+                        <p><strong>Full Name:</strong> {selectedVendor.fullName}</p>
+                        <p><strong>Organization:</strong> {selectedVendor.organization}</p>
+                        <p><strong>Email:</strong> {selectedVendor.email}</p>
+                        <p><strong>Contact:</strong> {selectedVendor.contact}</p>
+                        <p><strong>Address:</strong> {selectedVendor.address}</p>
+                        <p><strong>Description:</strong> {selectedVendor.description}</p>
+
+                        <div>
+                            <strong>Profile Image:</strong>
+                            <img src={selectedVendor.image} alt="Vendor" className="mt-2 w-32 rounded" />
+                        </div>
+
+                        {selectedVendor.idDocuments?.length > 0 && (
+                            <div className="mt-4">
+                                <strong>ID Documents:</strong>
+                                <div className="flex space-x-2 overflow-x-auto py-2">
+                                    {selectedVendor.idDocuments.map((doc, index) => (
+                                        <img key={index} src={doc} alt={`ID ${index}`} className="rounded shadow w-32 h-32 object-cover" />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </BigModal>
         </div>
     );
 };

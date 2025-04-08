@@ -75,7 +75,7 @@ const FeaturedPets = () => {
 
         <AnimateOnScroll animation="fadeInUp" delay={0.3}>
           <div className="text-center mt-10">
-            <a href="#" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
+            <a href="/pets" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
               View All Available Pets <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </div>

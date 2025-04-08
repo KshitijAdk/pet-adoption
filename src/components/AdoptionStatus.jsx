@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertCircle, ChevronLeft } from 'lucide-react';
 
 const AdoptionStatus = () => {
     // Mock status - in a real app, this would come from your backend
     const status = 'pending';
+    const adoptionId = useParams()
 
     const getStatusContent = () => {
         switch (status) {

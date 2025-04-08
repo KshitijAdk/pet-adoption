@@ -55,7 +55,7 @@ const Navbar = () => {
                 <PawPrint className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-800">
-                PawsAndHearts
+                NayaSathi
               </span>
             </Link>
 

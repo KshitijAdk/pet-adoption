@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Info, Users, MessageSquare } from 'lucide-react';
 import AnimateOnScroll, { AnimatedChild } from "../ui/AnimateOnScroll"
+import { Link } from 'react-router-dom';
 
 const AboutSection = () => {
   return (
@@ -75,9 +76,12 @@ const AboutSection = () => {
             </AnimateOnScroll>
 
             <AnimateOnScroll animation="fadeInUp" delay={0.3}>
-              <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300">
-                Learn More About Us
-              </button>
+              <Link to="/aboutUs">
+                <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300">
+                  Learn More About Us
+                </button>
+              </Link>
+
             </AnimateOnScroll>
           </div>
         </div>
