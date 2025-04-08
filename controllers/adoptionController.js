@@ -3,11 +3,11 @@ import userModel from "../models/userModel.js";
 import mongoose from "mongoose";
 
 export const submitAdoptionRequest = async (req, res) => {
-    console.log("Request Body:", req.body);  // Log the incoming request body
+    console.log("Request Body:", req.body); // Log request for debugging
 
     try {
         const {
-            adoptionId,
+            adoptionId, // Already a string from frontend
             petId,
             applicantId,
             fullName,
@@ -17,32 +17,32 @@ export const submitAdoptionRequest = async (req, res) => {
             reasonForAdoption,
         } = req.body;
 
-        // Validate incoming data
+        // Validate required fields
         if (!adoptionId || !petId || !applicantId || !fullName || !email || !phone || !address || !reasonForAdoption) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        // Find the user by applicantId
+        // Find user by applicantId
         const user = await userModel.findById(applicantId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Find the vendor who owns the pet
+        // Find vendor with the pet
         const vendor = await Vendor.findOne({ "pets._id": petId });
         if (!vendor) {
             return res.status(404).json({ message: "Pet not found under any vendor" });
         }
 
-        // Find the specific pet from the vendor's pets array
+        // Find the pet from the vendor's array
         const pet = vendor.pets.id(petId);
         if (!pet) {
             return res.status(404).json({ message: "Pet not found under this vendor" });
         }
 
-        // Create the adoption request object
+        // Create adoption request object
         const adoptionRequest = {
-            adoptionId,
+            adoptionId,  // Storing as string
             applicantId,
             applicantName: fullName,
             applicantEmail: email,
@@ -55,20 +55,16 @@ export const submitAdoptionRequest = async (req, res) => {
             createdAt: new Date(),
         };
 
-        // Push the adoption request to the pet's adoptionRequests array
+        // Push to pet's adoptionRequests array
         pet.adoptionRequests.push(adoptionRequest);
 
-        // Save the pet ID to the user's adoptedPets field
-        if (!user.adoptedPets) {
-            user.adoptedPets = [];
-        }
-        user.adoptedPets.push(pet._id);
+        // Save to user's applications array
+        user.applications.push({ adoptionId, petId });
 
-        // Save the updated user and vendor documents
+        // Save updated documents
         await user.save();
         await vendor.save();
 
-        // Return the created adoption request for confirmation
         res.status(201).json({
             message: "Adoption request submitted successfully",
             adoptionRequest,

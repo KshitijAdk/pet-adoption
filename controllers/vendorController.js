@@ -5,14 +5,31 @@ import Vendor from '../models/Vendor.js';
 
 export const registerVendor = async (req, res) => {
     try {
-        const { fullName, organization, email, contact, address, description, image } = req.body;
+        const { fullName, organization, email, contact, address, description } = req.body;
 
-        // Ensure the image URL is available from the request body
-        if (!image) {
-            return res.status(400).json({ message: "Image is required" });
+        // Check if vendor with this email already exists
+        const existingVendor = await VendorApplication.findOne({ email });
+        if (existingVendor) {
+            return res.status(409).json({
+                message: "Application with this email already exists"
+            });
         }
 
-        // Create a new vendor object and save it to the database
+        if (!req.files || !req.files.image || req.files.image.length === 0) {
+            return res.status(400).json({
+                message: "Organization image is required"
+            });
+        }
+
+        if (!req.files.idDocuments || req.files.idDocuments.length === 0) {
+            return res.status(400).json({
+                message: "At least one identity document is required"
+            });
+        }
+
+        const image = req.files.image[0].path;
+        const idDocumentUrls = req.files.idDocuments.map(file => file.path);
+
         const newVendor = new VendorApplication({
             fullName,
             organization,
@@ -20,20 +37,23 @@ export const registerVendor = async (req, res) => {
             contact,
             address,
             description,
-            image, // Directly store the Cloudinary image URL
+            image,
+            idDocuments: idDocumentUrls
         });
 
-        // Save the vendor to the database
         await newVendor.save();
 
-        // Send success response
-        res.status(201).json({ message: 'Vendor registered successfully!', vendor: newVendor });
+        res.status(201).json({
+            message: 'Vendor registered successfully!',
+            vendor: newVendor
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Something went wrong, please try again.' });
+        res.status(500).json({
+            message: 'Something went wrong, please try again.'
+        });
     }
 };
-
 
 export const getAllVendorApplications = async (req, res) => {
     try {
@@ -142,17 +162,12 @@ export const rejectVendor = async (req, res) => {
     }
 };
 
-// New controller to get only pending vendors
 export const getPendingVendors = async (req, res) => {
     try {
-        // Assuming 'status' is a field in your Vendor model that tracks the vendor's approval status.
-        const pendingVendors = await VendorApplication.find({ status: 'Pending' }); // Fetch all vendors with status 'pending'
+        const pendingVendors = await VendorApplication.find({ status: 'Pending' });
 
-        if (pendingVendors.length === 0) {
-            return res.status(404).json({ message: 'No pending vendors found.' });
-        }
-
-        res.status(200).json({ vendors: pendingVendors });
+        // Return an empty array if no pending vendors are found
+        res.status(200).json({ vendors: pendingVendors || [] });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch pending vendors, please try again.' });

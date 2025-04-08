@@ -8,7 +8,11 @@ const router = express.Router();
 const upload = multer({ storage }); // Use Cloudinary storage for multer
 
 // Vendor registration route (POST)
-router.post('/register', upload.single('image'), registerVendor); // Handle single file upload
+// Accept one 'image' file and multiple 'idDocuments'
+router.post('/register', upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'idDocuments', maxCount: 5 },
+]), registerVendor);
 router.get('/all-vendor-applications', getAllVendorApplications);
 router.put('/approve-vendor/:vendorId', approveVendor);
 router.put('/reject-vendor/:vendorId', rejectVendor); // New route for rejecting a vendor

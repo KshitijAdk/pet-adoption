@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
     image: { type: String, default: "https://res.cloudinary.com/dxigipf0k/image/upload/v1741190518/wy6ytirqcswljhf3c13v.png" },
     adoptedPets: [{ type: mongoose.Schema.Types.ObjectId }],  // Array of adopted pet IDs
     favoritePets: [{ type: mongoose.Schema.Types.ObjectId }],  // Array of favorite pet IDs
+    applications: [{
+        adoptionId: { type: String, required: true },
+        petId: { type: mongoose.Schema.Types.ObjectId, required: true }
+    }], // Array to store adoption applications
 });
 
 const userModel = mongoose.models.User || mongoose.model('User', userSchema);
