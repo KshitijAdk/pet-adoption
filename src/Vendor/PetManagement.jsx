@@ -4,7 +4,7 @@ import PetForm from './PetForm';
 import PetList from './PetList';
 import { AppContent } from '../context/AppContext';
 import Loading from '../components/ui/Loading';
-import Sidebar from '../components/ui/Sidebar'; // Import Sidebar component
+import Sidebar from '../components/ui/Sidebar';
 
 const PetManagement = () => {
     const { userData, loading: userLoading } = useContext(AppContent);
@@ -28,7 +28,7 @@ const PetManagement = () => {
         status: 'Available',
     });
     const [loading, setLoading] = useState(true);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Manage Sidebar open state
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const vendorMenuItems = [
         { path: "/vendor-dashboard", label: "Dashboard", icon: Home },
@@ -36,8 +36,6 @@ const PetManagement = () => {
         { path: "/vendor/adoption-requests", label: "Adoption Requests", icon: ListChecks }
     ];
 
-
-    // Fetch pets based on vendor ID
     useEffect(() => {
         if (userLoading || !userData?.vendorDetails) return;
 
@@ -82,7 +80,6 @@ const PetManagement = () => {
         }
     };
 
-    // Add New Pet
     const handleAddPet = async (e) => {
         e.preventDefault();
 
@@ -93,10 +90,7 @@ const PetManagement = () => {
             return;
         }
 
-        const newPet = {
-            ...formData,
-            image: formData.imageUrl, // Send image as 'image'
-        };
+        const newPet = { ...formData, image: formData.imageUrl };
 
         try {
             const response = await fetch(`http://localhost:3000/api/pets/add/${vendorId}`, {
@@ -109,7 +103,7 @@ const PetManagement = () => {
 
             if (response.ok && result.pet) {
                 setPets((prev) => [...prev, result.pet]);
-                handleCancelEdit(); // Reset and close form
+                handleCancelEdit();
             } else {
                 console.error('Failed to add pet:', result);
             }
@@ -118,28 +112,12 @@ const PetManagement = () => {
         }
     };
 
-    // Edit Pet
     const handleEditPet = (pet) => {
-        setFormData({
-            name: pet.name,
-            species: pet.species,
-            breed: pet.breed,
-            age: pet.age,
-            gender: pet.gender,
-            size: pet.size,
-            weight: pet.weight,
-            health: pet.health,
-            goodWith: pet.goodWith || [],
-            traits: pet.traits || [],
-            description: pet.description,
-            imageUrl: pet.image,
-            status: pet.status,
-        });
+        setFormData({ ...pet, imageUrl: pet.image });
         setEditingPetId(pet._id);
-        setIsAddingPet(true); // Open form for editing
+        setIsAddingPet(true);
     };
 
-    // Update Pet
     const handleUpdatePet = async (e) => {
         e.preventDefault();
 
@@ -153,10 +131,8 @@ const PetManagement = () => {
             const result = await response.json();
 
             if (response.ok && result.pet) {
-                setPets((prevPets) =>
-                    prevPets.map((pet) => (pet._id === editingPetId ? result.pet : pet))
-                );
-                handleCancelEdit(); // Reset and close form
+                setPets((prevPets) => prevPets.map((pet) => (pet._id === editingPetId ? result.pet : pet)));
+                handleCancelEdit();
             } else {
                 console.error('Failed to update pet:', result);
             }
@@ -165,7 +141,6 @@ const PetManagement = () => {
         }
     };
 
-    // Cancel Add/Edit
     const handleCancelEdit = () => {
         setEditingPetId(null);
         setIsAddingPet(false);
@@ -186,22 +161,32 @@ const PetManagement = () => {
         });
     };
 
-    // Delete Pet
     const handleDeletePet = async (petId) => {
+        const vendorId = userData?.vendorDetails?.vendorId;
+
+        if (!vendorId) {
+            console.error("Vendor ID is missing");
+            return;
+        }
+
+        console.log("Deleting pet with ID:", petId, "Vendor ID:", vendorId);
+
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/delete/${petId}`, {
+            const response = await fetch(`http://localhost:3000/api/pets/${vendorId}/${petId}`, {
                 method: 'DELETE',
             });
 
             if (response.ok) {
                 setPets((prevPets) => prevPets.filter((pet) => pet._id !== petId));
             } else {
-                console.error('Failed to delete pet');
+                const result = await response.json();
+                console.error('Failed to delete pet:', result.message);
             }
         } catch (error) {
             console.error('Error deleting pet:', error);
         }
     };
+
 
     const filteredPets = filter === 'all' ? pets : pets.filter((pet) => pet.status.toLowerCase() === filter);
 
@@ -239,7 +224,7 @@ const PetManagement = () => {
                 )}
 
                 {filteredPets.length > 0 ? (
-                    <PetList pets={filteredPets} handleEditPet={handleEditPet} handleDeletePet={handleDeletePet} />
+                    <PetList pets={filteredPets} onEdit={handleEditPet} onDelete={handleDeletePet} />
                 ) : (
                     <div className="text-center text-gray-500">No pets found. Add a new pet to get started.</div>
                 )}

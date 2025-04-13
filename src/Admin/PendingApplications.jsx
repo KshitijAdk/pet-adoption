@@ -115,7 +115,7 @@ const PendingApplications = () => {
                             </p>
                             <div className="mt-6">
                                 <Link
-                                    to="/admin/manage-vendors" // Link to another page if needed
+                                    to="/admin/pending-vendors" // Link to another page if needed
                                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
                                 >
                                     Refresh Applications

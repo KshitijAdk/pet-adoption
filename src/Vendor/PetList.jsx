@@ -1,24 +1,19 @@
 import React from 'react';
 import PetItem from './PetItem';
 
-const PetList = ({ pets = [], handleEditPet, handleDeletePet }) => {
-    console.log("Pets array:", pets);
-    if (pets.length > 0) {
-        console.log("First pet object:", pets[0]);
-    }
-
+const PetList = ({ pets = [], onEdit, onDelete }) => {
     return (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
             {pets.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                     {pets
-                        .filter((pet) => pet && pet._id) // Ensure pet exists and has an ID
+                        .filter((pet) => pet && pet._id)
                         .map((pet) => (
                             <PetItem
                                 key={pet._id}
                                 pet={pet}
-                                handleEditPet={handleEditPet}
-                                handleDeletePet={handleDeletePet}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
                             />
                         ))}
                 </ul>

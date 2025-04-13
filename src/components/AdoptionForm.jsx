@@ -1,42 +1,41 @@
 import React, { useContext, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, XCircle } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 import InputField from './ui/InputField';
 import Button from './ui/button';
 import { AppContent } from '../context/AppContext';
 import Label from './ui/label';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID generator
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'react-toastify';
 
 const AdoptionFormModal = ({ isOpen, onClose }) => {
   const { userData, backendUrl } = useContext(AppContent);
   const { petId } = useParams();
   const navigate = useNavigate();
 
-  // Initialize form data with userData, but allow updates for other fields
   const [formData, setFormData] = useState({
     phone: '',
     address: '',
     reasonForAdoption: '',
   });
 
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+
     try {
-      const adoptionId = uuidv4(); // Generate a unique string ID
+      const adoptionId = uuidv4();
 
       const payload = {
-        adoptionId, // Send adoptionId as a string
+        adoptionId,
         petId,
         applicantId: userData?.userId,
         fullName: userData?.name,
         email: userData?.email,
         ...formData,
       };
-
-      console.log('Payload:', payload); // Log the payload for debugging
 
       const response = await fetch(`${backendUrl}/api/adoption/apply`, {
         method: 'POST',
@@ -46,26 +45,30 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
         body: JSON.stringify(payload),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(`Failed to submit the application: ${errorResponse.message || 'Unknown error'}`);
+        if (response.status === 409) {
+          toast.error(result.message || 'You have already applied for this pet.');
+        } else {
+          toast.error(result.message || 'Something went wrong. Please try again.');
+        }
+        setSubmitting(false);
+        return;
       }
 
-      const result = await response.json();
-      console.log('Adoption Submission Response:', result);
-
-      setSubmitted(true);
+      toast.success('Adoption request submitted successfully!');
       setTimeout(() => {
         navigate(`/adoption-status/${adoptionId}`);
         onClose();
-      }, 1000);
+      }, 2000);
     } catch (err) {
       console.error('Submission Error:', err);
-      setError('There was an error submitting your application. Please try again.');
+      toast.error('Something went wrong. Please try again.');
+      setSubmitting(false);
     }
   };
 
-  // Handle input change for editable fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -88,13 +91,6 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
         </button>
 
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Adoption Application</h1>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -129,8 +125,12 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300" disabled={submitted}>
-              Submit Application
+            <Button
+              type="submit"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300"
+              disabled={submitting}
+            >
+              {submitting ? 'Submitting...' : 'Submit Application'}
             </Button>
           </div>
         </form>

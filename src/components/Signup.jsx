@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PawPrint, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { PawPrint, User, Mail, Lock, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
@@ -14,6 +14,7 @@ const Signup = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
     const navigate = useNavigate();
     const { backendUrl } = useContext(AppContent);
 
@@ -24,7 +25,32 @@ const Signup = () => {
         return regex.test(email);
     };
 
-    const validatePassword = (password) => password.length >= 6;
+    // Password validation checks
+    const hasMinLength = password.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const isValidPassword = hasMinLength && hasLetter && hasSpecialChar;
+
+    const handlePasswordFocus = () => {
+        setShowPasswordRequirements(true);
+    };
+
+    const handlePasswordBlur = () => {
+        if (password.length === 0) {
+            setShowPasswordRequirements(false);
+        }
+    };
+
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+        if (e.target.value.length > 0) {
+            setShowPasswordRequirements(true);
+        }
+    };
+
+    const togglePasswordRequirements = () => {
+        setShowPasswordRequirements(!showPasswordRequirements);
+    };
 
     const handleSignup = async (e) => {
         e.preventDefault();
@@ -34,8 +60,8 @@ const Signup = () => {
             return;
         }
 
-        if (!validatePassword(password)) {
-            toast.error("Password must be at least 6 characters.");
+        if (!isValidPassword) {
+            toast.error("Please meet all password requirements.");
             return;
         }
 
@@ -91,96 +117,138 @@ const Signup = () => {
         }
     };
 
+    // Validation icon component
+    const ValidationIcon = ({ isValid }) => (
+        <span className={isValid ? "text-green-500" : "text-red-500"}>
+            {isValid ? <Check size={14} /> : <X size={14} />}
+        </span>
+    );
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-amber-50 p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-md">
-                <div className="p-8">
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="bg-amber-100 p-3 rounded-full">
-                            <PawPrint size={28} className="text-amber-600" />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 p-4">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden border border-amber-100">
+                <div className="px-8 pt-10 pb-8">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md">
+                            <PawPrint size={32} className="text-white" />
                         </div>
                     </div>
 
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-semibold text-gray-800">Create Account</h2>
-                        <p className="text-gray-500 text-sm mt-1">Join us in helping pets find their homes</p>
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-gray-800">Welcome to NayaSathi</h2>
+                        <p className="text-gray-500 mt-2 text-sm">Create an account in seconds</p>
                     </div>
 
+                    {/* Form */}
                     <form onSubmit={handleSignup} className="space-y-4">
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={18} />
-                            <InputField
-                                id="name"
-                                type="text"
-                                placeholder="Full Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                                className="pl-10 w-full h-11 bg-gray-50 border border-gray-200 rounded-lg focus:ring-amber-500 focus:border-amber-500"
-                            />
-                        </div>
+                        <InputField
+                            id="name"
+                            type="text"
+                            placeholder="Your Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            icon={User}
+                            iconPosition="left"
+                            className="h-12 rounded-xl"
+                            required
+                        />
+
+                        <InputField
+                            id="email"
+                            type="email"
+                            placeholder="Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            icon={Mail}
+                            iconPosition="left"
+                            className="h-12 rounded-xl"
+                            required
+                        />
 
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={18} />
-                            <InputField
-                                id="email"
-                                type="email"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="pl-10 w-full h-11 bg-gray-50 border border-gray-200 rounded-lg focus:ring-amber-500 focus:border-amber-500"
-                            />
-                        </div>
-
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={18} />
                             <InputField
                                 id="password"
                                 type={isPasswordShown ? "text" : "password"}
-                                placeholder="Password"
+                                placeholder="Create Password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={handlePasswordChange}
+                                onFocus={handlePasswordFocus}
+                                onBlur={handlePasswordBlur}
+                                icon={Lock}
+                                iconPosition="left"
+                                isPasswordShown={isPasswordShown}
+                                togglePasswordVisibility={togglePasswordVisibility}
+                                className="h-12 rounded-xl"
                                 required
-                                className="pl-10 w-full h-11 bg-gray-50 border border-gray-200 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                             />
-                            <button
-                                type="button"
-                                onClick={togglePasswordVisibility}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-600"
-                            >
-                                {isPasswordShown ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
+                            {(password.length > 0 || showPasswordRequirements) && (
+                                <button
+                                    type="button"
+                                    onClick={togglePasswordRequirements}
+                                    className="absolute right-10 top-3 text-gray-400 hover:text-gray-600"
+                                >
+                                </button>
+                            )}
                         </div>
+
+                        {/* Password requirements - only shown when password field is focused/has content */}
+                        {(password.length > 0 || showPasswordRequirements) && showPasswordRequirements && (
+                            <div className="mt-2 space-y-1 p-3 bg-gray-50 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Password must contain:</p>
+                                <div className="flex items-center space-x-2">
+                                    <ValidationIcon isValid={hasMinLength} />
+                                    <span className={`text-xs ${hasMinLength ? 'text-green-500' : 'text-gray-500'}`}>
+                                        At least 8 characters
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <ValidationIcon isValid={hasLetter} />
+                                    <span className={`text-xs ${hasLetter ? 'text-green-500' : 'text-gray-500'}`}>
+                                        At least one letter
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <ValidationIcon isValid={hasSpecialChar} />
+                                    <span className={`text-xs ${hasSpecialChar ? 'text-green-500' : 'text-gray-500'}`}>
+                                        At least one special character
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         <Button
                             text={isLoading ? "Creating Account..." : "Create Account"}
                             type="submit"
                             variant="primary"
-                            className="w-full bg-amber-500 text-white py-2.5 rounded-lg font-medium hover:bg-amber-600 transition-all duration-200 disabled:opacity-50"
-                            disabled={isLoading}
+                            className={`w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 rounded-xl font-medium hover:from-amber-600 hover:to-amber-700 transition-all duration-200 disabled:opacity-50 mt-4 h-12 shadow-sm ${!isValidPassword ? "opacity-70 cursor-not-allowed" : ""
+                                }`}
+                            disabled={isLoading || !isValidPassword}
                         />
 
-                        <div className="relative my-6">
+                        {/* Social Login */}
+                        <div className="mt-6 relative">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-gray-100"></div>
                             </div>
-                            <div className="relative flex justify-center text-xs">
-                                <span className="px-2 text-gray-400 bg-white">or</span>
+                            <div className="relative flex justify-center">
+                                <span className="px-4 bg-white text-gray-400 text-sm">or</span>
                             </div>
                         </div>
 
                         <Button
                             text="Continue with Google"
                             variant="secondary"
-                            className="w-full bg-white border border-gray-200 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                            className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 h-12 shadow-sm mt-4"
                         />
 
+                        {/* Login Link */}
                         <p className="text-center text-gray-500 text-sm mt-6">
                             Already have an account?{" "}
                             <a
                                 href="/login"
-                                className="font-medium text-amber-600 hover:text-amber-700 hover:underline transition-colors"
+                                className="font-semibold text-amber-600 hover:text-amber-700 transition-colors"
                             >
                                 Sign in
                             </a>

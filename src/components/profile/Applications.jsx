@@ -1,8 +1,49 @@
-// Applications.js
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Calendar } from 'lucide-react';
+import { AppContent } from '../../context/AppContext';
+import { usePet } from '../../context/PetContext';
 
-const Applications = ({ applications }) => {
+const Applications = () => {
+    const { userData } = useContext(AppContent);
+    const { fetchPetById } = usePet();
+    const [petDetailsMap, setPetDetailsMap] = useState({});
+
+    const applications = userData?.applications || [];
+    console.log(applications);
+    
+
+    useEffect(() => {
+        const loadPets = async () => {
+            const newMap = {};
+
+            for (const application of applications) {
+                const petId = application.petId;
+
+                // Skip if already loaded
+                if (!petDetailsMap[petId]) {
+                    const res = await fetchPetById(petId);
+
+                    if (res?.pet) {
+                        // console.log(`Fetched pet for application ${application._id}:`, res.pet);
+                        newMap[petId] = res.pet;
+                    } else {
+                        console.warn(`Pet not found for ID: ${petId}`);
+                        newMap[petId] = null;
+                    }
+                }
+            }
+
+            if (Object.keys(newMap).length > 0) {
+                setPetDetailsMap(prev => ({ ...prev, ...newMap }));
+            }
+        };
+
+        if (applications.length > 0) {
+            loadPets();
+        }
+    }, [applications, fetchPetById]); // ✅ Don't include petDetailsMap here
+
+
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-200">
@@ -14,24 +55,27 @@ const Applications = ({ applications }) => {
 
             <div className="px-6 py-5">
                 {applications.length > 0 ? (
-                    <div className="overflow-hidden">
-                        <ul className="divide-y divide-gray-200">
-                            {applications.map(application => (
-                                <li key={application.id} className="py-4">
+                    <ul className="divide-y divide-gray-200">
+                        {applications.map(application => {
+                            const pet = petDetailsMap[application.petId];
+                            const createdDate = new Date(application.createdAt).toLocaleDateString();
+
+                            return (
+                                <li key={application._id} className="py-4">
                                     <div className="flex items-center space-x-4">
                                         <div className="flex-shrink-0 h-16 w-16">
                                             <img
-                                                src={application.petImage}
-                                                alt={application.petName}
+                                                src={pet?.imageUrl || "/placeholder.jpg"}
+                                                alt={pet?.name || "Pet"}
                                                 className="h-16 w-16 rounded-md object-cover"
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 truncate">
-                                                {application.petName}
+                                                {pet?.name || "Loading..."}
                                             </p>
                                             <p className="text-sm text-gray-500">
-                                                Submitted on {application.submittedDate}
+                                                Submitted on {createdDate || "Unknown"}
                                             </p>
                                         </div>
                                         <div>
@@ -45,15 +89,18 @@ const Applications = ({ applications }) => {
                                             </span>
                                         </div>
                                         <div>
-                                            <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                                            >
                                                 View Details
                                             </button>
                                         </div>
                                     </div>
                                 </li>
-                            ))}
-                        </ul>
-                    </div>
+                            );
+                        })}
+                    </ul>
                 ) : (
                     <div className="text-center py-12">
                         <Calendar className="mx-auto h-12 w-12 text-gray-300" />
