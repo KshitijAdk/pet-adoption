@@ -1,12 +1,13 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PawPrint, User, Mail, Lock, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { PawPrint, User, Mail, Lock, Check, X } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
 import ToastComponent from './ui/ToastComponent';
 import Loading from "./ui/Loading";
+import OAuth from "./OAuth";
 
 const Signup = () => {
     const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -237,11 +238,7 @@ const Signup = () => {
                             </div>
                         </div>
 
-                        <Button
-                            text="Continue with Google"
-                            variant="secondary"
-                            className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 h-12 shadow-sm mt-4"
-                        />
+                        <OAuth />
 
                         {/* Login Link */}
                         <p className="text-center text-gray-500 text-sm mt-6">

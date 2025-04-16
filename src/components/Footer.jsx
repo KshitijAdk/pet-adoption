@@ -42,9 +42,9 @@ const Footer = () => {
                                 </a>
                             </li>
                             <li>
-                                <a href="/volunteer" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/our-partner-organizations" className="flex items-center hover:text-purple-400 transition">
                                     <Heart className="mr-2" size={16} />
-                                    Volunteer
+                                    Organizations
                                 </a>
                             </li>
                             <li>

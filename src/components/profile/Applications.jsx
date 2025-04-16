@@ -1,48 +1,54 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
-import { usePet } from '../../context/PetContext';
+import PetDetailModal from './PetDetailModal';
 
 const Applications = () => {
     const { userData } = useContext(AppContent);
-    const { fetchPetById } = usePet();
-    const [petDetailsMap, setPetDetailsMap] = useState({});
-
-    const applications = userData?.applications || [];
-    console.log(applications);
-    
+    const [applications, setApplications] = useState([]);
+    const [selectedPet, setSelectedPet] = useState(null);
+    const [selectedApplication, setSelectedApplication] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        const loadPets = async () => {
-            const newMap = {};
+        const fetchApplications = async () => {
+            try {
+                const userId = userData?.userId;
+                if (!userId) return;
 
-            for (const application of applications) {
-                const petId = application.petId;
+                const response = await fetch(`http://localhost:3000/api/adoption/user/${userId}`);
+                const data = await response.json();
 
-                // Skip if already loaded
-                if (!petDetailsMap[petId]) {
-                    const res = await fetchPetById(petId);
-
-                    if (res?.pet) {
-                        // console.log(`Fetched pet for application ${application._id}:`, res.pet);
-                        newMap[petId] = res.pet;
-                    } else {
-                        console.warn(`Pet not found for ID: ${petId}`);
-                        newMap[petId] = null;
-                    }
+                if (data.applications) {
+                    setApplications(data.applications);
+                } else {
+                    console.error('No applications found');
                 }
-            }
-
-            if (Object.keys(newMap).length > 0) {
-                setPetDetailsMap(prev => ({ ...prev, ...newMap }));
+            } catch (error) {
+                console.error('Error fetching applications:', error);
             }
         };
 
-        if (applications.length > 0) {
-            loadPets();
+        if (userData?.userId) {
+            fetchApplications();
         }
-    }, [applications, fetchPetById]); // ✅ Don't include petDetailsMap here
+    }, [userData]);
 
+    const openModal = (application) => {
+        setSelectedPet(application.petId);
+        setSelectedApplication(application);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    // Format date for display
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
 
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -57,8 +63,8 @@ const Applications = () => {
                 {applications.length > 0 ? (
                     <ul className="divide-y divide-gray-200">
                         {applications.map(application => {
-                            const pet = petDetailsMap[application.petId];
-                            const createdDate = new Date(application.createdAt).toLocaleDateString();
+                            const pet = application.petId;
+                            const createdDate = formatDate(application.createdAt);
 
                             return (
                                 <li key={application._id} className="py-4">
@@ -80,16 +86,17 @@ const Applications = () => {
                                         </div>
                                         <div>
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${application.status === 'Approved'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : application.status === 'Rejected'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : application.status === 'Rejected'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {application.status}
                                             </span>
                                         </div>
                                         <div>
                                             <button
+                                                onClick={() => openModal(application)}
                                                 type="button"
                                                 className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
                                             >
@@ -116,6 +123,100 @@ const Applications = () => {
                     </div>
                 )}
             </div>
+
+            {/* Pet Detail Modal */}
+            <PetDetailModal
+                isOpen={isModalOpen}
+                closeModal={closeModal}
+                title={`${selectedPet?.name || 'Pet'} Details`}
+                imageUrl={selectedPet?.imageUrl}
+                content={
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <h3 className="font-medium text-gray-900">Pet Information</h3>
+                                <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                                    <li><span className="font-medium">Species:</span> {selectedPet?.species}</li>
+                                    <li><span className="font-medium">Breed:</span> {selectedPet?.breed}</li>
+                                    <li><span className="font-medium">Age:</span> {selectedPet?.age} years</li>
+                                    <li><span className="font-medium">Gender:</span> {selectedPet?.gender}</li>
+                                    <li><span className="font-medium">Size:</span> {selectedPet?.size}</li>
+                                    <li><span className="font-medium">Weight:</span> {selectedPet?.weight} lbs</li>
+                                    <li><span className="font-medium">Health:</span> {selectedPet?.health}</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="font-medium text-gray-900">Traits & Compatibility</h3>
+                                <div className="mt-2 space-y-2">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Personality Traits:</p>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {selectedPet?.traits?.map((trait, index) => (
+                                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {trait}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Good With:</p>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {selectedPet?.goodWith?.map((item, index) => (
+                                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                    {item}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="font-medium text-gray-900">Description</h3>
+                            <p className="mt-1 text-sm text-gray-700">{selectedPet?.description}</p>
+                        </div>
+
+                        <div className="border-t pt-4">
+                            <h3 className="font-medium text-gray-900">Shelter Information</h3>
+                            <p className="mt-1 text-sm text-gray-700">
+                                {selectedPet?.vendorId?.organization || 'Unknown shelter'}
+                            </p>
+                        </div>
+
+                        <div className="border-t pt-4">
+                            <h3 className="font-medium text-gray-900">Application Details</h3>
+                            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                                <li><span className="font-medium">Application ID:</span> {selectedApplication?._id}</li>
+                                <li><span className="font-medium">Submitted:</span> {selectedApplication && formatDate(selectedApplication.createdAt)}</li>
+                                <li><span className="font-medium">Status:</span>
+                                    <span className={`ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${selectedApplication?.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                                            selectedApplication?.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                        {selectedApplication?.status}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                footer={
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            onClick={closeModal}
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                            Close
+                        </button>
+                        {selectedApplication?.status === 'Pending' && (
+                            <button className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                                Update Application
+                            </button>
+                        )}
+                    </div>
+                }
+            />
         </div>
     );
 };

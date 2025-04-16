@@ -1,34 +1,41 @@
-// src/context/PetContext.js
-import React, { createContext, useContext, useState } from "react";
-import axios from "axios";
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const PetContext = createContext();
 
 export const PetProvider = ({ children }) => {
-    const [loading, setLoading] = useState(false);
+    const [pets, setPets] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchPetById = async (petId) => {
+    const fetchAllPets = async () => {
+        setLoading(true);
         try {
-            setLoading(true);
-            setError(null);
+            const res = await fetch('http://localhost:3000/api/pets/pets-with-vendor');
+            const data = await res.json();
 
-            const response = await axios.get(`http://localhost:3000/api/pets/${petId}`);
-            return response.data; // return pet data to the caller
+            if (res.ok) {
+                setPets(data.pets || []);
+            } else {
+                setError(data.message || 'Failed to fetch pets');
+            }
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to fetch pet details");
-            return null;
+            setError('Something went wrong');
+            console.error('Error fetching pets:', err);
         } finally {
             setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchAllPets();
+    }, []);
+
     return (
-        <PetContext.Provider value={{ fetchPetById, loading, error }}>
+        <PetContext.Provider value={{ pets, loading, error, refreshPets: fetchAllPets }}>
             {children}
         </PetContext.Provider>
     );
 };
 
-// Custom hook to access context
-export const usePet = () => useContext(PetContext);
+// Custom hook for using context
+export const usePets = () => useContext(PetContext);

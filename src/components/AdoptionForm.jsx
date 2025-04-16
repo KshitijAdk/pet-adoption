@@ -34,6 +34,7 @@ const AdoptionFormModal = ({ isOpen, onClose }) => {
         applicantId: userData?.userId,
         fullName: userData?.name,
         email: userData?.email,
+        applicantImage: userData?.image,
         ...formData,
       };
 

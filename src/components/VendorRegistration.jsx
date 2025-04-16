@@ -26,6 +26,7 @@ export default function VendorRegistration() {
             setFormData((prevData) => ({
                 ...prevData,
                 email: userData.email,
+                fullName: userData.name,
             }));
         }
     }, [userData]);

@@ -16,6 +16,11 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+    // Calculate counts based on userData
+    const adoptedPetsCount = userData?.adoptedPets?.length || 0;
+    const favoritePetsCount = userData?.favoritePets?.length || 0;
+    const applicationsCount = userData?.applications?.length || 0;
+
     const handleLogout = async () => {
         try {
             const response = await axios.post(backendUrl + "/api/auth/logout");
@@ -132,7 +137,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                         <PawPrint className="mr-3 h-5 w-5" />
                         My Adopted Pets
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {user.adoptedPets.length}
+                            {adoptedPetsCount}
                         </span>
                     </button>
 
@@ -145,7 +150,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                         <Heart className="mr-3 h-5 w-5" />
                         Favorite Pets
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {user.favoritePets.length}
+                            {favoritePetsCount}
                         </span>
                     </button>
 
@@ -158,7 +163,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
                         <Calendar className="mr-3 h-5 w-5" />
                         My Applications
                         <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {user.applications.length}
+                            {applicationsCount}
                         </span>
                     </button>
 

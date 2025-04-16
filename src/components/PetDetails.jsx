@@ -4,11 +4,12 @@ import { Heart, MapPin, ChevronLeft, CheckCircle, MessageCircle, Calendar } from
 import Loading from "./ui/Loading";
 import AdoptionFormModal from "./AdoptionForm";
 import { AppContent } from "../context/AppContext";
+import FavouriteButton from "./ui/FavouriteButton";
 
 const PetDetails = () => {
   const { petId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedin } = useContext(AppContent);
+  const { isLoggedin, userData } = useContext(AppContent);
   const [pet, setPet] = useState(null);
   const [vendorLocation, setVendorLocation] = useState("");
   const [vendorName, setVendorName] = useState("");
@@ -21,7 +22,7 @@ const PetDetails = () => {
   useEffect(() => {
     const fetchPetDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/pets/${petId}`);
+        const response = await fetch(`http://localhost:3000/api/pets/petDetails/${petId}`);
         const result = await response.json();
 
         if (result.pet) {
@@ -29,6 +30,11 @@ const PetDetails = () => {
           setVendorLocation(result.vendorLocation);
           setVendorName(result.vendorName);
           setVendorImage(result.vendorImage || "/api/placeholder/100/100");
+
+          // Check if pet is in user's favorites
+          if (userData?.favoritePets?.includes(result.pet._id)) {
+            setIsFavorite(true);
+          }
         } else {
           setError("Pet details not found");
         }
@@ -41,7 +47,7 @@ const PetDetails = () => {
     };
 
     fetchPetDetails();
-  }, [petId]);
+  }, [petId, userData?.favoritePets]); // Add userData.favoritePets to dependencies
 
   const getDaysAgo = (dateString) => {
     const createdDate = new Date(dateString);
@@ -54,10 +60,6 @@ const PetDetails = () => {
     return `${diffDays} days ago`;
   };
 
-  if (loading) return <Loading />;
-  if (error) return <div className="container mx-auto px-4 py-4 text-center text-red-500">{error}</div>;
-  if (!pet) return <div className="container mx-auto px-4 py-4 text-center">Pet details are not available.</div>;
-
   const handleAdoptNowClick = () => {
     if (!isLoggedin) {
       navigate("/login");
@@ -67,7 +69,10 @@ const PetDetails = () => {
   };
 
   const handleCloseModal = () => setIsModalOpen(false);
-  const toggleFavorite = () => setIsFavorite(!isFavorite);
+
+  if (loading) return <Loading />;
+  if (error) return <div className="container mx-auto px-4 py-4 text-center text-red-500">{error}</div>;
+  if (!pet) return <div className="container mx-auto px-4 py-4 text-center">Pet details are not available.</div>;
 
   return (
     <div className="container mx-auto px-4 py-4 max-w-5xl">
@@ -84,15 +89,9 @@ const PetDetails = () => {
               alt={pet.name}
               className="w-full h-[500px] object-cover"
             />
-            <button
-              onClick={toggleFavorite}
-              className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              <Heart
-                className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
-              />
-            </button>
-            <div className="absolute bottom-3 left-3 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+            <FavouriteButton petId={pet._id} isInitiallyFavorited={isFavorite} />
+            <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-medium ${pet.status === "Available" ? "bg-green-500" : "bg-amber-500"
+              } text-white`}>
               {pet.status}
             </div>
           </div>
@@ -111,7 +110,7 @@ const PetDetails = () => {
             {vendorLocation}
           </div>
 
-          <div className="flex items-center bg-gray-50 p-3 rounded-lg mb-3">
+          <div className="flex items-center bg-gray-200 p-3 rounded-lg mb-3">
             <div className="relative w-8 h-8 mr-3">
               <img
                 src={vendorImage}
@@ -194,7 +193,7 @@ const PetDetails = () => {
         </div>
       </div>
 
-      <AdoptionFormModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <AdoptionFormModal isOpen={isModalOpen} onClose={handleCloseModal} petId={petId} />
     </div>
   );
 };

@@ -1,46 +1,24 @@
 import Sidebar from "../components/ui/Sidebar";
-import { useState, useEffect, useRef } from "react";
-import { CheckCircle, XCircle, Calendar, Clock, ThumbsUp, ThumbsDown, Home, Users, ListChecks, Eye, MoreHorizontal } from "lucide-react";
-import BigModal from "../components/ui/BigModal";  // Import BigModal component
+import { useState, useEffect } from "react";
+import { CheckCircle, XCircle, Calendar, Clock, Home, Users, ListChecks, Eye } from "lucide-react";
+import BigModal from "../components/ui/BigModal";
+import Table from "../components/ui/Table";
+import EmptyState from "../components/ui/EmptyState";
 
 const ManageVendors = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedVendor, setSelectedVendor] = useState(null);  // State to store selected vendor
-    const [showModal, setShowModal] = useState(false);  // State to control modal visibility
-    const [dropdownOpen, setDropdownOpen] = useState(null); // State to manage which dropdown is open
-    const dropdownRefs = useRef({}); // Ref for the dropdown menu
+    const [selectedVendor, setSelectedVendor] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
-    const buttonRefs = useRef({});
-
-    const toggleDropdown = (vendorId, e) => {
-        e.stopPropagation();
-        setDropdownOpen(dropdownOpen === vendorId ? null : vendorId);
-    };
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            // Check if we clicked outside any dropdown and not on any button
-            const clickedOutsideDropdown = Object.values(dropdownRefs.current).every(ref => {
-                return ref && !ref.contains(event.target);
-            });
-
-            const clickedOutsideButton = Object.values(buttonRefs.current).every(ref => {
-                return ref && !ref.contains(event.target);
-            });
-
-            if (clickedOutsideDropdown && clickedOutsideButton) {
-                setDropdownOpen(null);
-            }
-        };
-
-        document.addEventListener("click", handleClickOutside);
-        return () => {
-            document.removeEventListener("click", handleClickOutside);
-        };
-    }, []);
+    const adminMenuItems = [
+        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
+        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+    ];
 
     useEffect(() => {
         const fetchVendors = async () => {
@@ -98,6 +76,25 @@ const ManageVendors = () => {
         }
     };
 
+    const refreshVendors = () => {
+        setLoading(true);
+        setError(null);
+
+        fetch("http://localhost:3000/api/vendors/all-vendor-applications")
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch vendors");
+                return response.json();
+            })
+            .then(data => {
+                setVendors(data.data || []);
+                setLoading(false);
+            })
+            .catch(err => {
+                setError(err.message);
+                setLoading(false);
+            });
+    };
+
     const openModal = (vendor) => {
         setSelectedVendor(vendor);
         setShowModal(true);
@@ -108,12 +105,81 @@ const ManageVendors = () => {
         setShowModal(false);
     };
 
-    const adminMenuItems = [
-        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
-        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
-        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+    const columns = [
+        {
+            key: "fullName",
+            label: "Applicant",
+            customRender: (vendor) => (
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {vendor.image ? (
+                            <img src={vendor.image} alt="Vendor" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-lg font-semibold text-gray-600">{vendor.fullName?.charAt(0) || 'N/A'}</span>
+                        )}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-gray-800">{vendor.fullName}</p>
+                        <p className="text-xs text-gray-500">{vendor.email}</p>
+                    </div>
+                </div>
+            )
+        },
+        { key: "contact", label: "Business Details" },
+        { key: "organization", label: "Organization" },
+        { key: "description", label: "Description" },
+        { key: "status", label: "Status" },
+        { key: "createdAt", label: "Date" }
     ];
+
+    const dropdownActions = [
+        {
+            key: "approve",
+            label: "Approve",
+            icon: CheckCircle,
+            onClick: (vendor) => approveVendor(vendor._id)
+        },
+        {
+            key: "reject",
+            label: "Reject",
+            icon: XCircle,
+            onClick: (vendor) => rejectVendor(vendor._id)
+        },
+        {
+            key: "view",
+            label: "View Details",
+            icon: Eye,
+            onClick: openModal
+        }
+    ];
+
+    const statusConfig = {
+        key: 'status',
+        icons: {
+            approved: { icon: CheckCircle, colorClass: 'bg-green-100 text-green-700 border-green-500' },
+            rejected: { icon: XCircle, colorClass: 'bg-red-100 text-red-700 border-red-500' },
+            pending: { icon: Clock, colorClass: 'bg-yellow-100 text-yellow-700 border-yellow-500' }
+        }
+    };
+
+    const dateConfig = {
+        key: 'createdAt',
+        icon: Calendar
+    };
+
+    // Empty state for all vendor applications
+    const vendorsEmptyState = (
+        <EmptyState
+            icon={ListChecks}
+            title="No vendor applications found"
+            description="No applications have been submitted yet or they may have been removed."
+            actionText="Refresh List"
+            actionType="button"
+            actionOnClick={refreshVendors}
+            iconClassName="h-12 w-12 text-amber-500"
+            actionClassName="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+        />
+    );
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -127,107 +193,20 @@ const ManageVendors = () => {
                 <div className="bg-white rounded-lg shadow-lg p-6">
                     <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Vendors</h1>
 
-                    {loading && <p className="text-center text-gray-500">Loading vendors...</p>}
-                    {error && <p className="text-center text-red-500">{error}</p>}
-                    {!loading && !error && vendors.length === 0 && (
-                        <p className="text-center text-gray-500">No vendors found.</p>
-                    )}
-
-                    {!loading && !error && vendors.length > 0 && (
-                        <div className="overflow-x-auto">
-                            <table className="w-full border border-gray-200 rounded-lg text-left">
-                                <thead>
-                                    <tr className="bg-gray-100 border-b border-gray-300 text-gray-700 text-sm">
-                                        <th className="p-4">Applicant</th>
-                                        <th className="p-4">Business Details</th>
-                                        <th className="p-4">Organization</th>
-                                        <th className="p-4">Description</th>
-                                        <th className="p-4">Status</th>
-                                        <th className="p-4">Date</th>
-                                        <th className="p-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {vendors.map((vendor) => (
-                                        <tr key={vendor._id} className="border-b border-gray-200 hover:bg-gray-50 text-sm">
-                                            <td className="p-4 flex items-center space-x-3">
-                                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                                    {vendor.image ? (
-                                                        <img src={vendor.image} alt="Vendor" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-lg font-semibold text-gray-600">N/A</span>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800">{vendor.fullName}</p>
-                                                    <p className="text-xs text-gray-500">{vendor.email}</p>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-gray-600 text-sm">{vendor.contact || "N/A"}</td>
-                                            <td className="p-4 text-gray-600 text-sm">{vendor.organization || "N/A"}</td>
-                                            <td className="p-4 text-gray-600 text-sm">{vendor.description || "N/A"}</td>
-                                            <td className="p-4 text-center">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center justify-center w-fit mx-auto ${vendor.status.toLowerCase() === "approved" ? "bg-green-100 text-green-700 border border-green-500" : vendor.status.toLowerCase() === "rejected" ? "bg-red-100 text-red-700 border border-red-500" : "bg-yellow-100 text-yellow-700 border border-yellow-500"}`}>
-                                                    {vendor.status.toLowerCase() === "approved" ? <><CheckCircle size={14} className="mr-1 text-green-500" /> Approved</> : vendor.status.toLowerCase() === "rejected" ? <><XCircle size={14} className="mr-1 text-red-500" /> Rejected</> : <><Clock size={14} className="mr-1 text-yellow-500" /> Pending</>}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center text-xs text-gray-500 hidden md:table-cell">
-                                                <div className="flex items-center justify-center space-x-1">
-                                                    <Calendar size={12} />
-                                                    <span>{new Date(vendor.createdAt).toLocaleDateString()}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                {/* 3-dot button for dropdown */}
-                                                <button
-                                                    className="text-gray-500 hover:text-gray-700"
-                                                    onClick={(e) => toggleDropdown(vendor._id, e)}>
-                                                    <MoreHorizontal size={20} />
-                                                </button>
-
-
-                                                {/* Dropdown Menu */}
-                                                {dropdownOpen === vendor._id && (
-                                                    <div
-                                                        ref={el => dropdownRefs.current[vendor._id] = el}
-                                                        className="absolute right-5 z-10 bg-white shadow-lg rounded-lg mt-2 w-46 py-3 border border-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
-                                                    >
-                                                        <button
-                                                            onClick={() => approveVendor(vendor._id)}
-                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-green-200 transition-all duration-200"
-                                                        >
-                                                            <CheckCircle className="w-5 h-5 text-green-500" />
-                                                            <span>Approve</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => rejectVendor(vendor._id)}
-                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-red-200 transition-all duration-200"
-                                                        >
-                                                            <XCircle className="w-5 h-5 text-red-500" />
-                                                            <span>Reject</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openModal(vendor)}
-                                                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-200 transition-all duration-200"
-                                                        >
-                                                            <Eye className="w-5 h-5 text-blue-600" />
-                                                            <span>View Details</span>
-                                                        </button>
-                                                    </div>
-                                                )}
-
-
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                    <Table
+                        columns={columns}
+                        data={vendors}
+                        loading={loading}
+                        error={error}
+                        emptyMessage={vendorsEmptyState}
+                        onRowClick={openModal}
+                        dropdownActions={dropdownActions}
+                        statusConfig={statusConfig}
+                        dateConfig={dateConfig}
+                    />
                 </div>
             </div>
 
-            {/* BigModal - Vendor Details */}
             <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
                 {selectedVendor && (
                     <div className="space-y-2 text-sm">

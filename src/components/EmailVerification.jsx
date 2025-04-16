@@ -6,11 +6,12 @@ import { Card, CardContent } from "./ui/card";
 import { toast } from "react-toastify";
 import { AppContent } from "../context/AppContext";
 import ToastComponent from "./ui/ToastComponent";
-import './styles.css'
+import './styles.css';
 
 export default function EmailVerification() {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [resendDisabled, setResendDisabled] = useState(false);
+    const [countdown, setCountdown] = useState(0);
     const navigate = useNavigate();
     const { backendUrl } = useContext(AppContent);
 
@@ -66,6 +67,19 @@ export default function EmailVerification() {
 
     const handleResend = async () => {
         setResendDisabled(true);
+        setCountdown(30);
+
+        const timer = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setResendDisabled(false);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
         toast.info("Resending OTP...");
 
         try {
@@ -86,26 +100,28 @@ export default function EmailVerification() {
         } catch (error) {
             toast.error("Something went wrong. Please try again.");
         }
-
-        setTimeout(() => {
-            setResendDisabled(false);
-        }, 30000);
     };
 
     return (
         <div className="flex justify-center items-center h-screen bg-image-login">
-            <Card className="w-96 p-6 shadow-lg ">
+            <Card className="w-96 shadow-xl bg-white/95 backdrop-blur-sm">
                 <CardContent className="text-center">
-                    <h2 className="text-xl font-semibold mb-4">Email Verification</h2>
-                    <p className="text-gray-600 mb-4">Enter the 6-digit OTP sent to your email</p>
-                    <div className="flex justify-center gap-4 mb-4" onPaste={handlePaste}>
+                    <div className="mb-6 mt-2">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h2>
+                        <p className="text-gray-600 text-sm">
+                            We've sent a 6-digit code to your email address.
+                            Enter it below to verify your account.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-center gap-2 mb-6" onPaste={handlePaste}>
                         {otp.map((digit, index) => (
                             <InputField
                                 key={index}
                                 id={`otp-${index}`}
                                 type="text"
                                 maxLength={1}
-                                className="h-12 w-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                className="h-12 w-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
                                 value={digit}
                                 onChange={(e) => handleChange(index, e.target.value, e)}
                                 onKeyDown={(e) => handleChange(index, e.target.value, e)}
@@ -113,18 +129,29 @@ export default function EmailVerification() {
                         ))}
                     </div>
 
-                    <Button className="w-full mb-2" onClick={handleSubmit} text=" Verify OTP" />
+                    <Button
+                        className="w-full mb-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
+                        onClick={handleSubmit}
+                        text="Verify Email"
+                    />
 
-                    <p className="text-sm text-gray-500">
-                        Didn't receive an OTP?{' '}
-                        <button
-                            className="text-blue-600 hover:underline"
-                            onClick={handleResend}
-                            disabled={resendDisabled}
-                        >
-                            Resend OTP
-                        </button>
-                    </p>
+                    <div className="text-sm text-gray-600 mb-2">
+                        Didn't receive the code?{' '}
+                        {resendDisabled ? (
+                            <span className="text-blue-500">Resend in {countdown}s</span>
+                        ) : (
+                            <button
+                                className="text-blue-600 font-medium hover:text-blue-800 transition-colors"
+                                onClick={handleResend}
+                            >
+                                Resend Code
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="mt-4 text-xs text-gray-500">
+                        Having trouble? Contact <span className="text-blue-600">support@example.com</span>
+                    </div>
                 </CardContent>
             </Card>
             <ToastComponent />

@@ -20,7 +20,7 @@ const PetManagement = () => {
         gender: 'Male',
         size: '',
         weight: 0,
-        health: '',
+        health: 'Vaccinated',
         goodWith: [],
         traits: [],
         description: '',
@@ -40,10 +40,8 @@ const PetManagement = () => {
         if (userLoading || !userData?.vendorDetails) return;
 
         const fetchPets = async () => {
-            const vendorId = userData.vendorDetails.vendorId;
-
             try {
-                const response = await fetch(`http://localhost:3000/api/pets/${vendorId}/pets`);
+                const response = await fetch(`http://localhost:3000/api/pets/getPets?vendorId=${userData.vendorDetails.vendorId}`);
                 if (response.ok) {
                     const data = await response.json();
                     setPets(data.pets);
@@ -59,8 +57,6 @@ const PetManagement = () => {
 
         fetchPets();
     }, [userData, userLoading]);
-
-    if (loading) return <Loading />;
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -83,29 +79,24 @@ const PetManagement = () => {
     const handleAddPet = async (e) => {
         e.preventDefault();
 
-        const vendorId = userData.vendorDetails?.vendorId;
-
-        if (!vendorId || !formData.imageUrl) {
-            console.error('Vendor ID or Image URL is missing');
-            return;
-        }
-
-        const newPet = { ...formData, image: formData.imageUrl };
-
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/add/${vendorId}`, {
+            const response = await fetch('http://localhost:3000/api/pets/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newPet),
+                body: JSON.stringify({
+                    ...formData,
+                    vendorId: userData.vendorDetails.vendorId,
+                    imageUrl: formData.imageUrl || '' // fallback to empty string
+                }),
             });
 
             const result = await response.json();
 
             if (response.ok && result.pet) {
                 setPets((prev) => [...prev, result.pet]);
-                handleCancelEdit();
+                handleCancelEdit(); // Clear the form or close modal
             } else {
-                console.error('Failed to add pet:', result);
+                console.error('Failed to add pet:', result.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error adding pet:', error);
@@ -113,7 +104,13 @@ const PetManagement = () => {
     };
 
     const handleEditPet = (pet) => {
-        setFormData({ ...pet, imageUrl: pet.image });
+        setFormData({
+            ...pet,
+            imageUrl: pet.imageUrl,
+            // Ensure arrays are properly set for checkboxes
+            goodWith: pet.goodWith || [],
+            traits: pet.traits || []
+        });
         setEditingPetId(pet._id);
         setIsAddingPet(true);
     };
@@ -122,19 +119,21 @@ const PetManagement = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/update/${editingPetId}`, {
+            const response = await fetch(`/api/pets/${editingPetId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, image: formData.imageUrl }),
+                body: JSON.stringify(formData),
             });
 
             const result = await response.json();
 
             if (response.ok && result.pet) {
-                setPets((prevPets) => prevPets.map((pet) => (pet._id === editingPetId ? result.pet : pet)));
+                setPets((prevPets) =>
+                    prevPets.map((pet) => (pet._id === editingPetId ? result.pet : pet))
+                );
                 handleCancelEdit();
             } else {
-                console.error('Failed to update pet:', result);
+                console.error('Failed to update pet:', result.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error updating pet:', error);
@@ -152,7 +151,7 @@ const PetManagement = () => {
             gender: 'Male',
             size: '',
             weight: 0,
-            health: '',
+            health: 'Vaccinated',
             goodWith: [],
             traits: [],
             description: '',
@@ -162,17 +161,10 @@ const PetManagement = () => {
     };
 
     const handleDeletePet = async (petId) => {
-        const vendorId = userData?.vendorDetails?.vendorId;
-
-        if (!vendorId) {
-            console.error("Vendor ID is missing");
-            return;
-        }
-
-        console.log("Deleting pet with ID:", petId, "Vendor ID:", vendorId);
+        if (!window.confirm('Are you sure you want to delete this pet?')) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/${vendorId}/${petId}`, {
+            const response = await fetch(`/api/pets/${petId}`, {
                 method: 'DELETE',
             });
 
@@ -181,14 +173,19 @@ const PetManagement = () => {
             } else {
                 const result = await response.json();
                 console.error('Failed to delete pet:', result.message);
+                alert(result.message || 'Failed to delete pet');
             }
         } catch (error) {
             console.error('Error deleting pet:', error);
+            alert('Error deleting pet');
         }
     };
 
+    const filteredPets = filter === 'all'
+        ? pets
+        : pets.filter((pet) => pet.status.toLowerCase() === filter.toLowerCase());
 
-    const filteredPets = filter === 'all' ? pets : pets.filter((pet) => pet.status.toLowerCase() === filter);
+    if (loading) return <Loading />;
 
     return (
         <div className="flex h-screen">
@@ -202,13 +199,25 @@ const PetManagement = () => {
             <div className={`flex-1 p-6 transition-all duration-300 ${isSidebarOpen ? 'ml-8' : 'ml-8'}`}>
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-2xl font-bold text-gray-900">Pet Listings</h1>
-                    <button
-                        onClick={() => setIsAddingPet(true)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                    >
-                        <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
-                        Add New Pet
-                    </button>
+                    <div className="flex gap-4">
+                        <select
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            className="border rounded-md px-3 py-2"
+                        >
+                            <option value="all">All Pets</option>
+                            <option value="available">Available</option>
+                            <option value="pending">Pending</option>
+                            <option value="adopted">Adopted</option>
+                        </select>
+                        <button
+                            onClick={() => setIsAddingPet(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                        >
+                            <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+                            Add New Pet
+                        </button>
+                    </div>
                 </div>
 
                 {(isAddingPet || editingPetId) && (
@@ -224,9 +233,23 @@ const PetManagement = () => {
                 )}
 
                 {filteredPets.length > 0 ? (
-                    <PetList pets={filteredPets} onEdit={handleEditPet} onDelete={handleDeletePet} />
+                    <PetList
+                        pets={filteredPets}
+                        onEdit={handleEditPet}
+                        onDelete={handleDeletePet}
+                    />
                 ) : (
-                    <div className="text-center text-gray-500">No pets found. Add a new pet to get started.</div>
+                    <div className="text-center text-gray-500 py-8">
+                        <p className="text-lg">No pets found.</p>
+                        {filter !== 'all' && (
+                            <button
+                                onClick={() => setFilter('all')}
+                                className="text-indigo-600 hover:underline mt-2"
+                            >
+                                Show all pets
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

@@ -18,7 +18,7 @@ const PetCard = ({ pet, onMeetClick }) => {
         <h3 className="text-lg font-bold">{pet.name}</h3>
         <div className="flex justify-between items-center">
           <p className="text-gray-500">{pet.breed}</p>
-          <p className="text-sm text-gray-600">📍 {pet.location}</p>
+          <p className="text-sm text-gray-600">📍 {pet.vendorId.address}</p>
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="px-2 py-1 text-xs bg-gray-200 rounded-full">{pet.age} years old</span>

@@ -7,6 +7,7 @@ import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
 import ToastComponent from './ui/ToastComponent';
 import Loading from "./ui/Loading";
+import OAuth from "./OAuth";
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -122,11 +123,7 @@ const Login = () => {
               </div>
             </div>
 
-            <Button
-              text="Continue with Google"
-              variant="secondary"
-              className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 h-12 shadow-sm mt-4"
-            />
+            <OAuth />
 
             {/* Signup Link */}
             <p className="text-center text-gray-500 text-sm mt-6">

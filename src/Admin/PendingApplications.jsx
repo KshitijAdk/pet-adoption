@@ -8,11 +8,11 @@ import {
     Home,
     Users,
     ListChecks,
-    Eye,
-    ChevronDown
+    Eye
 } from "lucide-react";
-import BigModal from "../components/ui/BigModal";  // Import the BigModal component
-import { Link } from "react-router-dom";
+import BigModal from "../components/ui/BigModal";
+import Table from "../components/ui/Table";
+import EmptyState from "../components/ui/EmptyState";
 
 const PendingApplications = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -21,6 +21,13 @@ const PendingApplications = () => {
     const [error, setError] = useState(null);
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [showModal, setShowModal] = useState(false);
+
+    const adminMenuItems = [
+        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
+        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+    ];
 
     useEffect(() => {
         const fetchVendors = async () => {
@@ -83,12 +90,99 @@ const PendingApplications = () => {
         setShowModal(false);
     };
 
-    const adminMenuItems = [
-        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
-        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
-        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+    const refreshApplications = () => {
+        setLoading(true);
+        setError(null);
+
+        fetch("http://localhost:3000/api/vendors/pending-vendors")
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch vendors");
+                return response.json();
+            })
+            .then(data => {
+                setVendors(data.vendors || []);
+                setLoading(false);
+            })
+            .catch(err => {
+                setError(err.message);
+                setLoading(false);
+            });
+    };
+
+    const columns = [
+        {
+            key: "fullName",
+            label: "Applicant",
+            customRender: (vendor) => (
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {vendor.image ? (
+                            <img src={vendor.image} alt="Vendor" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-lg font-semibold text-gray-600">{vendor.fullName?.charAt(0) || 'N/A'}</span>
+                        )}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-gray-800">{vendor.fullName}</p>
+                        <p className="text-xs text-gray-500">{vendor.email}</p>
+                    </div>
+                </div>
+            )
+        },
+        { key: "contact", label: "Contact" },
+        { key: "organization", label: "Organization" },
+        { key: "description", label: "Description" },
+        { key: "status", label: "Status" },
+        { key: "createdAt", label: "Date" }
     ];
+
+    const dropdownActions = [
+        {
+            key: "approve",
+            label: "Approve",
+            icon: ThumbsUp,
+            onClick: (vendor) => approveVendor(vendor._id)
+        },
+        {
+            key: "reject",
+            label: "Reject",
+            icon: ThumbsDown,
+            onClick: (vendor) => rejectVendor(vendor._id)
+        },
+        {
+            key: "view",
+            label: "View Details",
+            icon: Eye,
+            onClick: openModal
+        }
+    ];
+
+    const statusConfig = {
+        key: 'status',
+        icons: {
+            approved: { icon: ThumbsUp, colorClass: 'bg-green-100 text-green-700 border-green-500' },
+            rejected: { icon: ThumbsDown, colorClass: 'bg-red-100 text-red-700 border-red-500' },
+            pending: { icon: Clock, colorClass: 'bg-yellow-100 text-yellow-700 border-yellow-500' }
+        }
+    };
+
+    const dateConfig = {
+        key: 'createdAt',
+        icon: Calendar
+    };
+
+    // Empty state for pending applications
+    const pendingEmptyState = (
+        <EmptyState
+            icon={Clock}
+            title="No pending vendor applications found"
+            description="Check back later for new applications or take action on pending ones."
+            actionText="Refresh Applications"
+            actionType="button"
+            actionOnClick={refreshApplications}
+            iconClassName="h-12 w-12 text-yellow-500"
+        />
+    );
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -102,109 +196,17 @@ const PendingApplications = () => {
                 <div className="bg-white rounded-lg shadow-lg p-6">
                     <h1 className="text-2xl font-bold text-gray-800 mb-6">Pending Applications</h1>
 
-                    {loading && <p className="text-center text-gray-500">Loading vendors...</p>}
-                    {error && <p className="text-center text-red-500">{error}</p>}
-
-                    {/* Empty state with icon and message */}
-                    {!loading && !error && vendors.length === 0 && (
-                        <div className="text-center py-12">
-                            <Clock className="mx-auto h-12 w-12 text-yellow-500" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No pending vendor applications found</h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Check back later for new applications or take action on pending ones.
-                            </p>
-                            <div className="mt-6">
-                                <Link
-                                    to="/admin/pending-vendors" // Link to another page if needed
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
-                                >
-                                    Refresh Applications
-                                </Link>
-                            </div>
-                        </div>
-                    )}
-
-                    {!loading && !error && vendors.length > 0 && (
-                        <div className="overflow-x-auto">
-                            <table className="w-full border border-gray-200 rounded-lg text-left">
-                                <thead>
-                                    <tr className="bg-gray-100 border-b border-gray-300 text-gray-700 text-sm">
-                                        <th className="p-4">Applicant</th>
-                                        <th className="p-4">Contact</th>
-                                        <th className="p-4">Organization</th>
-                                        <th className="p-4">Description</th>
-                                        <th className="p-4">Status</th>
-                                        <th className="p-4">Date</th>
-                                        <th className="p-4 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {vendors.map((vendor) => (
-                                        <tr key={vendor._id} className="border-b border-gray-200 hover:bg-gray-50 text-sm">
-                                            <td className="p-4 text-gray-600">{vendor.fullName}</td>
-                                            <td className="p-4 text-gray-600">{vendor.contact}</td>
-                                            <td className="p-4 text-gray-600">{vendor.organization}</td>
-                                            <td className="p-4 text-gray-600">{vendor.description}</td>
-                                            <td className="p-4 text-center">{vendor.status}</td>
-                                            <td className="p-4 text-center text-gray-600">
-                                                {new Date(vendor.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="relative inline-block text-left">
-                                                    <div>
-                                                        <button
-                                                            type="button"
-                                                            className="inline-flex justify-center w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-                                                            id="options-menu"
-                                                            aria-haspopup="true"
-                                                            aria-expanded="true"
-                                                        >
-                                                            Actions
-                                                            <ChevronDown className="ml-2 -mr-1 h-5 w-5" />
-                                                        </button>
-                                                    </div>
-
-                                                    <div
-                                                        className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                                                        role="menu"
-                                                        aria-orientation="vertical"
-                                                        aria-labelledby="options-menu"
-                                                    >
-                                                        <div className="py-1" role="none">
-                                                            <button
-                                                                onClick={() => approveVendor(vendor._id)}
-                                                                className="text-gray-700 block px-4 py-2 text-sm"
-                                                                role="menuitem"
-                                                            >
-                                                                <ThumbsUp className="mr-2 inline" />
-                                                                Approve
-                                                            </button>
-                                                            <button
-                                                                onClick={() => rejectVendor(vendor._id)}
-                                                                className="text-gray-700 block px-4 py-2 text-sm"
-                                                                role="menuitem"
-                                                            >
-                                                                <ThumbsDown className="mr-2 inline" />
-                                                                Reject
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openModal(vendor)}
-                                                                className="text-gray-700 block px-4 py-2 text-sm"
-                                                                role="menuitem"
-                                                            >
-                                                                <Eye className="mr-2 inline" />
-                                                                View Details
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                    <Table
+                        columns={columns}
+                        data={vendors}
+                        loading={loading}
+                        error={error}
+                        emptyMessage={pendingEmptyState}
+                        onRowClick={openModal}
+                        dropdownActions={dropdownActions}
+                        statusConfig={statusConfig}
+                        dateConfig={dateConfig}
+                    />
                 </div>
 
                 {/* BigModal - Vendor Details */}

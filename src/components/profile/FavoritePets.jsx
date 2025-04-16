@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react';
 import { AppContent } from '../../context/AppContext';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import FavouriteButton from '../ui/FavouriteButton';
 
 const FavoritePets = () => {
     const { userData } = useContext(AppContent);
@@ -14,17 +15,18 @@ const FavoritePets = () => {
         const fetchFavoritePets = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3000/api/favorites/${userData.userId}`);
-                setFavoritePets(response.data.favoritePets);
-                setLoading(false);
+                const response = await axios.get(`http://localhost:3000/api/pets/favourite/${userData.userId}`);
+                setFavoritePets(response.data.favouritePets);
+
             } catch (error) {
-                setLoading(false);
-                setError('Error fetching favorite pets');
                 console.error("Error fetching favorite pets", error);
+                setError('Error fetching favorite pets');
+            } finally {
+                setLoading(false);
             }
         };
 
-        if (userData && userData.userId) {
+        if (userData?.userId) {
             fetchFavoritePets();
         }
     }, [userData]);
@@ -45,7 +47,7 @@ const FavoritePets = () => {
                     <div className="text-center py-12 text-red-500">{error}</div>
                 )}
 
-                {favoritePets.length > 0 ? (
+                {!loading && favoritePets.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {favoritePets.map((pet) => (
                             <div key={pet._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -55,9 +57,9 @@ const FavoritePets = () => {
                                         alt={pet.name}
                                         className="h-full w-full object-cover"
                                     />
-                                    <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-red-500 hover:bg-red-50">
-                                        <Heart className="h-5 w-5 fill-current" />
-                                    </button>
+                                    {/* FavoriteButton used here */}
+                                    <div className="absolute top-3 right-3">
+                                        <FavouriteButton petId={pet._id} isInitiallyFavorited={true} />                                    </div>
                                 </div>
                                 <div className="p-4">
                                     <div className="flex justify-between items-center">
@@ -69,13 +71,12 @@ const FavoritePets = () => {
                                     <div className="mt-2 flex items-center text-sm text-gray-500">
                                         <span className="mr-2">{pet.breed}</span>
                                         <span>•</span>
-                                        <span className="mx-2">{pet.age}</span>
+                                        <span className="mx-2">{pet.age} yrs</span>
                                         <span>•</span>
                                         <span className="ml-2">{pet.species}</span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
-                                        <Link
-                                            to={`/pets/${pet._id}`} >
+                                        <Link to={`/pets/${pet._id}`}>
                                             <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
                                                 View Details
                                             </button>
@@ -88,7 +89,7 @@ const FavoritePets = () => {
                             </div>
                         ))}
                     </div>
-                ) : (
+                ) : !loading && (
                     <div className="text-center py-12">
                         <Heart className="mx-auto h-12 w-12 text-gray-300" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">No favorite pets yet</h3>
@@ -97,7 +98,7 @@ const FavoritePets = () => {
                         </p>
                         <div className="mt-6">
                             <Link
-                                to="/pets"  // Link to the browse pets page
+                                to="/pets"
                                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
                             >
                                 Browse Available Pets

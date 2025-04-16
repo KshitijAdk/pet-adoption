@@ -7,50 +7,80 @@ import { Link } from 'react-router-dom';
 const AdoptedPets = () => {
     const { userData } = useContext(AppContent);
     const [adoptedPets, setAdoptedPets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchAdoptedPets = async () => {
             try {
-                console.log("Fetching adopted pets for user:", userData.userId);
+                if (!userData?.userId) {
+                    console.warn("No userId found in userData");
+                    setLoading(false);
+                    return;
+                }
 
-                // Make a GET request to fetch adopted pet IDs by userId
-                const response = await axios.get(`http://localhost:3000/api/adoption/${userData.userId}`);
-                console.log("Adopted Pet IDs:", response.data.adoptedPets);
+                setLoading(true);
+                setError(null);
 
-                if (response.status === 200 && Array.isArray(response.data.adoptedPets)) {
-                    const petDataPromises = response.data.adoptedPets.map(async (petId) => {
-                        try {
-                            const petResponse = await axios.get(`http://localhost:3000/api/pets/${petId}`);
-                            console.log("Fetched pet data:", petResponse.data);
-                            return petResponse.data;
-                        } catch (error) {
-                            console.error(`Error fetching pet data for ID ${petId}:`, error);
-                            return null;
-                        }
-                    });
+                const response = await axios.get(`http://localhost:3000/api/adoption/adopted/${userData.userId}`);
 
-                    const petData = await Promise.all(petDataPromises);
-                    // Extract the pet object from each response item if needed
-                    const validPets = petData.filter((item) => item !== null).map(item => {
-                        // If the response has a pet property, use it, otherwise use the item itself
-                        return item.pet || item;
-                    });
-                    console.log("Final Adopted Pets Data:", validPets);
-                    setAdoptedPets(validPets);
+                if (response.data?.adoptedPets) {
+                    setAdoptedPets(response.data.adoptedPets);
                 } else {
-                    console.warn("Unexpected response status or data format:", response.status);
+                    setAdoptedPets([]);
                 }
             } catch (error) {
-                console.error("Error fetching adopted pet IDs:", error);
+                console.error("Error fetching adopted pets:", error);
+                setError("Failed to fetch adopted pets. Please try again later.");
+                setAdoptedPets([]);
+            } finally {
+                setLoading(false);
             }
         };
 
-        if (userData.userId) {
-            fetchAdoptedPets();
-        } else {
-            console.warn("No userId found in userData");
-        }
-    }, [userData.userId]);
+        fetchAdoptedPets();
+    }, [userData?.userId]);
+
+
+
+    if (loading) {
+        return (
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="px-6 py-5 border-b border-gray-200">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900">My Adopted Pets</h3>
+                </div>
+                <div className="px-6 py-12 text-center">
+                    <div className="animate-pulse flex justify-center">
+                        <PawPrint className="h-12 w-12 text-gray-300" />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-500">Loading your adopted pets...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="px-6 py-5 border-b border-gray-200">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900">My Adopted Pets</h3>
+                </div>
+                <div className="px-6 py-12 text-center">
+                    <PawPrint className="mx-auto h-12 w-12 text-red-300" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading pets</h3>
+                    <p className="mt-1 text-sm text-red-500">{error}</p>
+                    <div className="mt-6">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -65,12 +95,15 @@ const AdoptedPets = () => {
                 {adoptedPets.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {adoptedPets.map((pet) => (
-                            <div key={pet._id || pet.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div key={pet._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <div className="h-48 w-full relative">
                                     <img
                                         src={pet.imageUrl}
                                         alt={pet.name}
                                         className="h-full w-full object-cover"
+                                        onError={(e) => {
+                                            e.target.src = 'https://via.placeholder.com/300x200?text=Pet+Image';
+                                        }}
                                     />
                                 </div>
                                 <div className="p-4">
@@ -78,24 +111,38 @@ const AdoptedPets = () => {
                                     <div className="mt-2 flex items-center text-sm text-gray-500">
                                         <span className="mr-2">{pet.breed}</span>
                                         <span>•</span>
-                                        <span className="mx-2">{pet.age}</span>
+                                        <span className="mx-2">{pet.age} years</span>
                                         <span>•</span>
-                                        <span className="ml-2">{pet.species}</span>
+                                        <span className="ml-2">{pet.gender}</span>
                                     </div>
                                     <div className="mt-3 flex items-center text-sm">
                                         <Calendar className="mr-2 h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600">Adopted on {new Date(pet.createdAt).toLocaleDateString()}</span>
+                                        <span className="text-gray-600">
+                                            Adopted on {new Date(pet.createdAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </span>
                                     </div>
                                     <div className="mt-4 flex space-x-3">
                                         <Link
-                                            to={`/pets/${pet._id}`} >
-                                            <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
-                                                View Details
+                                            to={`/pets/${pet._id}`}
+                                            className="flex-1"
+                                        >
+                                            <button className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                                View Info
+                                            </button>
+
+                                        </Link>
+                                        <Link
+                                            to={`/pets/${pet._id}/care`}
+                                            className="flex-1"
+                                        >
+                                            <button className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                                Care Info
                                             </button>
                                         </Link>
-                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                            Care Info
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -109,9 +156,11 @@ const AdoptedPets = () => {
                             Start your adoption journey today and find your perfect companion.
                         </p>
                         <div className="mt-6">
-                            <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
-                                Browse Available Pets
-                            </button>
+                            <Link to="/pets">
+                                <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                                    Browse Available Pets
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 )}

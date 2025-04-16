@@ -1,20 +1,24 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // import from 'react-dom/client' instead of 'react-dom'
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AppContextProvider } from './context/AppContext';
 import { PetProvider } from './context/PetContext';
 
-// Use ReactDOM.createRoot instead of ReactDOM.render
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <BrowserRouter>
-    <AppContextProvider>
-      <PetProvider>
-        <App />
-      </PetProvider>
-    </AppContextProvider>
-  </BrowserRouter>
+  <Provider store={store}>
+    <BrowserRouter>
+      <AppContextProvider>
+        <PetProvider>
+          <App />
+        </PetProvider>
+      </AppContextProvider>
+    </BrowserRouter>
+  </Provider>
 );
