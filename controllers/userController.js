@@ -29,7 +29,9 @@ export const getUserData = async (req, res) => {
             contact: user.contact,
             address: user.address,
             description: user.description,
-
+            adoptedPets: user.adoptedPets,
+            favouritePets: user.favouritePets,
+            applications: user.applications,
         };
 
         // If the user is a vendor, fetch additional data from the Vendor collection
@@ -210,5 +212,4 @@ export const changePassword = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
-
 

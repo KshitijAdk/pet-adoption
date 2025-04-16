@@ -2,7 +2,7 @@
 import express from 'express';
 import multer from 'multer';
 import { storage } from '../config/cloudinary.js'; // Import Cloudinary storage
-import { registerVendor, approveVendor, rejectVendor, getPendingVendors, getAllVendorApplications, getAllVendors } from '../controllers/vendorController.js';
+import { registerVendor, approveVendor, rejectVendor, getPendingVendors, getAllVendorApplications, getAllVendors, getVendorById } from '../controllers/vendorController.js';
 
 const router = express.Router();
 const upload = multer({ storage }); // Use Cloudinary storage for multer
@@ -18,6 +18,7 @@ router.put('/approve-vendor/:vendorId', approveVendor);
 router.put('/reject-vendor/:vendorId', rejectVendor); // New route for rejecting a vendor
 router.get('/pending-vendors', getPendingVendors);
 router.get('/all-vendors', getAllVendors)
+router.get('/:vendorId', getVendorById)
 
 
 export default router;

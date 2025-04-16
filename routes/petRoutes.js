@@ -1,14 +1,28 @@
 import express from "express";
-import { addPetToVendor, getPetData, deletePet, toggleFavorite } from "../controllers/petController.js";
+import {
+    addPetToVendor,
+    getPetData,
+    deletePet,
+    getPetsByVendor,
+    getAllPetsWithVendor,
+    addToFavourite,
+    removeFromFavourite,
+    getFavouritePets,
+} from "../controllers/petController.js";
+import multer from "multer";
+import { storage } from "../config/cloudinary.js";
 
 const router = express.Router();
+const upload = multer({ storage });
 
 // Route to add a pet to a vendor
-router.post("/add/:vendorId", addPetToVendor);
-// router.get('/:vendorId/pets', getPetsByVendor);
-router.delete("/delete-pet", deletePet); // DELETE request to remove a pet
-router.get("/:petId", getPetData);
-router.post("/toggle-favorite", toggleFavorite);
-
+router.post("/add", upload.single('image'), addPetToVendor);
+router.get('/getPets', getPetsByVendor);
+router.delete('/:vendorId/:petId', deletePet);
+router.get("/petDetails/:petId", getPetData);
+router.get('/pets-with-vendor', getAllPetsWithVendor);
+router.post("/add-to-favourite", addToFavourite);
+router.post("/remove-from-favourite", removeFromFavourite);
+router.get("/favourite/:userId", getFavouritePets);
 
 export default router;

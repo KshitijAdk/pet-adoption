@@ -1,199 +1,338 @@
-import Vendor from "../models/Vendor.js";
-import userModel from "../models/userModel.js";
-import mongoose from "mongoose";
+import AdoptionRequest from '../models/adoptionRequest.model.js';
+import Pet from '../models/pet.model.js';
+import Vendor from '../models/Vendor.js';
+import userModel from '../models/userModel.js';
+import mongoose from 'mongoose';
 
 export const submitAdoptionRequest = async (req, res) => {
     console.log("Request Body:", req.body); // Log request for debugging
 
     try {
         const {
-            adoptionId, // Already a string from frontend
+            adoptionId,
             petId,
             applicantId,
             fullName,
             email,
+            applicantImage,
             phone,
             address,
             reasonForAdoption,
         } = req.body;
 
         // Validate required fields
-        if (!adoptionId || !petId || !applicantId || !fullName || !email || !phone || !address || !reasonForAdoption) {
+        if (!adoptionId || !petId || !applicantId || !applicantImage || !fullName || !email || !phone || !address || !reasonForAdoption) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        // Find user by applicantId
+        // Find user
         const user = await userModel.findById(applicantId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Find vendor with the pet
-        const vendor = await Vendor.findOne({ "pets._id": petId });
-        if (!vendor) {
-            return res.status(404).json({ message: "Pet not found under any vendor" });
-        }
-
-        // Find the pet from the vendor's array
-        const pet = vendor.pets.id(petId);
+        // Check if pet exists
+        const pet = await Pet.findById(petId);
         if (!pet) {
-            return res.status(404).json({ message: "Pet not found under this vendor" });
+            return res.status(404).json({ message: "Pet not found" });
         }
 
-        // Create adoption request object
-        const adoptionRequest = {
-            adoptionId,  // Storing as string
+        // Find vendor
+        const vendor = await Vendor.findById(pet.vendorId);
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found for this pet" });
+        }
+
+        // Check if user already applied for this pet
+        const existingRequest = await AdoptionRequest.findOne({
+            petId,
+            applicantId,
+            status: { $in: ['Pending', 'Approved'] }
+        });
+
+        if (existingRequest) {
+            return res.status(409).json({
+                message: "You already have an active adoption request for this pet",
+                existingRequest
+            });
+        }
+
+        // Create the adoption request
+        const newAdoptionRequest = new AdoptionRequest({
+            adoptionId,
             applicantId,
             applicantName: fullName,
             applicantEmail: email,
+            applicantImage,
             applicantContact: phone,
             applicantAddress: address,
-            petId: pet._id,
+            petId,
+            vendorId: vendor._id,
             petName: pet.name,
             adoptionReason: reasonForAdoption,
-            status: "Pending",
-            createdAt: new Date(),
-        };
+            status: "Pending"
+        });
 
-        // Push to pet's adoptionRequests array
-        pet.adoptionRequests.push(adoptionRequest);
+        // Save the adoption request
+        const savedRequest = await newAdoptionRequest.save();
 
-        // Save to user's applications array
-        user.applications.push({ adoptionId, petId });
-
-        // Save updated documents
+        // Update user's applications
+        user.applications.push({
+            adoptionId: savedRequest._id,
+            petId,
+            status: "Pending"
+        });
         await user.save();
-        await vendor.save();
 
         res.status(201).json({
             message: "Adoption request submitted successfully",
-            adoptionRequest,
+            adoptionRequest: savedRequest,
         });
     } catch (error) {
         console.error("Error submitting adoption request:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
     }
 };
-
-
 
 export const approveAdoptionRequest = async (req, res) => {
-    const { adoptionId, applicantId, petId } = req.body;
+    const { adoptionId } = req.body;
+
+    if (!adoptionId) {
+        return res.status(400).json({ message: "Adoption ID is required" });
+    }
 
     try {
-        console.log("🔹 Received Approve Request:", { adoptionId, applicantId, petId });
+        // 1. Approve the adoption request
+        const adoptionRequest = await AdoptionRequest.findByIdAndUpdate(
+            adoptionId,
+            { status: "Approved" },
+            { new: true }
+        );
 
-        // Convert petId and adoptionId to ObjectId for accurate queries
-        const petObjectId = new mongoose.Types.ObjectId(petId);
-
-        // 1️⃣ Find the user who made the adoption request
-        const user = await userModel.findById(applicantId);
-        if (!user) {
-            return res.status(404).json({ message: `User with ID ${applicantId} not found` });
-        }
-        console.log("✅ User Found:", user._id);
-
-        // 2️⃣ Find the vendor that owns the pet
-        const vendor = await Vendor.findOne({ 'pets._id': petObjectId });
-        if (!vendor) {
-            return res.status(404).json({ message: `Pet with ID ${petId} not found in vendor records` });
-        }
-        console.log("✅ Vendor Found:", vendor._id);
-
-        // 3️⃣ Find the pet inside the vendor's pets array
-        const pet = vendor.pets.find((p) => p._id.equals(petObjectId));
-        if (!pet) {
-            return res.status(404).json({ message: `Pet with ID ${petId} not found in vendor records` });
-        }
-        console.log("✅ Pet Found:", pet.name);
-
-        // 4️⃣ Find the adoption request in the pet's adoptionRequests array
-        const adoptionRequest = pet.adoptionRequests.find((req) => req._id.toString() === adoptionId);
         if (!adoptionRequest) {
-            return res.status(404).json({ message: `Adoption request with ID ${adoptionId} not found` });
-        }
-        console.log("✅ Adoption Request Found:", adoptionRequest);
-
-        // 5️⃣ Update adoption request status and pet status
-        if (adoptionRequest.status !== 'Approved') {
-            adoptionRequest.status = "Approved";
-            pet.status = "Adopted";
-            await vendor.save();
-            console.log("✅ Adoption Request Approved & Pet Status Updated");
-        } else {
-            console.log("⚠️ Adoption Request was already approved.");
+            return res.status(404).json({ message: "Adoption request not found" });
         }
 
-        // 6️⃣ Add pet to user's adoptedPets array (if not already added)
-        if (!user.adoptedPets.includes(petId)) {
-            user.adoptedPets.push(petId);
-            await user.save();
-            console.log("✅ User's Adopted Pets Updated");
-        } else {
-            console.log("⚠️ Pet was already added to user's adoptedPets.");
+        // 2. Mark pet as adopted
+        const pet = await Pet.findByIdAndUpdate(
+            adoptionRequest.petId,
+            {
+                status: "Adopted",
+                adoptedBy: adoptionRequest.applicantId
+            },
+            { new: true }
+        );
+
+        if (!pet) {
+            return res.status(404).json({ message: "Pet not found" });
         }
 
-        // ✅ Send success response
-        res.status(200).json({ message: "Adoption request approved successfully" });
+        // 3. Update user who made the request
+        await userModel.findByIdAndUpdate(
+            adoptionRequest.applicantId,
+            {
+                $addToSet: { adoptedPets: adoptionRequest.petId }, // Add to adopted pets
+                $set: { "applications.$[app].status": "Approved" } // Update application status
+            },
+            {
+                arrayFilters: [{ "app.adoptionId": adoptionRequest._id }]
+            }
+        );
+
+        // 4. Reject all other pending requests for this pet
+        const rejectedRequests = await AdoptionRequest.find({
+            petId: adoptionRequest.petId,
+            status: "Pending",
+            _id: { $ne: adoptionRequest._id }
+        });
+
+        if (rejectedRequests.length > 0) {
+            // Update status in AdoptionRequest collection
+            await AdoptionRequest.updateMany(
+                { _id: { $in: rejectedRequests.map(req => req._id) } },
+                { status: "Rejected" }
+            );
+
+            // Update status in users' applications
+            const bulkOps = rejectedRequests.map(request => ({
+                updateOne: {
+                    filter: {
+                        _id: request.applicantId,
+                        "applications.adoptionId": request._id
+                    },
+                    update: {
+                        $set: { "applications.$.status": "Rejected" }
+                    }
+                }
+            }));
+
+            await userModel.bulkWrite(bulkOps);
+        }
+
+        res.status(200).json({
+            message: "Adoption request approved successfully",
+            adoptionRequest,
+            pet,
+            rejectedCount: rejectedRequests.length
+        });
 
     } catch (error) {
-        console.error("❌ Error in approveAdoptionRequest:", error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Error approving adoption request:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
 
-
-// Reject Adoption Request
 export const rejectAdoptionRequest = async (req, res) => {
-    const { adoptionId, petId } = req.body; // Expecting adoptionId and petId in the request body
+    const { adoptionId } = req.body;
+
+    if (!adoptionId) {
+        return res.status(400).json({ message: "Adoption ID is required" });
+    }
 
     try {
-        // Find the vendor that owns the pet
-        const vendor = await Vendor.findOne({ 'pets._id': petId });
-        if (!vendor) {
-            return res.status(404).json({ message: 'Pet not found in vendor records' });
-        }
+        // 1. Reject the adoption request
+        const adoptionRequest = await AdoptionRequest.findByIdAndUpdate(
+            adoptionId,
+            { status: "Rejected" },
+            { new: true }
+        );
 
-        // Find the pet inside the vendor's pets array
-        const pet = vendor.pets.find((pet) => pet._id.toString() === petId);
-        if (!pet) {
-            return res.status(404).json({ message: 'Pet not found' });
-        }
-
-        // Find the adoption request in the pet's adoptionRequests array and update its status to 'Rejected'
-        const adoptionRequest = pet.adoptionRequests.id(adoptionId);
         if (!adoptionRequest) {
-            return res.status(404).json({ message: 'Adoption request not found' });
+            return res.status(404).json({ message: "Adoption request not found" });
         }
 
-        // Update the adoption request status to 'Rejected'
-        adoptionRequest.status = 'Rejected';
-        await vendor.save();
+        // 2. Update the user's application status in one operation
+        await userModel.updateOne(
+            {
+                _id: adoptionRequest.applicantId,
+                "applications.adoptionId": adoptionRequest._id
+            },
+            {
+                $set: { "applications.$.status": "Rejected" }
+            }
+        );
 
-        // Send a success response
-        res.status(200).json({ message: 'Adoption request rejected successfully' });
+        // 3. If this was the only pending request for the pet, mark pet as available again
+        const pendingRequestsCount = await AdoptionRequest.countDocuments({
+            petId: adoptionRequest.petId,
+            status: "Pending"
+        });
+
+        if (pendingRequestsCount === 0) {
+            await Pet.findByIdAndUpdate(
+                adoptionRequest.petId,
+                { status: "Available" }
+            );
+        }
+
+        res.status(200).json({
+            message: "Adoption request rejected successfully",
+            adoptionRequest,
+            petStatusUpdated: pendingRequestsCount === 0
+        });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Error rejecting adoption request:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
 
-
-
-// Fetch adopted pets by userId
 export const getAdoptedPets = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Find the user and populate adopted pets
-        const user = await userModel.findById(userId).populate('adoptedPets');
+        // Find the user and populate adopted pets with vendor info
+        const user = await userModel.findById(userId)
+            .populate({
+                path: 'adoptedPets',
+                populate: {
+                    path: 'vendorId',
+                    select: 'organization image contact'
+                }
+            });
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ adoptedPets: user.adoptedPets });
+        res.status(200).json({
+            adoptedPets: user.adoptedPets,
+            count: user.adoptedPets.length
+        });
     } catch (error) {
         console.error("Error fetching adopted pets:", error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+};
+
+// Get all adoption requests for a vendor
+export const getVendorAdoptionRequests = async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+
+        const requests = await AdoptionRequest.find({ vendorId })
+            .populate('petId', 'name imageUrl status breed species size age weight gender health goodWith traits description')
+            .populate('applicantId', 'name email contact')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: requests.length,
+            requests
+        });
+    } catch (error) {
+        console.error("Error fetching vendor adoption requests:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+// Get user's adoption applications
+export const getUserApplications = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const user = await userModel.findById(userId)
+            .populate({
+                path: 'applications',
+                populate: {
+                    path: 'petId',
+                    select: 'name imageUrl status breed species size age weight gender health goodWith traits description vendorId',
+                    populate: {
+                        path: 'vendorId',
+                        select: 'organization'
+                    }
+                }
+            });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            applications: user.applications,
+            count: user.applications.length
+        });
+    } catch (error) {
+        console.error("Error fetching user applications:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };

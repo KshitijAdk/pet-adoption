@@ -1,12 +1,31 @@
 import express from 'express';
-import { submitAdoptionRequest, approveAdoptionRequest, rejectAdoptionRequest, getAdoptedPets } from '../controllers/adoptionController.js';
+import {
+    submitAdoptionRequest,
+    approveAdoptionRequest,
+    rejectAdoptionRequest,
+    getAdoptedPets,
+    getVendorAdoptionRequests,
+    getUserApplications,
+} from '../controllers/adoptionController.js';
 
 const router = express.Router();
 
+// Submit a new adoption request
 router.post('/apply', submitAdoptionRequest);
-router.post('/approve', approveAdoptionRequest);
-router.post('/reject', rejectAdoptionRequest);
-router.get('/:userId', getAdoptedPets);
 
+// Approve an adoption request
+router.post('/approve', approveAdoptionRequest);
+
+// Reject an adoption request
+router.post('/reject', rejectAdoptionRequest);
+
+// Get all adopted pets for a user
+router.get('/adopted/:userId', getAdoptedPets); // 🆕 changed route from "/:userId" to clearer "/adopted/:userId"
+
+// Get all adoption requests for a vendor
+router.get('/vendor/:vendorId', getVendorAdoptionRequests); // 🆕 added vendor route
+
+// Get all adoption applications submitted by a user
+router.get('/user/:userId', getUserApplications); // 🆕 added user applications route
 
 export default router;
