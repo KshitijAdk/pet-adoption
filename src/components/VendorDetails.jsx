@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, Mail, Phone, MapPin, Calendar, LucidePawPrint, Users, HeartHandshake, ExternalLink } from 'lucide-react';
+import { Heart, Mail, Phone, MapPin, Calendar, LucidePawPrint, Users, HeartHandshake, ExternalLink, X } from 'lucide-react';
 import PetCard from './ui/petcard';
 
 const VendorDetails = () => {
@@ -10,6 +10,7 @@ const VendorDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('gallery');
+    const [showDonateModal, setShowDonateModal] = useState(false);
 
     useEffect(() => {
         const fetchVendor = async () => {
@@ -37,8 +38,11 @@ const VendorDetails = () => {
     };
 
     const handleDonate = () => {
-        // Implement donation logic here
-        alert('Thank you for your interest in donating! This feature is coming soon.');
+        setShowDonateModal(true);
+    };
+
+    const closeDonateModal = () => {
+        setShowDonateModal(false);
     };
 
     const formatDate = (dateString) => {
@@ -81,6 +85,34 @@ const VendorDetails = () => {
 
     return (
         <div className="bg-neutral-50 min-h-screen">
+            {/* Donate Modal */}
+            {showDonateModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+                        <button
+                            onClick={closeDonateModal}
+                            className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
+                        >
+                            <X className="w-6 h-6 text-gray-500" />
+                        </button>
+                        <h3 className="text-2xl font-bold text-center mb-4 text-amber-600">Support {vendor.organization}</h3>
+                        <p className="text-center text-gray-600 mb-6">
+                            Scan the QR code below to donate via Fonepay
+                        </p>
+                        <div className="flex justify-center mb-6">
+                            <img
+                                src={vendor.fonepayQr}
+                                alt="Fonepay QR Code"
+                                className="w-64 h-64 object-contain border border-gray-200 rounded-lg"
+                            />
+                        </div>
+                        <p className="text-center text-sm text-gray-500">
+                            Your donation helps us care for animals in need. Thank you for your support!
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Hero Section with Parallax Effect */}
             <div className="relative h-96 overflow-hidden bg-gradient-to-r from-amber-500 to-amber-400">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3')] bg-cover bg-center opacity-20"></div>

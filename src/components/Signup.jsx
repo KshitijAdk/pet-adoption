@@ -1,5 +1,4 @@
-import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState, useEffect } from "react";
 import { PawPrint, User, Mail, Lock, Check, X } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
@@ -10,60 +9,51 @@ import Loading from "./ui/Loading";
 import OAuth from "./OAuth";
 
 const Signup = () => {
-    const [isPasswordShown, setIsPasswordShown] = useState(false);
+    const { backendUrl } = useContext(AppContent);
+
+    // Form states
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isPasswordShown, setIsPasswordShown] = useState(false);
     const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
-    const navigate = useNavigate();
-    const { backendUrl } = useContext(AppContent);
 
-    const togglePasswordVisibility = () => setIsPasswordShown((prev) => !prev);
+    // Verification states
+    const [showVerification, setShowVerification] = useState(false);
+    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [resendDisabled, setResendDisabled] = useState(false);
+    const [countdown, setCountdown] = useState(30);
+    const [timeLeft, setTimeLeft] = useState(180); // in seconds
 
-    const validateEmail = (email) => {
-        const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        return regex.test(email);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Password validation
+    const validations = {
+        hasMinLength: password.length >= 8,
+        hasLetter: /[a-zA-Z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     };
+    const isValidPassword = Object.values(validations).every(Boolean);
 
-    // Password validation checks
-    const hasMinLength = password.length >= 8;
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const isValidPassword = hasMinLength && hasLetter && hasSpecialChar;
+    // OTP expiry countdown
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+        const timer = setInterval(() => setTimeLeft(prev => Math.max(0, prev - 1)), 1000);
+        return () => clearInterval(timer);
+    }, [timeLeft]);
 
-    const handlePasswordFocus = () => {
-        setShowPasswordRequirements(true);
-    };
-
-    const handlePasswordBlur = () => {
-        if (password.length === 0) {
-            setShowPasswordRequirements(false);
-        }
-    };
-
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-        if (e.target.value.length > 0) {
-            setShowPasswordRequirements(true);
-        }
-    };
-
-    const togglePasswordRequirements = () => {
-        setShowPasswordRequirements(!showPasswordRequirements);
-    };
+    // Resend countdown
+    useEffect(() => {
+        if (!resendDisabled || countdown <= 0) return;
+        const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [countdown, resendDisabled]);
 
     const handleSignup = async (e) => {
         e.preventDefault();
-
-        if (!validateEmail(email)) {
-            toast.error("Please enter a valid email.");
-            return;
-        }
-
         if (!isValidPassword) {
-            toast.error("Please meet all password requirements.");
-            return;
+            return toast.error("Password must include a letter, number, and special character.");
         }
 
         setIsLoading(true);
@@ -71,54 +61,114 @@ const Signup = () => {
         try {
             const response = await fetch(`${backendUrl}/api/auth/register`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name, email, password }),
+                headers: { "Content-Type": "application/json" },
                 credentials: "include",
+                body: JSON.stringify({
+                    name: name.trim(),
+                    email: email.trim().toLowerCase(),
+                    password,
+                }),
             });
 
             const data = await response.json();
 
-            if (data.success) {
-                toast.success("Signup successful! Sending OTP...");
-                await sendOtp(data.userId);
-            } else {
-                toast.error(data.message || "Signup failed. Try again.");
+            if (!response.ok) {
+                if (response.status === 409 && data.isResend) {
+                    toast.info("Existing verification found. New OTP sent.");
+                    setShowVerification(true);
+                    return;
+                }
+                throw new Error(data.message || "Registration failed");
             }
+
+            toast.success("OTP sent to your email!");
+            setShowVerification(true);
+            setTimeLeft(180);
         } catch (error) {
-            console.error("Signup error:", error);
-            toast.error(error.message || "Something went wrong. Please try again.");
+            toast.error(error.message || "Signup failed");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const sendOtp = async (userId) => {
-        try {
-            const response = await fetch(`${backendUrl}/api/auth/send-verify-otp`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ userId }),
-                credentials: "include",
-            });
-            const data = await response.json();
+    const handleOtpChange = (index, value, event) => {
+        if (!/^\d?$/.test(value)) return;
 
-            if (data.success) {
-                toast.success("OTP sent! Check your email.");
-                setTimeout(() => navigate("/email-verification"), 2000);
-            } else {
-                toast.error(data.message || "Failed to send OTP.");
-            }
-        } catch (error) {
-            console.error("OTP sending error:", error);
-            toast.error("Failed to send OTP. Try again.");
+        const updatedOtp = [...otp];
+        updatedOtp[index] = value;
+        setOtp(updatedOtp);
+
+        if (value && index < 5) {
+            document.getElementById(`otp-${index + 1}`)?.focus();
+        } else if (event.key === "Backspace" && !value && index > 0) {
+            document.getElementById(`otp-${index - 1}`)?.focus();
         }
     };
 
-    // Validation icon component
+    const handleOtpPaste = (e) => {
+        e.preventDefault();
+        const digits = e.clipboardData.getData("text").replace(/\D/g, "").split("").slice(0, 6);
+        setOtp([...digits, ...Array(6 - digits.length).fill("")]);
+    };
+
+    const handleVerify = async () => {
+        const enteredOtp = otp.join("");
+
+        if (enteredOtp.length < 6) return toast.error("Please enter the full 6-digit OTP.");
+        if (timeLeft <= 0) return toast.error("OTP has expired. Please request a new one.");
+
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(`${backendUrl}/api/auth/verify-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp: enteredOtp }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Verification failed");
+
+            toast.success("Email verified! Redirecting...");
+            setTimeout(() => (window.location.href = "/login"), 1500);
+        } catch (error) {
+            toast.error(error.message || "Invalid OTP. Try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    const handleResendOtp = async () => {
+        setResendDisabled(true);
+        setCountdown(30);
+        setOtp(["", "", "", "", "", ""]);
+
+        try {
+            const response = await fetch(`${backendUrl}/api/auth/send-verify-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Resend failed");
+
+            setTimeLeft(180);
+            toast.success("New OTP sent!");
+        } catch (error) {
+            toast.error(error.message || "Failed to resend OTP.");
+            setResendDisabled(false);
+        }
+    };
+
+    const formatTime = (seconds) => {
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
     const ValidationIcon = ({ isValid }) => (
         <span className={isValid ? "text-green-500" : "text-red-500"}>
             {isValid ? <Check size={14} /> : <X size={14} />}
@@ -127,134 +177,119 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden border border-amber-100">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
                 <div className="px-8 pt-10 pb-8">
-                    {/* Logo */}
-                    <div className="flex justify-center mb-8">
-                        <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md">
-                            <PawPrint size={32} className="text-white" />
-                        </div>
-                    </div>
-
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-gray-800">Welcome to NayaSathi</h2>
-                        <p className="text-gray-500 mt-2 text-sm">Create an account in seconds</p>
-                    </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleSignup} className="space-y-4">
-                        <InputField
-                            id="name"
-                            type="text"
-                            placeholder="Your Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            icon={User}
-                            iconPosition="left"
-                            className="h-12 rounded-xl"
-                            required
-                        />
-
-                        <InputField
-                            id="email"
-                            type="email"
-                            placeholder="Email Address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            icon={Mail}
-                            iconPosition="left"
-                            className="h-12 rounded-xl"
-                            required
-                        />
-
-                        <div className="relative">
-                            <InputField
-                                id="password"
-                                type={isPasswordShown ? "text" : "password"}
-                                placeholder="Create Password"
-                                value={password}
-                                onChange={handlePasswordChange}
-                                onFocus={handlePasswordFocus}
-                                onBlur={handlePasswordBlur}
-                                icon={Lock}
-                                iconPosition="left"
-                                isPasswordShown={isPasswordShown}
-                                togglePasswordVisibility={togglePasswordVisibility}
-                                className="h-12 rounded-xl"
-                                required
-                            />
-                            {(password.length > 0 || showPasswordRequirements) && (
-                                <button
-                                    type="button"
-                                    onClick={togglePasswordRequirements}
-                                    className="absolute right-10 top-3 text-gray-400 hover:text-gray-600"
-                                >
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Password requirements - only shown when password field is focused/has content */}
-                        {(password.length > 0 || showPasswordRequirements) && showPasswordRequirements && (
-                            <div className="mt-2 space-y-1 p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Password must contain:</p>
-                                <div className="flex items-center space-x-2">
-                                    <ValidationIcon isValid={hasMinLength} />
-                                    <span className={`text-xs ${hasMinLength ? 'text-green-500' : 'text-gray-500'}`}>
-                                        At least 8 characters
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <ValidationIcon isValid={hasLetter} />
-                                    <span className={`text-xs ${hasLetter ? 'text-green-500' : 'text-gray-500'}`}>
-                                        At least one letter
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <ValidationIcon isValid={hasSpecialChar} />
-                                    <span className={`text-xs ${hasSpecialChar ? 'text-green-500' : 'text-gray-500'}`}>
-                                        At least one special character
-                                    </span>
+                    {!showVerification ? (
+                        <>
+                            <div className="flex justify-center mb-8">
+                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md">
+                                    <PawPrint size={32} className="text-white" />
                                 </div>
                             </div>
-                        )}
-
-                        <Button
-                            text={isLoading ? "Creating Account..." : "Create Account"}
-                            type="submit"
-                            variant="primary"
-                            className={`w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 rounded-xl font-medium hover:from-amber-600 hover:to-amber-700 transition-all duration-200 disabled:opacity-50 mt-4 h-12 shadow-sm ${!isValidPassword ? "opacity-70 cursor-not-allowed" : ""
-                                }`}
-                            disabled={isLoading || !isValidPassword}
-                        />
-
-                        {/* Social Login */}
-                        <div className="mt-6 relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-100"></div>
+                            <div className="text-center mb-8">
+                                <h2 className="text-2xl font-bold text-gray-800">Welcome to NayaSathi</h2>
+                                <p className="text-gray-500 mt-2 text-sm">Create an account in seconds</p>
                             </div>
-                            <div className="relative flex justify-center">
-                                <span className="px-4 bg-white text-gray-400 text-sm">or</span>
+
+                            <form onSubmit={handleSignup} className="space-y-4">
+                                <InputField id="name" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} icon={User} required />
+                                <InputField id="email" type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} icon={Mail} required />
+                                <InputField
+                                    id="password"
+                                    type={isPasswordShown ? "text" : "password"}
+                                    placeholder="Create Password"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    onFocus={() => setShowPasswordRequirements(true)}
+                                    onBlur={() => password.length === 0 && setShowPasswordRequirements(false)}
+                                    icon={Lock}
+                                    isPasswordShown={isPasswordShown}
+                                    togglePasswordVisibility={() => setIsPasswordShown(prev => !prev)}
+                                    required
+                                />
+
+                                {showPasswordRequirements && (
+                                    <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-1">
+                                        <p className="text-xs font-medium text-gray-500">Password must contain:</p>
+                                        {Object.entries({
+                                            "At least 8 characters": validations.hasMinLength,
+                                            "At least one letter": validations.hasLetter,
+                                            "At least one number": validations.hasNumber,
+                                            "At least one special character": validations.hasSpecialChar
+                                        }).map(([text, valid], idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs">
+                                                <ValidationIcon isValid={valid} />
+                                                <span className={valid ? "text-green-500" : "text-gray-500"}>{text}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <Button text={isLoading ? "Creating Account..." : "Create Account"} type="submit" disabled={!isValidPassword || isLoading} className="w-full h-12 mt-4" />
+                                <div className="mt-6 relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-100"></div>
+                                    </div>
+                                    <div className="relative flex justify-center">
+                                        <span className="px-4 bg-white text-gray-400 text-sm">or</span>
+                                    </div>
+                                </div>
+                                <OAuth />
+                                <p className="text-sm text-center text-gray-500 mt-6">
+                                    Already have an account? <a href="/login" className="font-semibold text-amber-600 hover:text-amber-700">Sign in</a>
+                                </p>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-center mb-8">
+                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md inline-block">
+                                    <PawPrint size={32} className="text-white" />
+                                </div>
+                                <h1 className="text-2xl font-bold text-gray-800 mt-4">Verify Your Email</h1>
+                                <p className="text-gray-600 mt-2">Enter the 6-digit code sent to <span className="text-amber-600 font-semibold">{email}</span></p>
                             </div>
-                        </div>
 
-                        <OAuth />
+                            <div className="flex justify-center gap-3 mb-6" onPaste={handleOtpPaste}>
+                                {otp.map((digit, idx) => (
+                                    <InputField
+                                        key={idx}
+                                        id={`otp-${idx}`}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={e => handleOtpChange(idx, e.target.value, e)}
+                                        onKeyDown={e => handleOtpChange(idx, e.target.value, e)}
+                                        className="w-14 h-14 text-2xl font-bold text-center border-2 rounded-lg"
+                                        disabled={isLoading}
+                                    />
+                                ))}
+                            </div>
 
-                        {/* Login Link */}
-                        <p className="text-center text-gray-500 text-sm mt-6">
-                            Already have an account?{" "}
-                            <a
-                                href="/login"
-                                className="font-semibold text-amber-600 hover:text-amber-700 transition-colors"
-                            >
-                                Sign in
-                            </a>
-                        </p>
-                    </form>
+                            <p className={`text-center text-sm ${timeLeft < 60 ? 'text-red-500' : 'text-gray-500'} mb-6`}>
+                                {timeLeft > 0 ? `Code expires in ${formatTime(timeLeft)}` : "Code has expired. Please request a new one."}
+                            </p>
+
+                            <Button text={isLoading ? "Verifying..." : "Verify Email"} onClick={handleVerify} disabled={isLoading || timeLeft <= 0} className="w-full mb-4" />
+
+                            <div className="text-sm text-center text-gray-600">
+                                Didn't receive the code?{" "}
+                                {resendDisabled ? (
+                                    <span className="text-amber-600">Resend available in {countdown}s</span>
+                                ) : (
+                                    <button onClick={handleResendOtp} className="text-amber-600 font-medium hover:underline">
+                                        Resend OTP
+                                    </button>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
-            {isLoading && <Loading text="Creating your account..." />}
+            {isLoading && <Loading text={showVerification ? "Verifying your email..." : "Creating your account..."} />}
             <ToastComponent />
         </div>
     );

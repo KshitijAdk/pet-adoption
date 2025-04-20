@@ -1,15 +1,15 @@
 import { useContext, useState, useEffect } from "react";
-import { Upload, Building2, Phone, MapPin, FileText, User, Mail, FileCheck, X } from "lucide-react";
-import InputField from "./ui/InputField";
-import Button from './ui/button';
+import { Upload, Building, Phone, MapPin, FileText, User, Mail, File, X, QrCode } from "lucide-react";
 import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
 
 export default function VendorRegistration() {
     const { backendUrl, userData } = useContext(AppContent);
-    const [image, setImage] = useState(null);
-    const [imagePath, setImagePath] = useState("");
-    const [idDocuments, setIdDocuments] = useState([]);
+    const [files, setFiles] = useState({
+        orgImage: null,
+        fonepayQr: null,
+        idDocuments: []
+    });
     const [formData, setFormData] = useState({
         fullName: userData?.name || "",
         organization: "",
@@ -23,89 +23,73 @@ export default function VendorRegistration() {
 
     useEffect(() => {
         if (userData?.email) {
-            setFormData((prevData) => ({
-                ...prevData,
+            setFormData(prev => ({
+                ...prev,
                 email: userData.email,
                 fullName: userData.name,
             }));
         }
     }, [userData]);
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setImage(file);
-            setImagePath(file.name);
-        }
-    };
+    const handleFileUpload = (field, e) => {
+        const fileList = Array.from(e.target.files);
+        if (!fileList.length) return;
 
-    const handleIdDocUpload = (event) => {
-        const files = Array.from(event.target.files);
-        if (files.length > 0) {
-            const newDocuments = files.map(file => ({
+        if (field === 'idDocuments') {
+            const newDocs = fileList.map(file => ({
                 file,
                 name: file.name,
-                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
-                type: file.type
+                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
             }));
-            setIdDocuments([...idDocuments, ...newDocuments]);
-            // Reset file input
-            event.target.value = null;
+            setFiles(prev => ({ ...prev, idDocuments: [...prev.idDocuments, ...newDocs] }));
+        } else {
+            setFiles(prev => ({ ...prev, [field]: fileList[0] }));
+        }
+
+        e.target.value = null;
+    };
+
+    const removeFile = (field, index) => {
+        if (field === 'idDocuments') {
+            const updated = [...files.idDocuments];
+            if (updated[index].preview) URL.revokeObjectURL(updated[index].preview);
+            updated.splice(index, 1);
+            setFiles(prev => ({ ...prev, idDocuments: updated }));
+        } else {
+            setFiles(prev => ({ ...prev, [field]: null }));
         }
     };
 
-    const removeIdDocument = (index) => {
-        const updatedDocuments = [...idDocuments];
-        // Revoke object URL to prevent memory leaks
-        if (updatedDocuments[index].preview) {
-            URL.revokeObjectURL(updatedDocuments[index].preview);
-        }
-        updatedDocuments.splice(index, 1);
-        setIdDocuments(updatedDocuments);
-    };
-
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
-        setErrors({ ...errors, [name]: "" });
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: "" }));
     };
 
     const validateForm = () => {
         const newErrors = {};
         let isValid = true;
 
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = "Full name is required";
-            isValid = false;
-        }
-        if (!formData.organization.trim()) {
-            newErrors.organization = "Organization name is required";
-            isValid = false;
-        }
-        if (!formData.contact.trim()) {
-            newErrors.contact = "Contact number is required";
-            isValid = false;
-        }
-        if (!formData.address.trim()) {
-            newErrors.address = "Address is required";
-            isValid = false;
-        }
-        if (!formData.description.trim()) {
-            newErrors.description = "Description is required";
-            isValid = false;
-        }
+        // Required text fields
+        const requiredFields = ['fullName', 'organization', 'contact', 'address', 'description'];
+        requiredFields.forEach(field => {
+            if (!formData[field].trim()) {
+                newErrors[field] = `${field === 'fullName' ? 'Full name' : field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+                isValid = false;
+            }
+        });
 
-        // Validate image
-        if (!image) {
-            toast.error("Organization image is required", {
-            });
+        // Required files
+        if (!files.orgImage) {
+            toast.error("Organization image is required");
             isValid = false;
         }
-
-        // Validate documents
-        if (idDocuments.length === 0) {
-            toast.error("At least one identity document is required", {
-            });
+        if (!files.fonepayQr) {
+            toast.error("Fonepay QR code is required");
+            isValid = false;
+        }
+        if (files.idDocuments.length === 0) {
+            toast.error("At least one identity document is required");
             isValid = false;
         }
 
@@ -113,27 +97,23 @@ export default function VendorRegistration() {
         return isValid;
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (!validateForm()) return;
         setIsLoading(true);
 
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append("fullName", formData.fullName);
-            formDataToSend.append("organization", formData.organization);
-            formDataToSend.append("email", formData.email);
-            formDataToSend.append("contact", formData.contact);
-            formDataToSend.append("address", formData.address);
-            formDataToSend.append("description", formData.description);
 
-            // Append main image
-            if (image) {
-                formDataToSend.append("image", image);
-            }
+            // Append form data
+            Object.entries(formData).forEach(([key, value]) => {
+                formDataToSend.append(key, value);
+            });
 
-            // Append ID documents
-            idDocuments.forEach(doc => {
+            // Append files
+            formDataToSend.append("image", files.orgImage);
+            formDataToSend.append("fonepayQr", files.fonepayQr);
+            files.idDocuments.forEach(doc => {
                 formDataToSend.append("idDocuments", doc.file);
             });
 
@@ -145,8 +125,7 @@ export default function VendorRegistration() {
             const data = await response.json();
 
             if (response.ok) {
-                toast.success("Vendor registered successfully!");
-
+                toast.success("Vendor registration sent successfully!");
                 // Reset form
                 setFormData({
                     fullName: userData?.name || "",
@@ -156,19 +135,10 @@ export default function VendorRegistration() {
                     address: "",
                     description: "",
                 });
-                setImage(null);
-                setImagePath("");
-                idDocuments.forEach(doc => {
-                    if (doc.preview) URL.revokeObjectURL(doc.preview);
-                });
-                setIdDocuments([]);
+                setFiles({ orgImage: null, fonepayQr: null, idDocuments: [] });
                 setErrors({});
             } else {
-                if (response.status === 409) {
-                    toast.warn("Application with this email already exists");
-                } else {
-                    toast.error(data.message || "Failed to register vendor. Please try again.");
-                }
+                toast.error(data.message || "Registration failed. Please try again.");
             }
         } catch (error) {
             toast.error("Something went wrong. Please try again.");
@@ -177,285 +147,221 @@ export default function VendorRegistration() {
         }
     };
 
-    // Clean up object URLs when component unmounts
+    // Clean up object URLs
     useEffect(() => {
         return () => {
-            idDocuments.forEach(doc => {
+            files.idDocuments.forEach(doc => {
                 if (doc.preview) URL.revokeObjectURL(doc.preview);
             });
         };
-    }, []);
+    }, [files.idDocuments]);
+
+    const FileUploadBox = ({ field, label, accept, multiple = false }) => (
+        <div className="mb-4">
+            <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                {field === 'orgImage' ? <Upload size={16} className="mr-2" /> :
+                    field === 'fonepayQr' ? <QrCode size={16} className="mr-2" /> :
+                        <File size={16} className="mr-2" />}
+                {label}
+            </label>
+
+            {(!files[field] || (multiple && files[field].length === 0)) ? (
+                <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Click to upload</span>
+                    <input
+                        type="file"
+                        onChange={(e) => handleFileUpload(field, e)}
+                        className="hidden"
+                        accept={accept}
+                        multiple={multiple}
+                    />
+                </label>
+            ) : (
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                    {multiple ? (
+                        files[field].map((doc, index) => (
+                            <div key={index} className="flex items-center justify-between mb-2 last:mb-0">
+                                <div className="flex items-center">
+                                    {doc.preview ? (
+                                        <img src={doc.preview} alt="Preview" className="h-10 w-10 object-cover rounded mr-3" />
+                                    ) : (
+                                        <File className="h-10 w-10 text-gray-400 p-2 bg-gray-100 rounded mr-3" />
+                                    )}
+                                    <span className="text-sm truncate max-w-xs">{doc.name}</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => removeFile(field, index)}
+                                    className="text-gray-500 hover:text-red-500"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                {field === 'orgImage' || field === 'fonepayQr' ? (
+                                    <img
+                                        src={URL.createObjectURL(files[field])}
+                                        alt="Preview"
+                                        className="h-10 w-10 object-cover rounded mr-3"
+                                    />
+                                ) : (
+                                    <File className="h-10 w-10 text-gray-400 p-2 bg-gray-100 rounded mr-3" />
+                                )}
+                                <span className="text-sm">{files[field].name}</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => removeFile(field)}
+                                className="text-gray-500 hover:text-red-500"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 
     return (
-        <div className="min-h-screen flex justify-center items-center bg-amber-50 p-6">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-4xl">
-                <div className="text-center mb-8">
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">Become a Vendor Partner</h2>
-                    <p className="text-gray-500 text-sm max-w-lg mx-auto">Join our network of trusted vendors and make a difference in animal welfare</p>
-                </div>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="p-6 sm:p-8">
+                    <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">Vendor Registration</h2>
+                    <p className="text-gray-600 text-center mb-8">Join our network of trusted vendors</p>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        {/* Organization Image Upload */}
-                        <div>
-                            <div className="flex items-center mb-2">
-                                <Upload size={16} className="text-amber-500 mr-2" />
-                                <label className="text-sm font-medium text-gray-700">Organization Image</label>
-                            </div>
-                            <div className="relative group">
-                                <div className="overflow-hidden rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 aspect-square flex items-center justify-center">
-                                    {image ? (
-                                        <img
-                                            src={URL.createObjectURL(image)}
-                                            alt="Uploaded Preview"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="text-center p-6">
-                                            <Upload size={36} className="mx-auto text-gray-300 mb-3" />
-                                            <p className="text-amber-500 font-medium text-sm">Upload Organization Image</p>
-                                            <p className="text-gray-400 text-xs mt-1">Recommended: 1:1 ratio, min 500x500px</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <label
-                                    htmlFor="upload"
-                                    className="absolute bottom-4 right-4 bg-amber-500 text-white px-3 py-1.5 rounded-lg cursor-pointer flex items-center space-x-1 hover:bg-amber-600 transition shadow-sm text-sm"
-                                >
-                                    <Upload size={14} />
-                                    <span>Upload</span>
-                                </label>
-                                <input
-                                    type="file"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                    id="upload"
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Left Column - File Uploads */}
+                            <div>
+                                <FileUploadBox
+                                    field="orgImage"
+                                    label="Organization Logo"
                                     accept="image/*"
                                 />
-                            </div>
-                            {errors.image && (
-                                <p className="text-red-500 text-xs mt-1">{errors.image}</p>
-                            )}
-                            {imagePath && (
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Selected: {imagePath}
-                                </p>
-                            )}
-                        </div>
 
-                        {/* ID Documents Upload */}
-                        <div>
-                            <div className="flex items-center mb-2">
-                                <FileCheck size={16} className="text-amber-500 mr-2" />
-                                <label className="text-sm font-medium text-gray-700">Identity Documents</label>
-                            </div>
+                                <FileUploadBox
+                                    field="fonepayQr"
+                                    label="Fonepay QR Code"
+                                    accept="image/*"
+                                />
 
-                            {/* Documents Preview Area */}
-                            {idDocuments.length > 0 && (
-                                <div className="mb-4 space-y-3">
-                                    {idDocuments.map((doc, index) => (
-                                        <div key={index} className="flex items-center bg-amber-50 p-3 rounded-lg relative">
-                                            <div className="flex-shrink-0 h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center mr-3">
-                                                {doc.preview ? (
-                                                    <img
-                                                        src={doc.preview}
-                                                        alt="Document preview"
-                                                        className="h-full w-full object-cover rounded-lg"
-                                                    />
-                                                ) : (
-                                                    <FileText size={24} className="text-amber-500" />
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-gray-700 truncate">{doc.name}</p>
-                                                <p className="text-xs text-gray-500">{doc.type}</p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => removeIdDocument(index)}
-                                                className="text-gray-400 hover:text-red-500 ml-2"
-                                                aria-label="Remove document"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="relative group">
-                                <div className="overflow-hidden rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 h-40 flex items-center justify-center">
-                                    <div className="text-center p-4">
-                                        <Upload size={36} className="mx-auto text-gray-300 mb-2" />
-                                        <p className="text-amber-500 font-medium text-sm">Upload ID Documents</p>
-                                        <p className="text-gray-400 text-xs mt-1">Upload ID card, business license or other verification documents</p>
-                                    </div>
-                                </div>
-                                <label
-                                    htmlFor="upload-id"
-                                    className="absolute bottom-4 right-4 bg-amber-500 text-white px-3 py-1.5 rounded-lg cursor-pointer flex items-center space-x-1 hover:bg-amber-600 transition shadow-sm text-sm"
-                                >
-                                    <Upload size={14} />
-                                    <span>Upload</span>
-                                </label>
-                                <input
-                                    type="file"
-                                    onChange={handleIdDocUpload}
-                                    className="hidden"
-                                    id="upload-id"
+                                <FileUploadBox
+                                    field="idDocuments"
+                                    label="Identity Documents"
                                     accept="image/*,.pdf"
                                     multiple
                                 />
                             </div>
-                            {errors.idDocuments && (
-                                <p className="text-red-500 text-xs mt-1">{errors.idDocuments}</p>
-                            )}
-                            <p className="text-xs text-gray-500 mt-2">
-                                {idDocuments.length > 0
-                                    ? `${idDocuments.length} document${idDocuments.length > 1 ? 's' : ''} selected`
-                                    : 'No documents selected'}
-                            </p>
+
+                            {/* Right Column - Form Fields */}
+                            <div className="space-y-4">
+                                <div>
+                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                        <User size={16} className="mr-2" />
+                                        Full Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={formData.fullName}
+                                        onChange={handleChange}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 bg-gray-100"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                        <Mail size={16} className="mr-2" />
+                                        Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 bg-gray-100"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                        <Building size={16} className="mr-2" />
+                                        Organization Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="organization"
+                                        value={formData.organization}
+                                        onChange={handleChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                    />
+                                    {errors.organization && <p className="mt-1 text-sm text-red-600">{errors.organization}</p>}
+                                </div>
+
+                                <div>
+                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                        <Phone size={16} className="mr-2" />
+                                        Contact Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        name="contact"
+                                        value={formData.contact}
+                                        onChange={handleChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                    />
+                                    {errors.contact && <p className="mt-1 text-sm text-red-600">{errors.contact}</p>}
+                                </div>
+
+                                <div>
+                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                        <MapPin size={16} className="mr-2" />
+                                        Address
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                    />
+                                    {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-amber-50 p-5 rounded-lg">
-                            <h3 className="text-base font-medium text-gray-800 mb-3">Why Partner With Us?</h3>
-                            <ul className="space-y-2.5">
-                                <li className="flex items-start">
-                                    <div className="h-4 w-4 rounded-full bg-amber-100 flex items-center justify-center mt-1 flex-shrink-0">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500"></div>
-                                    </div>
-                                    <span className="ml-2.5 text-gray-600 text-sm">Access to a network of pet lovers and animal welfare advocates</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="h-4 w-4 rounded-full bg-amber-100 flex items-center justify-center mt-1 flex-shrink-0">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500"></div>
-                                    </div>
-                                    <span className="ml-2.5 text-gray-600 text-sm">Contribute to improving animal welfare in your community</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div>
-                        <form className="space-y-4" onSubmit={handleSubmit}>
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <User size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">Full Name</label>
-                                </div>
-                                <InputField
-                                    name="fullName"
-                                    placeholder="Your full name"
-                                    onChange={handleChange}
-                                    value={formData.fullName}
-                                    readOnly
-                                    className="w-full h-11 bg-gray-100 border border-gray-200 rounded-lg px-4 text-gray-500"
-                                />
-                                {errors.fullName && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <Mail size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">Email Address</label>
-                                </div>
-                                <InputField
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    readOnly
-                                    className="w-full h-11 bg-gray-100 border border-gray-200 rounded-lg px-4 text-gray-500"
-                                />
-                            </div>
-
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <Building2 size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">Organization</label>
-                                </div>
-                                <InputField
-                                    name="organization"
-                                    placeholder="Your organization name"
-                                    onChange={handleChange}
-                                    value={formData.organization}
-                                    required
-                                    className="w-full h-11 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:ring-amber-500 focus:border-amber-500"
-                                />
-                                {errors.organization && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.organization}</p>
-                                )}
-                            </div>
-
-
-
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <Phone size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">Contact Number</label>
-                                </div>
-                                <InputField
-                                    type="tel"
-                                    name="contact"
-                                    placeholder="Your contact number"
-                                    onChange={handleChange}
-                                    value={formData.contact}
-                                    required
-                                    className="w-full h-11 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:ring-amber-500 focus:border-amber-500"
-                                />
-                                {errors.contact && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.contact}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <MapPin size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">Address</label>
-                                </div>
-                                <InputField
-                                    name="address"
-                                    placeholder="Organization address"
-                                    onChange={handleChange}
-                                    value={formData.address}
-                                    required
-                                    className="w-full h-11 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:ring-amber-500 focus:border-amber-500"
-                                />
-                                {errors.address && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.address}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <div className="flex items-center mb-1.5">
-                                    <FileText size={16} className="text-amber-500 mr-2" />
-                                    <label className="text-sm font-medium text-gray-700">About Your Organization</label>
-                                </div>
-                                <InputField
-                                    as="textarea"
-                                    name="description"
-                                    placeholder="Tell us about your organization and how you can contribute to animal welfare..."
-                                    onChange={handleChange}
-                                    value={formData.description}
-                                    rows={4}
-                                    required
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-amber-500 focus:border-amber-500 resize-none"
-                                />
-                                {errors.description && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.description}</p>
-                                )}
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="w-full bg-amber-500 text-white py-2.5 rounded-lg font-medium hover:bg-amber-600 transition shadow-md disabled:opacity-50 mt-6"
-                                variant="primary"
-                                text={isLoading ? "Processing..." : "Submit Application"}
-                                disabled={isLoading}
+                        <div>
+                            <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <FileText size={16} className="mr-2" />
+                                Organization Description
+                            </label>
+                            <textarea
+                                name="description"
+                                rows={4}
+                                value={formData.description}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                placeholder="Tell us about your organization..."
                             />
-                        </form>
-                    </div>
+                            {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
+                            >
+                                {isLoading ? "Processing..." : "Submit Application"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

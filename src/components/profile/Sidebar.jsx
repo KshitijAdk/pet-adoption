@@ -23,23 +23,33 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
 
     const handleLogout = async () => {
         try {
-            const response = await axios.post(backendUrl + "/api/auth/logout");
+            const response = await fetch(`${backendUrl}/api/auth/logout`, {
+                method: "POST",
+                credentials: "include", // Important for cookie removal
+            });
 
-            // Check if response exists and has a success flag, or just check status
-            if (response?.data?.success || response.status === 200) {
-                setIsLoggedin(false);
-                setUserData({});
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Clear localStorage and cookie
+                localStorage.removeItem("user");
                 Cookies.remove("token");
-                navigate("/login");
+
+                // Reset context state
+                setIsLoggedin(false);
+                setUserData(null);
+
                 toast.success("Successfully logged out!");
+                navigate("/");
             } else {
-                toast.error("Logout failed. Please try again.");
+                throw new Error(data.message || "Logout failed");
             }
         } catch (error) {
-            console.error("Logout Error:", error); // Debugging
+            console.error("Logout error:", error);
             toast.error("An error occurred during logout. Please try again.");
         }
     };
+
 
 
     // Function to trigger file input

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import ToastComponent from './ui/ToastComponent';
 import Loading from "./ui/Loading";
 import OAuth from "./OAuth";
+import axios from "axios";
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -15,7 +16,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { backendUrl, setIsLoggedin, getUserData } = useContext(AppContent);
+  const { backendUrl, setIsLoggedin, getUserData, setUserData } = useContext(AppContent);
 
   const togglePasswordVisibility = () => setIsPasswordShown((prev) => !prev);
 
@@ -24,28 +25,31 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${backendUrl}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
+      const response = await axios.post(`${backendUrl}/api/auth/login`, {
+        email,
+        password
+      }, {
+        withCredentials: true
       });
 
-      const data = await response.json();
+      const { data } = response;
 
       if (data.success) {
-        toast.success("Login successful! Redirecting...");
+        // Update context state
         setIsLoggedin(true);
-        await getUserData();
-        setTimeout(() => navigate("/"), 2000);
+        setUserData(data.user);
+
+        // Optional: Store in localStorage if needed elsewhere
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        toast.success("Login successful! Redirecting...");
+        navigate("/");
       } else {
-        toast.error(data.message || "Invalid credentials. Please try again.");
+        throw new Error(data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(error.message || "Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }

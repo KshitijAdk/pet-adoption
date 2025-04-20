@@ -14,6 +14,7 @@ const PetDetails = () => {
   const [vendorLocation, setVendorLocation] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [vendorImage, setVendorImage] = useState("");
+  const [vendorId, setVendorId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,6 +30,7 @@ const PetDetails = () => {
           setPet(result.pet);
           setVendorLocation(result.vendorLocation);
           setVendorName(result.vendorName);
+          setVendorId(result.vendorId);
           setVendorImage(result.vendorImage || "/api/placeholder/100/100");
 
           // Check if pet is in user's favorites

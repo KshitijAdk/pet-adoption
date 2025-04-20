@@ -4,81 +4,49 @@ import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
 export const AppContent = createContext();
-
 export const AppContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const [isLoggedin, setIsLoggedin] = useState(false);
-    const [userData, setUserData] = useState(null); // Set default to null
-    const [loading, setLoading] = useState(true); // Add loading state
-    const [petData, setPetData] = useState(null); // Add pet data state
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    axios.defaults.withCredentials = true;
-
+    // Configure axios defaults once
     useEffect(() => {
-        const token = Cookies.get("token");
-        if (token) {
-            getUserData(); // ✅ Fetch user data if token exists
-        } else {
-            setIsLoggedin(false);
-            setUserData(null);
-            setLoading(false); // Stop loading if no token
-        }
+        axios.defaults.withCredentials = true;
     }, []);
 
-    const getAuthState = async () => {
-        try {
-            const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
-            if (data.success) {
-                setIsLoggedin(true);
-                getUserData();
+    // Single auth check on mount
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
+                if (data.success) {
+                    setIsLoggedin(true);
+                    await getUserData();
+                }
+            } catch (error) {
+                console.log("Auth check failed:", error.message);
+                setIsLoggedin(false);
+                setUserData(null);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            toast.error(error.message);
-            setLoading(false);
-        }
-    };
+        };
 
-    useEffect(() => {
-        getAuthState();
-    }, []);
+        checkAuth();
+    }, [backendUrl]);
 
     const getUserData = async () => {
         try {
-            const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-                withCredentials: true,
-            });
-
+            const { data } = await axios.get(`${backendUrl}/api/user/data`);
             if (data.success) {
                 setUserData(data.userData);
                 setIsLoggedin(true);
-            } else {
-                toast.error(data.message);
-                setIsLoggedin(false);
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
-            toast.error(error.response?.data?.message || "An error occurred");
             setIsLoggedin(false);
-        } finally {
-            setLoading(false); // Stop loading once the request completes
-        }
-    };
-
-    // ✅ New function to fetch pet data using petId
-    const getPetData = async (petId) => {
-        try {
-            const { data } = await axios.get(`${backendUrl}/api/pets/${petId}`);
-            if (data) {
-                setPetData(data.pet); // ✅ Set the fetched pet data
-                return data.pet;
-            } else {
-                toast.error("Pet not found");
-                return null;
-            }
-        } catch (error) {
-            console.error("Error fetching pet data:", error);
-            toast.error(error.response?.data?.message || "Failed to fetch pet data");
-            return null;
+            setUserData(null);
         }
     };
 
@@ -90,8 +58,6 @@ export const AppContextProvider = (props) => {
         setUserData,
         getUserData,
         loading,
-        petData, // Expose pet data
-        getPetData, // Expose the pet data fetching function
     };
 
     return <AppContent.Provider value={value}>{props.children}</AppContent.Provider>;

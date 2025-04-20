@@ -2,12 +2,10 @@ import React from "react";
 import { Route, Router, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
-
 import Home from "./components/Landing/home";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import FAQPage from "./components/FAQPage";
-import EmailVerification from "./components/EmailVerification";
 import ResetPassword from "./components/ResetPassword";
 import BlogPage from "./components/BlogsPage";
 import Navbar from "./components/Navbar";
@@ -28,6 +26,12 @@ import AboutUs from "./components/AboutUs";
 import VendorsList from "./components/VendorsList";
 import VendorDetails from "./components/VendorDetails";
 
+// Import route protectors
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
+import VendorRoute from "./routes/VendorRoute";
+import NotFoundPage from "./routes/NotFoundPage";
+
 const App = () => {
   return (
     <>
@@ -35,43 +39,45 @@ const App = () => {
       <Navbar />
 
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
-
         <Route path="/pets" element={<PetListing />} />
         <Route path="/pets/:petId" element={<PetDetails />} />
         <Route path="/our-partner-organizations" element={<VendorsList />} />
         <Route path="/vendor/:vendorId" element={<VendorDetails />} />
-
-        <Route path="/adoption-status/:adoptionId" element={<AdoptionStatus />} />
-
-
         <Route path="/faq" element={<FAQPage />} />
-        <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/fullblogs" element={<BlogPage />} />
         <Route path="/aboutUs" element={<AboutUs />} />
         <Route path="/vendor-registration" element={<VendorRegistration />} />
 
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/adoption-status/:adoptionId" element={<AdoptionStatus />} />
+        </Route>
 
-        <Route path="/admin/manage-vendors" element={<ManageVendors />} />
-        <Route path="/admin/manage-users" element={<ManageUsers />} />
-        <Route path="/admin/pending-vendors" element={<PendingApplications />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        {/* Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin/manage-vendors" element={<ManageVendors />} />
+          <Route path="/admin/manage-users" element={<ManageUsers />} />
+          <Route path="/admin/pending-vendors" element={<PendingApplications />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Route>
 
+        {/* Vendor Routes */}
+        <Route element={<VendorRoute />}>
+          <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+          <Route path="/pets-listing" element={<PetManagement />} />
+          <Route path="/vendor/adoption-requests" element={<AdoptionRequests />} />
+        </Route>
 
-        <Route path="/profile" element={<Profile />} />
-
-
-        <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-        <Route path="/pets-listing" element={<PetManagement />} />
-        <Route path="/vendor/adoption-requests" element={<AdoptionRequests />} />
-
-
-
+        {/* 404 Catch-all Route - Should be last */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
       <Footer />
     </>
   );

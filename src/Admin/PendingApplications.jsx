@@ -131,7 +131,6 @@ const PendingApplications = () => {
         },
         { key: "contact", label: "Contact" },
         { key: "organization", label: "Organization" },
-        { key: "description", label: "Description" },
         { key: "status", label: "Status" },
         { key: "createdAt", label: "Date" }
     ];
@@ -185,7 +184,7 @@ const PendingApplications = () => {
     );
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex h-screen">
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
