@@ -21,6 +21,12 @@ export const registerVendor = async (req, res) => {
             });
         }
 
+        if (!req.files.fonepayQr || req.files.fonepayQr.length === 0) {
+            return res.status(400).json({
+                message: "Fonepay QR code is required"
+            });
+        }
+
         if (!req.files.idDocuments || req.files.idDocuments.length === 0) {
             return res.status(400).json({
                 message: "At least one identity document is required"
@@ -28,6 +34,7 @@ export const registerVendor = async (req, res) => {
         }
 
         const image = req.files.image[0].path;
+        const fonepayQr = req.files.fonepayQr[0].path;
         const idDocumentUrls = req.files.idDocuments.map(file => file.path);
 
         const newVendor = new VendorApplication({
@@ -38,6 +45,7 @@ export const registerVendor = async (req, res) => {
             address,
             description,
             image,
+            fonepayQr,
             idDocuments: idDocumentUrls
         });
 
@@ -55,6 +63,7 @@ export const registerVendor = async (req, res) => {
     }
 };
 
+
 export const getAllVendorApplications = async (req, res) => {
     try {
         const vendors = await VendorApplication.find({});
@@ -68,14 +77,19 @@ export const getAllVendorApplications = async (req, res) => {
 export const approveVendor = async (req, res) => {
     try {
         const { vendorId } = req.params;
+        const { adminNotes } = req.body; // Optional: Add approval notes
 
-        // Find vendor application
+        // 1. Find and validate vendor application
         const vendorApplication = await VendorApplication.findById(vendorId);
         if (!vendorApplication) {
             return res.status(404).json({ message: "Vendor application not found" });
         }
 
-        // Update user role only
+        if (vendorApplication.status === "Approved") {
+            return res.status(400).json({ message: "Application already approved" });
+        }
+
+        // 2. Update user role to "vendor"
         const updatedUser = await userModel.findOneAndUpdate(
             { email: vendorApplication.email },
             {
@@ -94,7 +108,7 @@ export const approveVendor = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Create new vendor (no need for pets array now as they're separate)
+        // 3. Create vendor profile (with reference to the application)
         const newVendor = new Vendor({
             fullName: vendorApplication.fullName,
             organization: vendorApplication.organization,
@@ -103,39 +117,61 @@ export const approveVendor = async (req, res) => {
             address: vendorApplication.address,
             description: vendorApplication.description,
             image: vendorApplication.image,
-            // No need for pets or adoptionRequests arrays as they're separate collections
+            fonepayQr: vendorApplication.fonepayQr,
+            idDocuments: vendorApplication.idDocuments,
+            application: vendorApplication._id,
+            approvedAt: new Date(), // Track approval time
+            adminNotes: adminNotes || null, // Optional approval notes
         });
 
         await newVendor.save();
 
-        // Approve vendor application
-        await VendorApplication.findByIdAndUpdate(vendorId, { status: "Approved" });
+        // 4. Update application status and link to the new vendor
+        vendorApplication.status = "Approved";
+        vendorApplication.approvedVendor = newVendor._id;
+        vendorApplication.processedAt = new Date();
+        await vendorApplication.save();
 
         res.status(200).json({
+            success: true,
             message: "Vendor approved successfully!",
             user: updatedUser,
-            vendor: newVendor
+            vendor: newVendor,
+            application: vendorApplication,
         });
+
     } catch (error) {
         console.error("Error approving vendor:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
+
 
 export const rejectVendor = async (req, res) => {
     try {
         const { vendorId } = req.params;
+        const { rejectionReason } = req.body; // Optional: Add rejection reason
 
-        // Find the vendor application
+        // 1. Find vendor application
         const vendorApplication = await VendorApplication.findById(vendorId);
         if (!vendorApplication) {
             return res.status(404).json({ message: "Vendor application not found" });
         }
 
-        // Remove vendor data from the Vendor schema
-        await Vendor.findOneAndDelete({ email: vendorApplication.email });
+        if (vendorApplication.status === "Rejected") {
+            return res.status(400).json({ message: "Application already rejected" });
+        }
 
-        // Update the user's role back to "user"
+        // 2. If previously approved, remove vendor profile
+        if (vendorApplication.approvedVendor) {
+            await Vendor.findByIdAndDelete(vendorApplication.approvedVendor);
+        }
+
+        // 3. Reset user role to "user" (if they were a vendor)
         const updatedUser = await userModel.findOneAndUpdate(
             { email: vendorApplication.email },
             { $set: { role: "user" } },
@@ -146,20 +182,29 @@ export const rejectVendor = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Update the vendor application status to "rejected"
+        // 4. Update application status (retain documents for audit)
         vendorApplication.status = "Rejected";
+        vendorApplication.rejectionReason = rejectionReason || null;
+        vendorApplication.processedAt = new Date();
         await vendorApplication.save();
 
         res.status(200).json({
+            success: true,
             message: "Vendor rejected successfully!",
             user: updatedUser,
-            vendor: vendorApplication
+            application: vendorApplication,
         });
+
     } catch (error) {
         console.error("Error rejecting vendor:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
+
 
 export const getPendingVendors = async (req, res) => {
     try {

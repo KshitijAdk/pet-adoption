@@ -2,7 +2,7 @@ import AdoptionRequest from '../models/adoptionRequest.model.js';
 import Pet from '../models/pet.model.js';
 import Vendor from '../models/Vendor.js';
 import userModel from '../models/userModel.js';
-import mongoose from 'mongoose';
+import { sendAdoptionStatusEmail } from '../config/nodemailer.js';
 
 export const submitAdoptionRequest = async (req, res) => {
     console.log("Request Body:", req.body); // Log request for debugging
@@ -110,7 +110,7 @@ export const approveAdoptionRequest = async (req, res) => {
             adoptionId,
             { status: "Approved" },
             { new: true }
-        );
+        ).populate('applicantId', 'email');
 
         if (!adoptionRequest) {
             return res.status(404).json({ message: "Adoption request not found" });
@@ -134,8 +134,8 @@ export const approveAdoptionRequest = async (req, res) => {
         await userModel.findByIdAndUpdate(
             adoptionRequest.applicantId,
             {
-                $addToSet: { adoptedPets: adoptionRequest.petId }, // Add to adopted pets
-                $set: { "applications.$[app].status": "Approved" } // Update application status
+                $addToSet: { adoptedPets: adoptionRequest.petId },
+                $set: { "applications.$[app].status": "Approved" }
             },
             {
                 arrayFilters: [{ "app.adoptionId": adoptionRequest._id }]
@@ -147,7 +147,7 @@ export const approveAdoptionRequest = async (req, res) => {
             petId: adoptionRequest.petId,
             status: "Pending",
             _id: { $ne: adoptionRequest._id }
-        });
+        }).populate('applicantId', 'email');
 
         if (rejectedRequests.length > 0) {
             // Update status in AdoptionRequest collection
@@ -170,6 +170,19 @@ export const approveAdoptionRequest = async (req, res) => {
             }));
 
             await userModel.bulkWrite(bulkOps);
+
+            // Send rejection emails to all rejected applicants
+            await Promise.all(rejectedRequests.map(async request => {
+                const pet = await Pet.findById(request.petId).select('name');
+                if (pet && request.applicantId.email) {
+                    await sendAdoptionStatusEmail(request.applicantId.email, pet.name, 'Rejected');
+                }
+            }));
+        }
+
+        // Send approval email to the approved applicant
+        if (adoptionRequest.applicantId.email && pet) {
+            await sendAdoptionStatusEmail(adoptionRequest.applicantId.email, pet.name, 'Approved');
         }
 
         res.status(200).json({
@@ -196,18 +209,18 @@ export const rejectAdoptionRequest = async (req, res) => {
     }
 
     try {
-        // 1. Reject the adoption request
+        // 1. Reject the adoption request and get applicant info
         const adoptionRequest = await AdoptionRequest.findByIdAndUpdate(
             adoptionId,
             { status: "Rejected" },
             { new: true }
-        );
+        ).populate('applicantId', 'email');
 
         if (!adoptionRequest) {
             return res.status(404).json({ message: "Adoption request not found" });
         }
 
-        // 2. Update the user's application status in one operation
+        // 2. Update the user's application status
         await userModel.updateOne(
             {
                 _id: adoptionRequest.applicantId,
@@ -229,6 +242,12 @@ export const rejectAdoptionRequest = async (req, res) => {
                 adoptionRequest.petId,
                 { status: "Available" }
             );
+        }
+
+        // Send rejection email to the applicant
+        const pet = await Pet.findById(adoptionRequest.petId).select('name');
+        if (pet && adoptionRequest.applicantId.email) {
+            await sendAdoptionStatusEmail(adoptionRequest.applicantId.email, pet.name, 'Rejected');
         }
 
         res.status(200).json({

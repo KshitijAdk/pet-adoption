@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js";
 import Vendor from "../models/Vendor.js";
 import bcrypt from 'bcryptjs';
+import sendEmail from "../utils/emailTemplates.js";
 
 export const getUserData = async (req, res) => {
     try {
@@ -63,22 +64,26 @@ export const getUserData = async (req, res) => {
     }
 };
 
-// Get all users data
 export const getAllUsers = async (req, res) => {
     try {
-        // Fetch all users from the database
-        const users = await userModel.find({}, 'name email role image isAccountVerified');
+        const users = await userModel.find({})
+            .select('-password -verifyOtp -verifyOtpExpireAt -resetOtp -resetOtpExpireAt')
+            .populate('banInfo.bannedBy', 'name email')
+            .lean();
 
-        // If no users found
-        if (!users.length) {
-            return res.json({ success: false, message: 'No users found' });
-        }
-
-        // Return all users' data
-        res.json({ success: true, users });
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            users
+        });
 
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
     }
 };
 
@@ -213,3 +218,126 @@ export const changePassword = async (req, res) => {
     }
 };
 
+export const banUser = async (req, res) => {
+    try {
+        const { userId, remarks, adminId } = req.body;
+
+        if (!userId || !adminId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID and Admin ID are required"
+            });
+        }
+
+        const user = await userModel.findById(userId);
+        const admin = await userModel.findById(adminId);
+
+        if (!user || !admin) {
+            return res.status(404).json({
+                success: false,
+                message: "User or Admin not found"
+            });
+        }
+
+        // Update ban info
+        user.banInfo = {
+            isBanned: true,
+            bannedBy: adminId,
+            reason: remarks || "Violation of terms of service",
+            at: new Date()
+        };
+
+        await user.save();
+
+        // Send email notification
+        try {
+            await sendEmail(
+                user.email,
+                'account-banned',
+                {
+                    userName: user.name || user.username,
+                    remarks: remarks,
+                    adminEmail: admin.email
+                }
+            );
+        } catch (emailError) {
+            console.error("Email sending failed:", emailError);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User banned successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error("Error banning user:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const unbanUser = async (req, res) => {
+    try {
+        const { userId, adminId, remarks } = req.body;
+
+        if (!userId || !adminId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID and Admin ID are required"
+            });
+        }
+
+        const user = await userModel.findById(userId);
+        const admin = await userModel.findById(adminId);
+
+        if (!user || !admin) {
+            return res.status(404).json({
+                success: false,
+                message: "User or Admin not found"
+            });
+        }
+
+        // Update ban info
+        user.banInfo = {
+            isBanned: false,
+            unbannedBy: adminId,
+            unbanReason: remarks || "Suspension lifted",
+            at: null,
+            unbannedAt: new Date()
+        };
+
+        await user.save();
+
+        // Send email notification
+        try {
+            await sendEmail(
+                user.email,
+                'account-unbanned',
+                {
+                    userName: user.name || user.username,
+                    adminEmail: admin.email
+                }
+            );
+        } catch (emailError) {
+            console.error("Email sending failed:", emailError);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User unbanned successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error("Error unbanning user:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
