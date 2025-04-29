@@ -66,7 +66,7 @@ export const getUserData = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await userModel.find({})
+        const users = await userModel.find({ role: { $ne: 'admin' } }) // Only fetch users where role is not 'admin'
             .select('-password -verifyOtp -verifyOtpExpireAt -resetOtp -resetOtpExpireAt')
             .populate('banInfo.bannedBy', 'name email')
             .lean();
@@ -341,3 +341,56 @@ export const unbanUser = async (req, res) => {
         });
     }
 };
+
+
+export const getAllAdmins = async (req, res) => {
+    try {
+        const users = await userModel.find({ role: 'admin' }) // Only fetch users where role is not 'admin'
+            .select('-password -verifyOtp -verifyOtpExpireAt -resetOtp -resetOtpExpireAt')
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            users
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+export const createAdmin = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        // Check if the admin already exists
+        const existingAdmin = await userModel.findOne({ email });
+        if (existingAdmin) {
+            return res.status(400).json({ success: false, message: 'Admin already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new admin
+        const newAdmin = new userModel({
+            name,
+            email,
+            password: hashedPassword,
+            isAccountVerified: true, // Assuming new admins are verified by default
+            role: 'admin'
+        });
+
+        await newAdmin.save();
+
+        res.status(201).json({ success: true, message: 'Admin created successfully', admin: newAdmin });
+    } catch (error) {
+        console.error('Error creating admin:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+}

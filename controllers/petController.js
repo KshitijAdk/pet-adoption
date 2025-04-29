@@ -221,3 +221,23 @@ export const getFavouritePets = async (req, res) => {
         })
     }
 }
+
+export const getAllPets = async (req, res) => {
+    try {
+        const pets = await Pet.find({})
+        .populate({
+            path: "vendorId",
+            select: "fullName organization email contact address description image"
+        });
+        res.status(200).json({
+            success: true,
+            count: pets.length,
+            data: pets
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
+    }
+};

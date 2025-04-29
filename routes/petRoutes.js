@@ -8,6 +8,7 @@ import {
     addToFavourite,
     removeFromFavourite,
     getFavouritePets,
+    getAllPets,
 } from "../controllers/petController.js";
 import multer from "multer";
 import { storage } from "../config/cloudinary.js";
@@ -24,5 +25,6 @@ router.get('/pets-with-vendor', getAllPetsWithVendor);
 router.post("/add-to-favourite", addToFavourite);
 router.post("/remove-from-favourite", removeFromFavourite);
 router.get("/favourite/:userId", getFavouritePets);
+router.get("/all-pets", getAllPets);
 
 export default router;

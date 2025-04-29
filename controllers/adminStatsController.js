@@ -210,3 +210,56 @@ export const getDetailedStats = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getVendorData = async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+
+        // Validate the vendorId
+        if (!mongoose.Types.ObjectId.isValid(vendorId)) {
+            return res.status(400).json({ error: "Invalid vendor ID" });
+        }
+
+        // Fetch vendor details
+        const vendor = await Vendor.findById(vendorId);
+        if (!vendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+
+        // Fetch all pets listed by this vendor
+        const pets = await Pet.find({ vendorId });
+
+        // Fetch all adoption requests for this vendor's pets
+        const adoptionRequests = await AdoptionRequest.find({ vendorId });
+
+        // Calculate counts
+        const petCounts = {
+            total: pets.length,
+            available: pets.filter(pet => pet.status === 'Available').length,
+            adopted: pets.filter(pet => pet.status === 'Adopted').length,
+        };
+
+        const adoptionRequestCounts = {
+            total: adoptionRequests.length,
+            pending: adoptionRequests.filter(req => req.status === 'Pending').length,
+            approved: adoptionRequests.filter(req => req.status === 'Approved').length,
+            rejected: adoptionRequests.filter(req => req.status === 'Rejected').length,
+        };
+
+        // Combine all data into a single response
+        const vendorData = {
+            vendorDetails: vendor,
+            pets,
+            adoptionRequests,
+            counts: {
+                pets: petCounts,
+                adoptionRequests: adoptionRequestCounts,
+            },
+        };
+
+        res.status(200).json(vendorData);
+    } catch (error) {
+        console.error("Error fetching vendor data:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};

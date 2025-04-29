@@ -1,8 +1,8 @@
 import transporter from "../config/nodemailer.js";
 
 const emailTemplates = {
-    // Initial OTP verification
-    verifyEmail: (otp) => `
+  // Initial OTP verification
+  verifyEmail: (otp) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #f59e0b;">Welcome to NayaSathi!</h2>
       <p>Please verify your email address to complete your registration.</p>
@@ -14,8 +14,8 @@ const emailTemplates = {
     </div>
   `,
 
-    // Resend OTP
-    resendOtp: (otp) => `
+  // Resend OTP
+  resendOtp: (otp) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #f59e0b;">Your New Verification Code</h2>
       <p>Here's your new verification code for NayaSathi:</p>
@@ -27,8 +27,8 @@ const emailTemplates = {
     </div>
   `,
 
-    // Password reset OTP
-    passwordResetOtp: (otp) => `
+  // Password reset OTP
+  passwordResetOtp: (otp) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #f59e0b;">Password Reset Request</h2>
       <p>We received a request to reset your NayaSathi account password. Use this code to verify it's you:</p>
@@ -40,8 +40,8 @@ const emailTemplates = {
     </div>
   `,
 
-    // Password reset success confirmation
-    passwordResetSuccess: () => `
+  // Password reset success confirmation
+  passwordResetSuccess: () => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #10b981;">Password Changed Successfully</h2>
       <p>Your NayaSathi account password has been successfully updated.</p>
@@ -50,18 +50,8 @@ const emailTemplates = {
     </div>
   `,
 
-    // Account locked notification
-    accountLocked: () => `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #ef4444;">Account Locked</h2>
-      <p>Your NayaSathi account has been temporarily locked due to multiple failed login attempts.</p>
-      <p>For your security, please wait 30 minutes before trying again or reset your password.</p>
-      <p style="color: #64748b; font-size: 14px;">If this wasn't you, please contact our support team immediately.</p>
-    </div>
-  `,
-
-    // Ban notification
-    banNotification: (userName, remarks, adminEmail) => `
+  // Ban notification
+  banNotification: (userName, remarks, adminEmail) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #ef4444;">Account Suspension Notice</h2>
       <p>Dear ${userName},</p>
@@ -78,8 +68,8 @@ const emailTemplates = {
     </div>
   `,
 
-    // Unban notification
-    unbanNotification: (userName, adminEmail) => `
+  // Unban notification
+  unbanNotification: (userName, adminEmail) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #10b981;">Account Access Restored</h2>
       <p>Dear ${userName},</p>
@@ -96,59 +86,54 @@ const emailTemplates = {
 };
 
 const sendEmail = async (email, type, data) => {
-    const templateConfig = {
-        // Verification emails
-        'verify-email': {
-            subject: 'Verify Your Email',
-            template: emailTemplates.verifyEmail(data.otp)
-        },
-        'resend-otp': {
-            subject: 'Your New Verification Code',
-            template: emailTemplates.resendOtp(data.otp)
-        },
+  const templateConfig = {
+    // Verification emails
+    'verify-email': {
+      subject: 'Verify Your Email',
+      template: emailTemplates.verifyEmail(data.otp)
+    },
+    'resend-otp': {
+      subject: 'Your New Verification Code',
+      template: emailTemplates.resendOtp(data.otp)
+    },
 
-        // Password related emails
-        'password-reset-otp': {
-            subject: 'Password Reset Verification',
-            template: emailTemplates.passwordResetOtp(data.otp)
-        },
-        'password-reset-success': {
-            subject: 'Password Changed Successfully',
-            template: emailTemplates.passwordResetSuccess()
-        },
+    // Password related emails
+    'password-reset-otp': {
+      subject: 'Password Reset Verification',
+      template: emailTemplates.passwordResetOtp(data.otp)
+    },
+    'password-reset-success': {
+      subject: 'Password Changed Successfully',
+      template: emailTemplates.passwordResetSuccess()
+    },
 
-        // Security notifications
-        'account-locked': {
-            subject: 'Account Locked Notification',
-            template: emailTemplates.accountLocked()
-        },
-        'account-banned': {
-            subject: 'Account Suspension Notice',
-            template: emailTemplates.banNotification(data.userName, data.remarks, data.adminEmail)
-        },
-        'account-unbanned': {
-            subject: 'Account Access Restored',
-            template: emailTemplates.unbanNotification(data.userName, data.adminEmail)
-        }
-    };
-
-    if (!templateConfig[type]) {
-        throw new Error('Invalid email type');
+    'account-banned': {
+      subject: 'Account Suspension Notice',
+      template: emailTemplates.banNotification(data.userName, data.remarks, data.adminEmail)
+    },
+    'account-unbanned': {
+      subject: 'Account Access Restored',
+      template: emailTemplates.unbanNotification(data.userName, data.adminEmail)
     }
+  };
 
-    const mailOptions = {
-        from: `"NayaSathi" <${process.env.SENDER_EMAIL}>`,
-        to: email,
-        subject: templateConfig[type].subject,
-        html: templateConfig[type].template
-    };
+  if (!templateConfig[type]) {
+    throw new Error('Invalid email type');
+  }
 
-    try {
-        await transporter.sendMail(mailOptions);
-    } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error(`Failed to send ${type} email`);
-    }
+  const mailOptions = {
+    from: `"NayaSathi" <${process.env.SENDER_EMAIL}>`,
+    to: email,
+    subject: templateConfig[type].subject,
+    html: templateConfig[type].template
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new Error(`Failed to send ${type} email`);
+  }
 };
 
 
