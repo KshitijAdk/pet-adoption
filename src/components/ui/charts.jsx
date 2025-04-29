@@ -2,10 +2,8 @@ import React from 'react';
 import {
     BarChart as ReBarChart,
     PieChart as RePieChart,
-    LineChart as ReLineChart,
     Bar,
     Pie,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -63,39 +61,6 @@ export const BarChart = ({ data, colors = COLORS }) => {
                 <Legend />
                 <Bar dataKey="value" fill={colors[0]} />
             </ReBarChart>
-        </ResponsiveContainer>
-    );
-};
-
-// Line Chart Component
-export const LineChart = ({ data }) => {
-    return (
-        <ResponsiveContainer width="100%" height="100%">
-            <ReLineChart
-                margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                }}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {data.map((series, index) => (
-                    <Line
-                        key={series.name}
-                        type="monotone"
-                        dataKey="y"
-                        data={series.data}
-                        name={series.name}
-                        stroke={COLORS[index % COLORS.length]}
-                        activeDot={{ r: 8 }}
-                    />
-                ))}
-            </ReLineChart>
         </ResponsiveContainer>
     );
 };

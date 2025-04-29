@@ -8,11 +8,14 @@ import {
     Home,
     Users,
     ListChecks,
-    Eye
+    Eye,
+    PawPrint,
+    Shield
 } from "lucide-react";
 import BigModal from "../components/ui/BigModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
+import { VendorDetailsModal } from "./DetailsModal";
 
 const PendingApplications = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -26,7 +29,10 @@ const PendingApplications = () => {
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
         { path: "/admin/manage-users", label: "Manage Users", icon: Users },
         { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
+
     ];
 
     useEffect(() => {
@@ -208,34 +214,8 @@ const PendingApplications = () => {
                     />
                 </div>
 
-                {/* BigModal - Vendor Details */}
                 <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
-                    {selectedVendor && (
-                        <div className="space-y-2 text-sm">
-                            <p><strong>Full Name:</strong> {selectedVendor.fullName}</p>
-                            <p><strong>Organization:</strong> {selectedVendor.organization}</p>
-                            <p><strong>Email:</strong> {selectedVendor.email}</p>
-                            <p><strong>Contact:</strong> {selectedVendor.contact}</p>
-                            <p><strong>Address:</strong> {selectedVendor.address}</p>
-                            <p><strong>Description:</strong> {selectedVendor.description}</p>
-
-                            <div>
-                                <strong>Profile Image:</strong>
-                                <img src={selectedVendor.image} alt="Vendor" className="mt-2 w-32 rounded" />
-                            </div>
-
-                            {selectedVendor.idDocuments?.length > 0 && (
-                                <div className="mt-4">
-                                    <strong>ID Documents:</strong>
-                                    <div className="flex space-x-2 overflow-x-auto py-2">
-                                        {selectedVendor.idDocuments.map((doc, index) => (
-                                            <img key={index} src={doc} alt={`ID ${index}`} className="rounded shadow w-32 h-32 object-cover" />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <VendorDetailsModal vendor={selectedVendor} onClose={closeModal} />
                 </BigModal>
             </div>
         </div>

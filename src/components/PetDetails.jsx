@@ -49,7 +49,7 @@ const PetDetails = () => {
     };
 
     fetchPetDetails();
-  }, [petId, userData?.favoritePets]); // Add userData.favoritePets to dependencies
+  }, [petId, userData?.favoritePets]);
 
   const getDaysAgo = (dateString) => {
     const createdDate = new Date(dateString);
@@ -71,6 +71,10 @@ const PetDetails = () => {
   };
 
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const navigateToVendorProfile = () => {
+    navigate(`/vendor/${vendorId}`);
+  };
 
   if (loading) return <Loading />;
   if (error) return <div className="container mx-auto px-4 py-4 text-center text-red-500">{error}</div>;
@@ -112,7 +116,10 @@ const PetDetails = () => {
             {vendorLocation}
           </div>
 
-          <div className="flex items-center bg-gray-200 p-3 rounded-lg mb-3">
+          <div
+            className="flex items-center bg-gray-200 p-3 rounded-lg mb-3 cursor-pointer hover:bg-gray-300 transition-colors"
+            onClick={navigateToVendorProfile}
+          >
             <div className="relative w-8 h-8 mr-3">
               <img
                 src={vendorImage}
@@ -123,7 +130,7 @@ const PetDetails = () => {
             </div>
             <div>
               <div className="text-xs text-gray-500">Posted by</div>
-              <div className="font-medium text-sm text-gray-800">{vendorName}</div>
+              <div className="font-medium text-sm text-gray-800 hover:underline">{vendorName}</div>
             </div>
             <div className="ml-auto flex items-center text-xs text-gray-500">
               <Calendar className="h-3 w-3 mr-1" />
@@ -195,7 +202,12 @@ const PetDetails = () => {
         </div>
       </div>
 
-      <AdoptionFormModal isOpen={isModalOpen} onClose={handleCloseModal} petId={petId} />
+      <AdoptionFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        petId={petId}
+        vendorId={vendorId}  // Add this line
+      />
     </div>
   );
 };

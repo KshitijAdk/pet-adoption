@@ -1,9 +1,10 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Calendar, Clock, Home, Users, ListChecks, Eye } from "lucide-react";
-import BigModal from "../components/ui/BigModal";
+import { CheckCircle, XCircle, Calendar, Clock, Home, Shield, Users, ListChecks, Eye, PawPrint } from "lucide-react";
+import { VendorDetailsModal } from "./DetailsModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
+import BigModal from "../components/ui/BigModal";
 
 const ManageVendors = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -17,7 +18,9 @@ const ManageVendors = () => {
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
         { path: "/admin/manage-users", label: "Manage Users", icon: Users },
         { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
     ];
 
     useEffect(() => {
@@ -188,51 +191,30 @@ const ManageVendors = () => {
                 menuItems={adminMenuItems}
                 title="Admin Panel"
             />
-            <div className="flex-1 p-6">
-                <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                <div className="p-6 flex-1 flex flex-col">
                     <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Vendors</h1>
 
-                    <Table
-                        columns={columns}
-                        data={vendors}
-                        loading={loading}
-                        error={error}
-                        emptyMessage={vendorsEmptyState}
-                        onRowClick={openModal}
-                        dropdownActions={dropdownActions}
-                        statusConfig={statusConfig}
-                        dateConfig={dateConfig}
-                    />
+                    <div className="bg-white rounded-lg shadow-lg p-6 flex-1 flex flex-col">
+                        <div className="flex-1 overflow-auto">
+                            <Table
+                                columns={columns}
+                                data={vendors}
+                                loading={loading}
+                                error={error}
+                                emptyMessage={vendorsEmptyState}
+                                onRowClick={openModal}
+                                dropdownActions={dropdownActions}
+                                statusConfig={statusConfig}
+                                dateConfig={dateConfig}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
-                {selectedVendor && (
-                    <div className="space-y-2 text-sm">
-                        <p><strong>Full Name:</strong> {selectedVendor.fullName}</p>
-                        <p><strong>Organization:</strong> {selectedVendor.organization}</p>
-                        <p><strong>Email:</strong> {selectedVendor.email}</p>
-                        <p><strong>Contact:</strong> {selectedVendor.contact}</p>
-                        <p><strong>Address:</strong> {selectedVendor.address}</p>
-                        <p><strong>Description:</strong> {selectedVendor.description}</p>
-
-                        <div>
-                            <strong>Profile Image:</strong>
-                            <img src={selectedVendor.image} alt="Vendor" className="mt-2 w-32 rounded" />
-                        </div>
-
-                        {selectedVendor.idDocuments?.length > 0 && (
-                            <div className="mt-4">
-                                <strong>ID Documents:</strong>
-                                <div className="flex space-x-2 overflow-x-auto py-2">
-                                    {selectedVendor.idDocuments.map((doc, index) => (
-                                        <img key={index} src={doc} alt={`ID ${index}`} className="rounded shadow w-32 h-32 object-cover" />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                <VendorDetailsModal vendor={selectedVendor} onClose={closeModal} />
             </BigModal>
         </div>
     );

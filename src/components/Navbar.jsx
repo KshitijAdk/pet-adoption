@@ -1,37 +1,46 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
-import { PawPrint, Menu, X, User, LogOut, Settings } from "lucide-react";
+import { PawPrint, Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import ToastComponent from "./ui/ToastComponent";
-import axios from "axios";
 
 const Navbar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } = useContext(AppContent);
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
       const response = await fetch(`${backendUrl}/api/auth/logout`, {
         method: "POST",
-        credentials: "include", // Important for cookie removal
+        credentials: "include",
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Clear localStorage and cookie
         localStorage.removeItem("user");
         Cookies.remove("token");
-
-        // Reset context state
         setIsLoggedin(false);
         setUserData(null);
-
         toast.success("Successfully logged out!");
         navigate("/");
       } else {
@@ -43,6 +52,22 @@ const Navbar = () => {
     }
   };
 
+  const getDashboardLink = () => {
+    if (!userData?.role) return null;
+
+    switch (userData.role) {
+      case 'admin':
+        return { path: "/admin/dashboard", label: "Admin Dashboard" };
+      case 'vendor':
+        return { path: "/vendor-dashboard", label: "Vendor Dashboard" };
+      case 'user':
+        return { path: "/user/dashboard", label: "User Dashboard" };
+      default:
+        return null;
+    }
+  };
+
+  const dashboardLink = getDashboardLink();
 
   const navLinks = [
     { path: "/", label: "Home" },
@@ -59,10 +84,10 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-                <PawPrint className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+                <PawPrint className="w-7 h-7 text-amber-600" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-800">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-800">
                 NayaSathi
               </span>
             </Link>
@@ -83,7 +108,7 @@ const Navbar = () => {
             {/* User Menu / Login Button */}
             <div className="flex items-center space-x-4">
               {isLoggedin ? (
-                <div className="relative">
+                <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     className="flex items-center space-x-2 focus:outline-none"
@@ -91,7 +116,7 @@ const Navbar = () => {
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-200 hover:border-amber-400 transition-colors">
                       {userData?.image ? (
                         <img
-                          src={userData.image}
+                          src={userData?.image}
                           alt={userData.name}
                           className="w-full h-full object-cover"
                         />
@@ -105,10 +130,27 @@ const Navbar = () => {
 
                   {/* Profile Dropdown */}
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 ring-1 ring-black ring-opacity-5 z-50">
+                      <div className="px-4 py-3 border-b">
+                        <p className="text-sm font-medium text-gray-900 truncate">{userData?.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{userData?.email}</p>
+                      </div>
+
+                      {dashboardLink && (
+                        <Link
+                          to={dashboardLink.path}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          {dashboardLink.label}
+                        </Link>
+                      )}
+
                       <Link
                         to="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Profile Settings
@@ -161,6 +203,32 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {isLoggedin && (
+                <>
+                  {dashboardLink && (
+                    <Link
+                      to={dashboardLink.path}
+                      className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-amber-600 hover:bg-amber-50"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {dashboardLink.label}
+                    </Link>
+                  )}
+                  <Link
+                    to="/profile"
+                    className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-amber-600 hover:bg-amber-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Profile Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left block px-3 py-2 rounded-lg text-base font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Log Out
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

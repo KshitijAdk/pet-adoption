@@ -31,6 +31,8 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import VendorRoute from "./routes/VendorRoute";
 import NotFoundPage from "./routes/NotFoundPage";
+import AllPetsAdmin from "./Admin/AllPetsAdmin";
+import AllAdmins from "./Admin/AllAdmins";
 
 const App = () => {
   return (
@@ -65,6 +67,8 @@ const App = () => {
           <Route path="/admin/manage-users" element={<ManageUsers />} />
           <Route path="/admin/pending-vendors" element={<PendingApplications />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/all-pets" element={<AllPetsAdmin />} />
+          <Route path="/admin/all-admins" element={<AllAdmins />} />
         </Route>
 
         {/* Vendor Routes */}

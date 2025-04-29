@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, Mail, Phone, MapPin, Calendar, LucidePawPrint, Users, HeartHandshake, ExternalLink, X } from 'lucide-react';
+import {
+    Heart, Mail, Phone, MapPin, Calendar, Users, HeartHandshake,
+    X, Camera, PawPrint, Clock, Award, ExternalLink, Info
+} from 'lucide-react';
 import PetCard from './ui/petcard';
 
 const VendorDetails = () => {
@@ -11,6 +14,7 @@ const VendorDetails = () => {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('gallery');
     const [showDonateModal, setShowDonateModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     useEffect(() => {
         const fetchVendor = async () => {
@@ -33,6 +37,19 @@ const VendorDetails = () => {
         fetchVendor();
     }, [vendorId]);
 
+    useEffect(() => {
+        // Disable scrolling when modal is open
+        if (showDonateModal || selectedImage) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [showDonateModal, selectedImage]);
+
     const handleMeetClick = (petId) => {
         navigate(`/pets/${petId}`);
     };
@@ -43,6 +60,14 @@ const VendorDetails = () => {
 
     const closeDonateModal = () => {
         setShowDonateModal(false);
+    };
+
+    const openImagePreview = (imageUrl) => {
+        setSelectedImage(imageUrl);
+    };
+
+    const closeImagePreview = () => {
+        setSelectedImage(null);
     };
 
     const formatDate = (dateString) => {
@@ -56,27 +81,27 @@ const VendorDetails = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-                <div className="relative">
-                    <div className="h-16 w-16 rounded-full border-4 border-amber-300 border-t-amber-500 animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <LucidePawPrint className="h-6 w-6 text-amber-500" />
-                    </div>
-                </div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-amber-50 text-amber-600">
+                <div className="h-16 w-16 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin mb-4"></div>
+                <p className="text-lg font-medium animate-pulse">Loading shelter details...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-                <div className="bg-red-50 p-8 rounded-xl shadow-md text-red-600 max-w-md mx-auto">
-                    <p className="text-lg font-medium text-center">{error}</p>
+            <div className="min-h-screen flex items-center justify-center bg-amber-50">
+                <div className="bg-amber-50 p-8 rounded-lg shadow-md max-w-md mx-auto text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-5">
+                        <Info className="w-8 h-8 text-amber-600" />
+                    </div>
+                    <p className="text-xl font-medium text-amber-600 mb-4">{error}</p>
+                    <p className="text-gray-600 mb-6">The shelter you're looking for might have been moved or no longer exists.</p>
                     <button
                         onClick={() => navigate('/vendors')}
-                        className="mt-4 w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        className="w-full py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-md"
                     >
-                        Back to Vendors
+                        Browse All Shelters
                     </button>
                 </div>
             </div>
@@ -84,119 +109,191 @@ const VendorDetails = () => {
     }
 
     return (
-        <div className="bg-neutral-50 min-h-screen">
-            {/* Donate Modal */}
-            {showDonateModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+        <div className="bg-amber-50 min-h-screen text-gray-800">
+            {/* Image Preview Modal */}
+            {selectedImage && (
+                <div
+                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-auto"
+                    onClick={closeImagePreview}
+                >
+                    <div
+                        className="relative max-w-4xl w-full max-h-screen p-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button
-                            onClick={closeDonateModal}
-                            className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
+                            onClick={closeImagePreview}
+                            className="absolute top-2 right-2 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                            aria-label="Close image preview"
                         >
-                            <X className="w-6 h-6 text-gray-500" />
+                            <X className="w-6 h-6 text-white" />
                         </button>
-                        <h3 className="text-2xl font-bold text-center mb-4 text-amber-600">Support {vendor.organization}</h3>
-                        <p className="text-center text-gray-600 mb-6">
-                            Scan the QR code below to donate via Fonepay
-                        </p>
-                        <div className="flex justify-center mb-6">
-                            <img
-                                src={vendor.fonepayQr}
-                                alt="Fonepay QR Code"
-                                className="w-64 h-64 object-contain border border-gray-200 rounded-lg"
-                            />
-                        </div>
-                        <p className="text-center text-sm text-gray-500">
-                            Your donation helps us care for animals in need. Thank you for your support!
-                        </p>
+                        <img
+                            src={selectedImage}
+                            alt="Preview"
+                            className="w-full h-auto max-h-screen object-contain rounded-lg"
+                        />
                     </div>
                 </div>
             )}
 
-            {/* Hero Section with Parallax Effect */}
-            <div className="relative h-96 overflow-hidden bg-gradient-to-r from-amber-500 to-amber-400">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3')] bg-cover bg-center opacity-20"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/90 to-amber-500/90"></div>
-                <div className="relative h-full container mx-auto px-6 flex flex-col justify-center">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="text-center md:text-left mb-8 md:mb-0">
-                            <h1 className="text-5xl font-bold mb-3 text-white tracking-tight">{vendor.organization}</h1>
-                            <p className="text-amber-100 text-xl max-w-xl">
-                                Making tails wag and hearts purr since {new Date(vendor.createdAt).getFullYear()}
+            {/* Donate Modal */}
+            {showDonateModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-auto">
+                    <div
+                        className="bg-white rounded-xl max-w-md w-full p-6 relative shadow-xl max-h-screen overflow-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="absolute top-3 right-3">
+                            <button
+                                onClick={closeDonateModal}
+                                className="p-2 rounded-full bg-amber-100 hover:bg-amber-200 transition-colors"
+                                aria-label="Close donation modal"
+                            >
+                                <X className="w-5 h-5 text-amber-700" />
+                            </button>
+                        </div>
+
+                        <div className="text-center mb-6 pt-2">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
+                                <HeartHandshake className="w-8 h-8 text-amber-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-amber-600">Support {vendor.organization}</h3>
+                            <p className="text-gray-600 mt-2">
+                                Your donation helps animals in need find their forever homes
                             </p>
                         </div>
-                        <button
-                            onClick={handleDonate}
-                            className="px-8 py-4 bg-white text-amber-600 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl hover:bg-amber-50 hover:scale-105 transition-all duration-300 flex items-center"
-                        >
-                            <HeartHandshake className="w-6 h-6 mr-2" />
-                            Donate Now
-                        </button>
+
+                        <div className="flex justify-center mb-6">
+                            <img
+                                src={vendor.fonepayQr}
+                                alt="Fonepay QR Code"
+                                className="w-64 h-64 object-contain shadow-sm rounded-lg bg-white p-2 border border-amber-200"
+                            />
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-sm text-gray-500 mb-4">
+                                Scan the QR code above with your Fonepay app to donate directly
+                            </p>
+                            <button
+                                onClick={closeDonateModal}
+                                className="w-full py-3 bg-amber-500 text-white rounded-lg font-medium shadow-md hover:bg-amber-600 transition-all duration-300"
+                            >
+                                Thank you for your support!
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-neutral-50 to-transparent"></div>
+            )}
+
+            {/* Hero Section */}
+            <div className="relative h-80 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-500 opacity-90"></div>
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
+                <div className="relative h-full container mx-auto px-6 flex flex-col justify-center">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <div className="text-center md:text-left mb-8 md:mb-0 max-w-xl">
+                            <h1 className="text-3xl font-bold mb-3 text-white">{vendor.organization}</h1>
+                            <p className="text-lg text-amber-100 mb-4">
+                                Making tails wag and hearts purr since {new Date(vendor.createdAt).getFullYear()}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3 mt-4">
+                                <div className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full flex items-center text-sm">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    <span>{vendor.address.split(',')[0]}</span>
+                                </div>
+                                <div className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full flex items-center text-sm">
+                                    <PawPrint className="w-4 h-4 mr-1" />
+                                    <span>{vendor.availablePetsCount} Pets</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button
+                                onClick={handleDonate}
+                                className="px-6 py-3 bg-white text-amber-600 rounded-full font-medium shadow-md hover:bg-amber-50 transition-all duration-300 flex items-center"
+                            >
+                                <HeartHandshake className="w-5 h-5 mr-2" />
+                                Donate Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80">
+                        <path fill="#fffbeb" fillOpacity="1" d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
+                    </svg>
+                </div>
             </div>
 
             {/* Organization Details Section */}
-            <div className="container mx-auto px-6 -mt-24 relative z-10">
-                <div className="bg-white rounded-2xl shadow-xl p-8 mb-12 backdrop-blur-sm bg-white/90">
-                    <div className="md:flex gap-12">
-                        <div className="md:w-1/3 mb-8 md:mb-0">
-                            <div className="relative rounded-xl overflow-hidden shadow-lg group">
+            <div className="container mx-auto px-6 -mt-6 relative z-10">
+                <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-1">
+                            <div className="rounded-xl overflow-hidden shadow-md">
                                 <img
                                     src={vendor.image}
                                     alt={vendor.organization}
-                                    className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-110"
+                                    className="w-full h-64 object-contain cursor-pointer"
+                                    onClick={() => openImagePreview(vendor.image)}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                    <h3 className="text-xl font-bold">{vendor.organization}</h3>
-                                    <p className="text-amber-200">Rescue & Adoption Center</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 mt-4">
+                                <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full flex items-center text-sm">
+                                    <PawPrint className="w-4 h-4 mr-1" />
+                                    <span>{vendor.availablePetsCount} Pets Available</span>
+                                </div>
+                                <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full flex items-center text-sm">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    <span>Since {new Date(vendor.createdAt).getFullYear()}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="md:w-2/3">
-                            <div className="flex flex-wrap items-center gap-4 mb-8">
-                                <div className="bg-green-100 text-green-800 px-5 py-2 rounded-full flex items-center shadow-sm">
-                                    <LucidePawPrint className="w-5 h-5 mr-2" />
-                                    <span className="font-medium">{vendor.availablePetsCount} Pets Available</span>
-                                </div>
-                                <div className="bg-amber-100 text-amber-800 px-5 py-2 rounded-full flex items-center shadow-sm">
-                                    <Users className="w-5 h-5 mr-2" />
-                                    <span className="font-medium">Managed by {vendor.fullName}</span>
-                                </div>
+
+                        <div className="md:col-span-2">
+                            <div className="flex items-center mb-4">
+                                <Award className="w-5 h-5 text-amber-600 mr-2" />
+                                <h2 className="text-xl font-bold text-gray-800">About {vendor.organization}</h2>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="bg-neutral-50 p-6 rounded-xl shadow-sm">
-                                    <h3 className="text-gray-900 font-semibold text-lg mb-4 flex items-center">
-                                        <Mail className="w-5 h-5 mr-2 text-amber-500" />
+                            <p className="text-gray-600 mb-6 leading-relaxed">{vendor.description}</p>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-amber-50 p-4 rounded-lg">
+                                    <h3 className="text-gray-800 font-medium mb-3 flex items-center">
+                                        <Mail className="w-4 h-4 mr-2 text-amber-600" />
                                         Contact Information
                                     </h3>
-                                    <ul className="space-y-4">
-                                        <li className="flex items-center text-gray-700">
-                                            <Mail className="w-5 h-5 mr-3 text-amber-500 flex-shrink-0" />
-                                            <span className="truncate">{vendor.email}</span>
+                                    <ul className="space-y-3 text-gray-600">
+                                        <li className="flex items-center border-b border-amber-100 pb-2">
+                                            <Mail className="w-4 h-4 text-amber-600 mr-2" />
+                                            <span>{vendor.email}</span>
                                         </li>
-                                        <li className="flex items-center text-gray-700">
-                                            <Phone className="w-5 h-5 mr-3 text-amber-500 flex-shrink-0" />
-                                            {vendor.contact}
+                                        <li className="flex items-center border-b border-amber-100 pb-2">
+                                            <Phone className="w-4 h-4 text-amber-600 mr-2" />
+                                            <span>{vendor.contact}</span>
                                         </li>
-                                        <li className="flex items-start text-gray-700">
-                                            <MapPin className="w-5 h-5 mr-3 text-amber-500 flex-shrink-0 mt-1" />
+                                        <li className="flex items-start">
+                                            <MapPin className="w-4 h-4 text-amber-600 mr-2 mt-1" />
                                             <span>{vendor.address}</span>
                                         </li>
                                     </ul>
                                 </div>
-                                <div className="bg-neutral-50 p-6 rounded-xl shadow-sm">
-                                    <h3 className="text-gray-900 font-semibold text-lg mb-4 flex items-center">
-                                        <Heart className="w-5 h-5 mr-2 text-amber-500" />
-                                        About Us
+                                <div className="bg-amber-50 p-4 rounded-lg">
+                                    <h3 className="text-gray-800 font-medium mb-3 flex items-center">
+                                        <Info className="w-4 h-4 mr-2 text-amber-600" />
+                                        Additional Information
                                     </h3>
-                                    <p className="text-gray-700 mb-4 line-clamp-4">{vendor.description}</p>
-                                    <div className="flex items-center text-gray-600 mt-auto pt-2 border-t border-gray-200">
-                                        <Calendar className="w-5 h-5 mr-2 text-amber-500" />
-                                        <span>Member since {formatDate(vendor.createdAt)}</span>
+                                    <div className="space-y-3 text-gray-600">
+                                        <div className="flex items-center border-b border-amber-100 pb-2">
+                                            <Calendar className="w-4 h-4 text-amber-600 mr-2" />
+                                            <span>Member since {formatDate(vendor.createdAt)}</span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Users className="w-4 h-4 text-amber-600 mr-2" />
+                                            <span>Managed by {vendor.fullName}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -206,55 +303,54 @@ const VendorDetails = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="container mx-auto px-6 mb-8">
-                <div className="flex space-x-4 border-b border-gray-200">
+            <div className="container mx-auto px-6">
+                <div className="flex space-x-1 border-b border-amber-200 mb-6">
                     <button
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'gallery'
-                            ? 'text-amber-600 border-b-2 border-amber-500'
-                            : 'text-gray-600 hover:text-amber-500'}`}
+                        className={`px-4 py-3 font-medium transition-colors flex items-center ${activeTab === 'gallery'
+                                ? 'text-amber-700 border-b-2 border-amber-500'
+                                : 'text-gray-600 hover:text-amber-600'
+                            }`}
                         onClick={() => setActiveTab('gallery')}
                     >
+                        <Camera className="w-4 h-4 mr-2" />
                         Photo Gallery
                     </button>
                     <button
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'pets'
-                            ? 'text-amber-600 border-b-2 border-amber-500'
-                            : 'text-gray-600 hover:text-amber-500'}`}
+                        className={`px-4 py-3 font-medium transition-colors flex items-center ${activeTab === 'pets'
+                                ? 'text-amber-700 border-b-2 border-amber-500'
+                                : 'text-gray-600 hover:text-amber-600'
+                            }`}
                         onClick={() => setActiveTab('pets')}
                     >
+                        <PawPrint className="w-4 h-4 mr-2" />
                         Available Pets
                     </button>
                 </div>
-            </div>
 
-            {/* Enhanced Pet Gallery Section - Modern Overlapping Grid with Hover Effects */}
-            {activeTab === 'gallery' && (
-                <div className="container mx-auto px-6 py-8">
-                    <div className="relative overflow-hidden">
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-                            {vendor.pets.map((pet, index) => (
+                {/* Pet Gallery Section */}
+                {activeTab === 'gallery' && (
+                    <div className="mb-12">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {vendor.pets.map((pet) => (
                                 <div
                                     key={pet._id}
-                                    className={`group relative aspect-[3/4] transform transition-all duration-500 
-                                        ${index % 3 === 0 ? 'translate-y-8' : ''} 
-                                        ${index % 3 === 1 ? '-translate-y-8' : ''}
-                                        ${index % 2 === 0 ? 'md:rotate-2' : 'md:-rotate-2'}
-                                        hover:rotate-0 hover:scale-110 hover:z-10`}
+                                    className="relative aspect-square group overflow-hidden rounded-lg shadow-sm"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                                     <img
                                         src={pet.imageUrl}
                                         alt={pet.name}
-                                        className="w-full h-full object-cover rounded-2xl shadow-lg group-hover:shadow-2xl transition-shadow duration-500"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        onClick={() => openImagePreview(pet.imageUrl)}
                                     />
-                                    <div className="absolute bottom-0 left-0 right-0 p-5 text-white transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                                        <h3 className="text-xl font-bold">{pet.name}</h3>
-                                        <p className="text-amber-200">{pet.breed}</p>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white transform translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                        <h3 className="text-lg font-medium">{pet.name}</h3>
+                                        <p className="text-sm text-amber-200">{pet.breed}</p>
                                         <button
                                             onClick={() => handleMeetClick(pet._id)}
-                                            className="mt-3 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm hover:bg-white/30 transition-colors flex items-center"
+                                            className="mt-2 px-3 py-1 bg-amber-500/80 rounded-full text-sm hover:bg-amber-500 transition-colors flex items-center text-white"
                                         >
-                                            <Heart className="w-4 h-4 mr-2" />
+                                            <Heart className="w-3 h-3 mr-1" />
                                             Meet {pet.name}
                                         </button>
                                     </div>
@@ -262,46 +358,57 @@ const VendorDetails = () => {
                             ))}
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Available Pets Section */}
-            {activeTab === 'pets' && (
-                <div className="container mx-auto px-6 py-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {vendor.pets.map(pet => (
-                            <PetCard
-                                key={pet._id}
-                                pet={{ ...pet, vendorId: { address: vendor.address } }}
-                                onMeetClick={handleMeetClick}
-                            />
-                        ))}
+                {/* Available Pets Section */}
+                {activeTab === 'pets' && (
+                    <div className="mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {vendor.pets.map(pet => (
+                                <PetCard
+                                    key={pet._id}
+                                    pet={{ ...pet, vendorId: { address: vendor.address } }}
+                                    onMeetClick={handleMeetClick}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
-            {/* Testimonials or CTA Section */}
-            <div className="bg-amber-500 py-16 mt-16">
+            {/* CTA Section */}
+            <div className="bg-amber-100 py-12 relative border-t border-amber-200">
                 <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-6">Ready to Find Your Perfect Companion?</h2>
-                    <p className="text-amber-100 text-lg max-w-2xl mx-auto mb-8">
-                        Every pet deserves a loving home. Visit us today to meet our amazing pets waiting for adoption.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <button
-                            onClick={() => window.open(`https://maps.google.com/?q=${vendor.address}`, '_blank')}
-                            className="px-8 py-3 bg-white text-amber-600 rounded-lg font-semibold flex items-center justify-center hover:bg-amber-50 transition-colors"
-                        >
-                            <MapPin className="w-5 h-5 mr-2" />
-                            Visit Us
-                        </button>
-                        <button
-                            onClick={handleDonate}
-                            className="px-8 py-3 bg-amber-600 text-white rounded-lg font-semibold flex items-center justify-center hover:bg-amber-700 transition-colors"
-                        >
-                            <HeartHandshake className="w-5 h-5 mr-2" />
-                            Support Our Mission
-                        </button>
+                    <div className="max-w-2xl mx-auto">
+                        <h2 className="text-2xl font-bold text-amber-800 mb-4">Ready to Find Your Perfect Companion?</h2>
+                        <p className="text-amber-700 mb-6">
+                            Every pet deserves a loving home. Visit us today to meet our amazing pets waiting for adoption.
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center gap-4">
+                            <button
+                                onClick={() => window.open(`https://maps.google.com/?q=${vendor.address}`, '_blank')}
+                                className="px-6 py-2 bg-white text-amber-700 rounded-full font-medium flex items-center justify-center hover:bg-amber-50 transition-colors shadow-sm border border-amber-200"
+                            >
+                                <MapPin className="w-4 h-4 mr-2" />
+                                Visit Us
+                            </button>
+                            <button
+                                onClick={handleDonate}
+                                className="px-6 py-2 bg-amber-500 text-white rounded-full font-medium flex items-center justify-center hover:bg-amber-600 transition-colors shadow-sm"
+                            >
+                                <HeartHandshake className="w-4 h-4 mr-2" />
+                                Support Our Mission
+                            </button>
+                        </div>
+                        <div className="mt-6 text-amber-700 flex items-center justify-center">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            <span>Share this shelter on</span>
+                            <div className="flex space-x-3 ml-2">
+                                <button className="p-1 hover:text-amber-900 transition-colors">Facebook</button>
+                                <button className="p-1 hover:text-amber-900 transition-colors">Twitter</button>
+                                <button className="p-1 hover:text-amber-900 transition-colors">Instagram</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

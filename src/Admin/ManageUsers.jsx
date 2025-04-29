@@ -1,10 +1,12 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Trash, Ban, Check } from "lucide-react";
+import { Trash, Ban, Check, Eye, Clock as ClockIcon, PawPrint, Shield } from "lucide-react";
 import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import FeedbackModal from "../components/ui/FeedbackModal";
 import { Home, Users, Clock, ListChecks } from "lucide-react";
 import { AppContent } from '../context/AppContext'
+import { UserDetailModal } from "./DetailsModal";
+import { message } from 'antd'; // Import message from antd
 
 const ManageUsers = () => {
     const { userData } = useContext(AppContent);
@@ -18,6 +20,8 @@ const ManageUsers = () => {
         userId: null,
         action: null
     });
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [messageApi, contextHolder] = message.useMessage(); // Initialize message API
 
     useEffect(() => {
         fetchUsers();
@@ -58,20 +62,22 @@ const ManageUsers = () => {
             .then((data) => {
                 if (data.success) {
                     setUsers(users.filter(user => user._id !== userId));
+                    messageApi.success('User deleted successfully!'); // Show success message
                 } else {
                     setError("Failed to delete user.");
+                    messageApi.error(data.message || 'Failed to delete user'); // Show error message
                 }
             })
             .catch((error) => {
                 setError("Error deleting user.");
                 console.error("Error deleting user:", error);
+                messageApi.error('Error deleting user'); // Show error message
             });
     };
 
-
     const handleBanUnban = (userId, isBanned, remarks = "") => {
         const action = isBanned ? 'unban' : 'ban';
-        const adminId = userData?.userId; // Get admin ID from your context
+        const adminId = userData?.userId;
 
         fetch(`http://localhost:3000/api/user/${action}`, {
             method: "PUT",
@@ -81,10 +87,8 @@ const ManageUsers = () => {
             body: JSON.stringify({
                 userId,
                 remarks,
-                adminId // Include admin ID in the request
+                adminId
             }),
-
-
         })
             .then((response) => response.json())
             .then((data) => {
@@ -95,16 +99,18 @@ const ManageUsers = () => {
                             banInfo: data.user.banInfo
                         } : user
                     ));
+                    messageApi.success(`User ${action === 'ban' ? 'banned' : 'unbanned'} successfully!`); // Show success message
                 } else {
                     setError(`Failed to ${action} user: ${data.message}`);
+                    messageApi.error(data.message || `Failed to ${action} user`); // Show error message
                 }
             })
             .catch((error) => {
                 setError(`Error ${action}ning user.`);
                 console.error(`Error ${action}ning user:`, error);
+                messageApi.error(`Error ${action}ning user`); // Show error message
             });
     };
-
 
     const handleConfirmAction = () => {
         if (!confirmAction) return;
@@ -114,7 +120,6 @@ const ManageUsers = () => {
         if (action === 'delete') {
             handleDelete(userId);
         } else if (action === 'ban') {
-            // For banning, open the feedback modal instead of executing immediately
             setFeedbackModal({
                 isOpen: true,
                 userId: userId,
@@ -131,14 +136,12 @@ const ManageUsers = () => {
         const { userId, action } = feedbackModal;
 
         if (action === 'ban') {
-            // Find the user to check if they're already banned
             const user = users.find(u => u._id === userId);
             if (user) {
                 handleBanUnban(userId, user.isBanned, feedback);
             }
         }
 
-        // Close the feedback modal
         setFeedbackModal({
             isOpen: false,
             userId: null,
@@ -146,15 +149,24 @@ const ManageUsers = () => {
         });
     };
 
+    const handleViewUser = (userId) => {
+        const user = users.find(u => u._id === userId);
+        setSelectedUser(user);
+    };
+
     const adminMenuItems = [
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
         { path: "/admin/manage-users", label: "Manage Users", icon: Users },
         { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks }
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
+
     ];
 
     return (
         <div className="flex h-screen">
+            {contextHolder} {/* This is where the messages will appear */}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
@@ -179,8 +191,6 @@ const ManageUsers = () => {
                                         <th className="p-3">Email</th>
                                         <th className="p-3">Role</th>
                                         <th className="p-3">Status</th>
-                                        <th className="p-3">Ban Reason</th>
-                                        <th className="p-3">Banned By</th>
                                         <th className="p-3">Actions</th>
                                     </tr>
                                 </thead>
@@ -204,38 +214,49 @@ const ManageUsers = () => {
                                                     {user.banInfo?.isBanned ? 'Banned' : 'Active'}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-gray-600 text-sm max-w-xs truncate">
-                                                {user.banInfo?.reason || "—"}
-                                            </td>
-                                            <td className="p-4 text-gray-600 text-sm max-w-xs truncate">
-                                                {user.banInfo?.bannedBy?.name || "—"}
-                                            </td>
                                             <td className="p-4">
-                                                <div className="flex flex-col gap-2">
+                                                <div className="flex items-center gap-3">
                                                     <button
-                                                        onClick={() => setConfirmAction({
-                                                            action: user.banInfo?.isBanned ? 'unban' : 'ban',
-                                                            userId: user._id,
-                                                            isBanned: user.banInfo?.isBanned
-                                                        })}
-                                                        className={`${user.banInfo?.isBanned ? 'bg-green-500' : 'bg-yellow-500'} text-white px-3 py-1 rounded-lg flex items-center justify-center space-x-1 text-sm w-full`}>
+                                                        onClick={() => handleViewUser(user._id)}
+                                                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                                        title="View User"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (user.banInfo?.isBanned) {
+                                                                setConfirmAction({
+                                                                    action: 'unban',
+                                                                    userId: user._id,
+                                                                    isBanned: true
+                                                                });
+                                                            } else {
+                                                                setFeedbackModal({
+                                                                    isOpen: true,
+                                                                    userId: user._id,
+                                                                    action: 'ban'
+                                                                });
+                                                            }
+                                                        }}
+                                                        className={`p-2 rounded-full hover:bg-opacity-20 ${user.banInfo?.isBanned
+                                                            ? 'text-green-500 hover:bg-green-100'
+                                                            : 'text-yellow-500 hover:bg-yellow-100'
+                                                            }`}
+                                                        title={user.banInfo?.isBanned ? 'Unban User' : 'Ban User'}
+                                                    >
                                                         {user.banInfo?.isBanned ? (
-                                                            <>
-                                                                <Check size={14} />
-                                                                <span>Unban</span>
-                                                            </>
+                                                            <Check size={18} />
                                                         ) : (
-                                                            <>
-                                                                <Ban size={14} />
-                                                                <span>Ban</span>
-                                                            </>
+                                                            <Ban size={18} />
                                                         )}
                                                     </button>
                                                     <button
                                                         onClick={() => setConfirmAction({ action: 'delete', userId: user._id })}
-                                                        className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center justify-center space-x-1 text-sm w-full">
-                                                        <Trash size={14} />
-                                                        <span>Delete</span>
+                                                        className="p-2 text-red-500 hover:bg-red-100 rounded-full"
+                                                        title="Delete User"
+                                                    >
+                                                        <Trash size={18} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -263,6 +284,13 @@ const ManageUsers = () => {
                 description="Please provide a reason for banning this user. This information will be stored and may be displayed to the user."
                 placeholder="Enter ban reason..."
             />
+            {/* User Detail Modal */}
+            {selectedUser && (
+                <UserDetailModal
+                    user={selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                />
+            )}
         </div>
     );
 };
