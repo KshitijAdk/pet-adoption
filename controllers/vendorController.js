@@ -1,7 +1,7 @@
-import VendorApplication from '../models/venderApplication.js';
 import userModel from '../models/userModel.js';
 import Vendor from '../models/Vendor.js';
 import Pet from '../models/pet.model.js';
+import VendorApplication from '../models/venderApplication.js';
 
 export const registerVendor = async (req, res) => {
     try {
