@@ -1,0 +1,13 @@
+2025/04/30-14:09:33.220 35e0 Reusing MANIFEST C:\Users\Meridian\Desktop\pet_adoption\server\.wwebjs_auth\session-whatsapp-client\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/30-14:09:33.221 35e0 Recovering log #204
+2025/04/30-14:09:33.295 35e0 Reusing old log C:\Users\Meridian\Desktop\pet_adoption\server\.wwebjs_auth\session-whatsapp-client\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000204.log 
+2025/04/30-14:09:35.993 401c Level-0 table #209: started
+2025/04/30-14:09:36.010 401c Level-0 table #209: 252544 bytes OK
+2025/04/30-14:09:36.011 401c Delete type=0 #204
+2025/04/30-14:09:36.012 401c Manual compaction at level-0 from '\x00R\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00S\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/30-14:09:39.729 401c Compacting 1@1 + 1@2 files
+2025/04/30-14:09:39.936 401c Generated table #210@1: 47424 keys, 2147477 bytes
+2025/04/30-14:09:39.936 401c Compacted 1@1 + 1@2 files => 2147477 bytes
+2025/04/30-14:09:39.937 401c compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/04/30-14:09:39.938 401c Delete type=2 #206
+2025/04/30-14:09:39.938 401c Delete type=2 #209

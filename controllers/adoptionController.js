@@ -3,6 +3,7 @@ import Pet from '../models/pet.model.js';
 import Vendor from '../models/Vendor.js';
 import userModel from '../models/userModel.js';
 import { sendAdoptionStatusEmail } from '../config/nodemailer.js';
+import { sendWhatsAppMessage } from '../utils/sendWhatsappMsg.js';
 
 export const submitAdoptionRequest = async (req, res) => {
     console.log("Request Body:", req.body); // Log request for debugging
@@ -97,6 +98,7 @@ export const submitAdoptionRequest = async (req, res) => {
     }
 };
 
+
 export const approveAdoptionRequest = async (req, res) => {
     const { adoptionId } = req.body;
 
@@ -130,6 +132,12 @@ export const approveAdoptionRequest = async (req, res) => {
             return res.status(404).json({ message: "Pet not found" });
         }
 
+        // Send WhatsApp message
+        if (adoptionRequest.applicantContact) {
+            const waMessage = `🎉 Congratulations! Your adoption request for ${pet.name} has been approved. Thank you for choosing NayaSathi! 🐾`;
+            await sendWhatsAppMessage(adoptionRequest.applicantContact, waMessage);
+        }
+
         // 3. Update user who made the request
         await userModel.findByIdAndUpdate(
             adoptionRequest.applicantId,
@@ -150,13 +158,11 @@ export const approveAdoptionRequest = async (req, res) => {
         }).populate('applicantId', 'email');
 
         if (rejectedRequests.length > 0) {
-            // Update status in AdoptionRequest collection
             await AdoptionRequest.updateMany(
                 { _id: { $in: rejectedRequests.map(req => req._id) } },
                 { status: "Rejected" }
             );
 
-            // Update status in users' applications
             const bulkOps = rejectedRequests.map(request => ({
                 updateOne: {
                     filter: {
@@ -171,7 +177,7 @@ export const approveAdoptionRequest = async (req, res) => {
 
             await userModel.bulkWrite(bulkOps);
 
-            // Send rejection emails to all rejected applicants
+            // Send rejection emails
             await Promise.all(rejectedRequests.map(async request => {
                 const pet = await Pet.findById(request.petId).select('name');
                 if (pet && request.applicantId.email) {
@@ -180,7 +186,7 @@ export const approveAdoptionRequest = async (req, res) => {
             }));
         }
 
-        // Send approval email to the approved applicant
+        // Send approval email
         if (adoptionRequest.applicantId.email && pet) {
             await sendAdoptionStatusEmail(adoptionRequest.applicantId.email, pet.name, 'Approved');
         }
@@ -209,7 +215,7 @@ export const rejectAdoptionRequest = async (req, res) => {
     }
 
     try {
-        // 1. Reject the adoption request and get applicant info
+        // 1. Reject the adoption request
         const adoptionRequest = await AdoptionRequest.findByIdAndUpdate(
             adoptionId,
             { status: "Rejected" },
@@ -231,7 +237,7 @@ export const rejectAdoptionRequest = async (req, res) => {
             }
         );
 
-        // 3. If this was the only pending request for the pet, mark pet as available again
+        // 3. Check if pet should be marked available
         const pendingRequestsCount = await AdoptionRequest.countDocuments({
             petId: adoptionRequest.petId,
             status: "Pending"
@@ -244,10 +250,16 @@ export const rejectAdoptionRequest = async (req, res) => {
             );
         }
 
-        // Send rejection email to the applicant
+        // 4. Send notifications
         const pet = await Pet.findById(adoptionRequest.petId).select('name');
+
         if (pet && adoptionRequest.applicantId.email) {
             await sendAdoptionStatusEmail(adoptionRequest.applicantId.email, pet.name, 'Rejected');
+        }
+
+        if (adoptionRequest.applicantContact) {
+            const waMessage = `😔 We're sorry to inform you that your adoption request for ${pet?.name || 'the pet'} has been rejected. Thank you for your interest in giving a pet a home. 🐾`;
+            await sendWhatsAppMessage(adoptionRequest.applicantContact, waMessage);
         }
 
         res.status(200).json({
@@ -264,6 +276,7 @@ export const rejectAdoptionRequest = async (req, res) => {
         });
     }
 };
+
 
 export const getAdoptedPets = async (req, res) => {
     try {

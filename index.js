@@ -11,6 +11,8 @@ import petRoutes from './routes/petRoutes.js'
 import adoptionRoutes from './routes/adoptionRoutes.js'
 import adminStats from './routes/adminStats.js'
 
+import whatsappRoutes from './routes/whatsapp.js'; // Import the WhatsApp routes
+
 const app = express();
 const PORT = 3000;
 
@@ -30,7 +32,7 @@ app.use(
 );
 
 app.get('/', (req, res) => {
-  res.send("API Working");
+  res.send('🚀 WhatsApp Messaging API is running');
 });
 
 // Define routes
@@ -40,6 +42,7 @@ app.use("/api/vendors", vendorRoutes);  // All vendor routes will be prefixed wi
 app.use("/api/pets", petRoutes); // Mount pet routes
 app.use("/api/adoption", adoptionRoutes); // Mount pet routes
 app.use("/api/admin", adminStats); // Mount pet routes
+app.use('/api/whatsapp', whatsappRoutes);
 
 // Start the server
 app.listen(PORT, () => {
