@@ -162,6 +162,15 @@ export const login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
 
+        // Check if user is banned
+        if (user.banInfo.isBanned) {
+            return res.status(403).json({
+                success: false,
+                message: 'Account is banned',
+                banReason: user.banInfo.reason || 'No reason provided'
+            });
+        }
+
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRES_IN || '7d'
         });
@@ -351,6 +360,15 @@ export const google = async (req, res, next) => {
 
         // Check if user exists
         const existingUser = await userModel.findOne({ email });
+
+        // Check if user is banned
+        if (existingUser.banInfo.isBanned) {
+            return res.status(403).json({
+                success: false,
+                message: 'Account is banned',
+                banReason: existingUser.banInfo.reason || 'No reason provided'
+            });
+        }
 
         if (existingUser) {
             // User exists - generate token and respond

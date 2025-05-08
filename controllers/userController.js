@@ -239,15 +239,53 @@ export const banUser = async (req, res) => {
             });
         }
 
+        // Calculate unban date (1 minute from now)
+        const unbanDate = new Date();
+        unbanDate.setMinutes(unbanDate.getMinutes() + 1);
+
         // Update ban info
         user.banInfo = {
             isBanned: true,
             bannedBy: adminId,
             reason: remarks || "Violation of terms of service",
-            at: new Date()
+            at: new Date(),
+            willBeUnbannedAt: unbanDate  // Store the scheduled unban date
         };
 
         await user.save();
+
+        // Schedule auto-unban (after 1 minute)
+        setTimeout(async () => {
+            try {
+                const userToUnban = await userModel.findById(userId);
+                if (userToUnban && userToUnban.banInfo.isBanned) {
+                    userToUnban.banInfo = {
+                        ...userToUnban.banInfo,
+                        isBanned: false,
+                        unbannedBy: null, // System-initiated
+                        unbanReason: 'Automatic unban after 1 minute',
+                        unbannedAt: new Date()
+                    };
+                    await userToUnban.save();
+
+                    // Send unban notification email
+                    try {
+                        await sendEmail(
+                            userToUnban.email,
+                            'account-unbanned',
+                            {
+                                userName: userToUnban.name || userToUnban.username,
+                                adminEmail: 'system@yourdomain.com'
+                            }
+                        );
+                    } catch (emailError) {
+                        console.error("Email sending failed:", emailError);
+                    }
+                }
+            } catch (error) {
+                console.error("Error in auto-unban process:", error);
+            }
+        }, 60 * 1000); // 1 minute in milliseconds
 
         // Send email notification
         try {
@@ -256,8 +294,9 @@ export const banUser = async (req, res) => {
                 'account-banned',
                 {
                     userName: user.name || user.username,
-                    remarks: remarks,
-                    adminEmail: admin.email
+                    remarks: remarks || "Violation of terms of service",
+                    adminEmail: admin.email,
+                    unbanDate: unbanDate.toLocaleTimeString() // Show time instead of date
                 }
             );
         } catch (emailError) {
@@ -266,8 +305,9 @@ export const banUser = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "User banned successfully",
-            user
+            message: "User banned successfully. Will be automatically unbanned after 1 minute.",
+            user,
+            unbanTime: unbanDate.toLocaleTimeString() // Return time instead of full date
         });
 
     } catch (error) {

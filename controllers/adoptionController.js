@@ -4,6 +4,7 @@ import Vendor from '../models/Vendor.js';
 import userModel from '../models/userModel.js';
 import { sendAdoptionStatusEmail } from '../config/nodemailer.js';
 import { sendWhatsAppMessage } from '../utils/sendWhatsappMsg.js';
+import mongoose from 'mongoose';
 
 export const submitAdoptionRequest = async (req, res) => {
     console.log("Request Body:", req.body); // Log request for debugging
@@ -366,5 +367,92 @@ export const getUserApplications = async (req, res) => {
             message: "Internal server error",
             error: error.message
         });
+    }
+};
+
+
+export const getAllAdoptionRequests = async (req, res) => {
+    try {
+        // Check MongoDB connection
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error("MongoDB connection not ready");
+        }
+
+        // Get status filter from query params (optional)
+        const { status } = req.query;
+        const query = status ? { status } : {};
+
+        // Validate status if provided
+        if (status && !["Pending", "Approved", "Rejected"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value" });
+        }
+
+        // Fetch adoption requests with populated fields
+        const adoptionRequests = await AdoptionRequest.find(query)
+            .sort({ createdAt: -1 }) // Sort by most recent first
+            .populate({
+                path: "applicantId",
+                select: "name email contact address image"
+            })
+            .populate({
+                path: "petId",
+                select: "name species breed age gender status imageUrl"
+            })
+            .populate({
+                path: "vendorId",
+                select: "organization email contact address"
+            })
+            .lean(); // Convert to plain JavaScript objects for performance
+
+        // Check if any requests were found
+        if (!adoptionRequests.length) {
+            return res.status(200).json({
+                message: "No adoption requests found",
+                data: []
+            });
+        }
+
+        // Format response
+        const formattedRequests = adoptionRequests.map(request => ({
+            adoptionId: request.adoptionId,
+            status: request.status,
+            createdAt: request.createdAt,
+            adoptionReason: request.adoptionReason,
+            applicant: {
+                id: request.applicantId?._id,
+                name: request.applicantId?.name,
+                email: request.applicantId?.email,
+                contact: request.applicantId?.contact,
+                address: request.applicantId?.address,
+                image: request.applicantId?.image
+            },
+            pet: {
+                id: request.petId?._id,
+                name: request.petId?.name,
+                species: request.petId?.species,
+                breed: request.petId?.breed,
+                age: request.petId?.age,
+                gender: request.petId?.gender,
+                status: request.petId?.status,
+                imageUrl: request.petId?.imageUrl
+            },
+            vendor: {
+                id: request.vendorId?._id,
+                organization: request.vendorId?.organization,
+                email: request.vendorId?.email,
+                contact: request.vendorId?.contact,
+                address: request.vendorId?.address
+            }
+        }));
+
+        res.status(200).json({
+            message: "Adoption requests fetched successfully",
+            total: adoptionRequests.length,
+            data: formattedRequests
+        });
+
+    } catch (error) {
+        console.error("Error fetching adoption requests:", error.message);
+        res.status(500).json({ message: `Failed to fetch adoption requests: ${error.message}` });
     }
 };

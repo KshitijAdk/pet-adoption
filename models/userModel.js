@@ -92,6 +92,23 @@ const userSchema = new mongoose.Schema({
         at: {
             type: Date,
             default: null
+        },
+        willBeUnbannedAt: {  // Add this field
+            type: Date,
+            default: null
+        },
+        unbannedAt: {  // Add this field
+            type: Date,
+            default: null
+        },
+        unbanReason: {  // Add this field
+            type: String,
+            default: ""
+        },
+        unbannedBy: {  // Add this field
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
         }
     },
 

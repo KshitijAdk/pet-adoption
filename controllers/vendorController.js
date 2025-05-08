@@ -295,3 +295,4 @@ export const getVendorById = async (req, res) => {
         });
     }
 };
+

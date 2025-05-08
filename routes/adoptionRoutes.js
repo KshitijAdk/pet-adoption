@@ -6,6 +6,7 @@ import {
     getAdoptedPets,
     getVendorAdoptionRequests,
     getUserApplications,
+    getAllAdoptionRequests,
 } from '../controllers/adoptionController.js';
 
 const router = express.Router();
@@ -27,5 +28,7 @@ router.get('/vendor/:vendorId', getVendorAdoptionRequests); // 🆕 added vendor
 
 // Get all adoption applications submitted by a user
 router.get('/user/:userId', getUserApplications); // 🆕 added user applications route
+
+router.get('/adoption-requests',getAllAdoptionRequests); // 🆕 added route to get all adoption requests
 
 export default router;

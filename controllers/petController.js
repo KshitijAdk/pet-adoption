@@ -2,6 +2,7 @@ import Pet from "../models/pet.model.js";
 import userModel from "../models/userModel.js";
 import Vendor from "../models/Vendor.js";
 import mongoose from "mongoose";
+import AdoptionRequest from '../models/adoptionRequest.model.js';
 
 // controllers/petController.js
 export const addPetToVendor = async (req, res) => {
@@ -94,6 +95,51 @@ export const deletePet = async (req, res) => {
         });
     }
 };
+
+
+
+export const updatePetById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Validate if the pet exists
+        const existingPet = await Pet.findById(id);
+        if (!existingPet) {
+            return res.status(404).json({ message: 'Pet not found' });
+        }
+
+        // Validate vendor ID if needed (optional)
+        // if (req.user.vendorId !== existingPet.vendorId.toString()) {
+        //     return res.status(403).json({ message: 'Unauthorized to update this pet' });
+        // }
+
+        // Prepare updated fields
+        const updateFields = {
+            name: req.body.name,
+            species: req.body.species,
+            breed: req.body.breed,
+            size: req.body.size,
+            age: Number(req.body.age),
+            gender: req.body.gender,
+            weight: Number(req.body.weight),
+            health: req.body.health,
+            goodWith: req.body.goodWith || [],
+            traits: req.body.traits || [],
+            imageUrl: req.body.imageUrl,
+            description: req.body.description,
+            status: req.body.status,
+        };
+
+        // Update the pet document
+        const updatedPet = await Pet.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+
+        return res.status(200).json({ pet: updatedPet });
+    } catch (error) {
+        console.error('Error updating pet:', error);
+        return res.status(500).json({ message: 'Server error while updating pet' });
+    }
+};
+
 
 // Get pet details
 export const getPetData = async (req, res) => {
