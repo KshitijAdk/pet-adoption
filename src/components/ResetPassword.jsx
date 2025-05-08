@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import InputField from "./ui/InputField";
 import Button from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { toast } from "react-toastify";
 import { AppContent } from "../context/AppContext";
-import ToastComponent from "./ui/ToastComponent";
 import "./styles.css";
+import { message } from "antd";
 
 export default function ResetPassword() {
     const [step, setStep] = useState(1);
@@ -21,7 +20,7 @@ export default function ResetPassword() {
 
     const handleSendOtp = async () => {
         if (!email) {
-            toast.error("Please enter your email address.");
+            message.error("Please enter your email address.");
             return;
         }
         try {
@@ -33,15 +32,15 @@ export default function ResetPassword() {
             });
             const data = await response.json();
             if (data.success) {
-                toast.success("OTP has been sent to your email.");
+                message.success("OTP has been sent to your email.");
                 setStep(2);
                 setResendDisabled(true);
                 startCountdown();
             } else {
-                toast.error(data.message || "Failed to send OTP. Please try again.");
+                message.error(data.message || "Failed to send OTP. Please try again.");
             }
         } catch (error) {
-            toast.error("Something went wrong. Please try again later.");
+            message.error("Something went wrong. Please try again later.");
         }
     };
 
@@ -72,32 +71,32 @@ export default function ResetPassword() {
             });
             const data = await response.json();
             if (data.success) {
-                toast.success("OTP has been resent to your email.");
+                message.success("OTP has been resent to your email.");
             } else {
-                toast.error(data.message || "Failed to resend OTP. Please try again.");
+                message.error(data.message || "Failed to resend OTP. Please try again.");
             }
         } catch (error) {
-            toast.error("Something went wrong. Please try again later.");
+            message.error("Something went wrong. Please try again later.");
         }
     };
 
     const handleVerifyOtp = async () => {
         if (!otp) {
-            toast.error("Please enter the OTP sent to your email.");
+            message.error("Please enter the OTP sent to your email.");
             return;
         }
-        toast.success("OTP verified successfully! Proceeding to password reset.");
+        message.success("OTP verified successfully! Proceeding to password reset.");
         setStep(3);
     };
 
     const handleResetPassword = async () => {
         if (!newPassword) {
-            toast.error("Please enter a new password.");
+            message.error("Please enter a new password.");
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            toast.error("Passwords do not match. Please check and try again.");
+            message.error("Passwords do not match. Please check and try again.");
             return;
         }
 
@@ -110,13 +109,13 @@ export default function ResetPassword() {
             });
             const data = await response.json();
             if (data.success) {
-                toast.success("Your password has been reset successfully!");
+                message.success("Your password has been reset successfully!");
                 setTimeout(() => navigate("/login"), 2000);
             } else {
-                toast.error(data.message || "Failed to reset password. Please try again.");
+                message.error(data.message || "Failed to reset password. Please try again.");
             }
         } catch (error) {
-            toast.error("Something went wrong. Please try again later.");
+            message.error("Something went wrong. Please try again later.");
         }
     };
 
@@ -126,7 +125,7 @@ export default function ResetPassword() {
                 {[1, 2, 3].map((num) => (
                     <div key={num} className="flex items-center">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === num ? "bg-blue-600 text-white" :
-                                step > num ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
+                            step > num ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
                             }`}>
                             {step > num ? "✓" : num}
                         </div>
@@ -240,7 +239,6 @@ export default function ResetPassword() {
                     </div>
                 </CardContent>
             </Card>
-            <ToastComponent />
         </div>
     );
 }

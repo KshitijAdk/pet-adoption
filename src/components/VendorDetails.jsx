@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -16,6 +17,7 @@ const VendorDetails = () => {
     const [showDonateModal, setShowDonateModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
 
+    // Fetch vendor data
     useEffect(() => {
         const fetchVendor = async () => {
             try {
@@ -37,8 +39,13 @@ const VendorDetails = () => {
         fetchVendor();
     }, [vendorId]);
 
+    // Auto-open donate modal when the component mounts
     useEffect(() => {
-        // Disable scrolling when modal is open
+        setShowDonateModal(true); // Open the donate modal automatically
+    }, []); // Empty dependency array ensures this runs only once on mount
+
+    // Handle scroll behavior for modals
+    useEffect(() => {
         if (showDonateModal || selectedImage) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -82,9 +89,9 @@ const VendorDetails = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-amber-50 text-amber-600">
-                <div className="h-16 w-16 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin mb-4"></div>
+                < div className="h-16 w-16 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin mb-4" ></div >
                 <p className="text-lg font-medium animate-pulse">Loading shelter details...</p>
-            </div>
+            </div >
         );
     }
 
@@ -189,7 +196,7 @@ const VendorDetails = () => {
             {/* Hero Section */}
             <div className="relative h-80 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-500 opacity-90"></div>
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-154819 Carbohydrates3')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
                 <div className="relative h-full container mx-auto px-6 flex flex-col justify-center">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <div className="text-center md:text-left mb-8 md:mb-0 max-w-xl">
@@ -307,8 +314,8 @@ const VendorDetails = () => {
                 <div className="flex space-x-1 border-b border-amber-200 mb-6">
                     <button
                         className={`px-4 py-3 font-medium transition-colors flex items-center ${activeTab === 'gallery'
-                                ? 'text-amber-700 border-b-2 border-amber-500'
-                                : 'text-gray-600 hover:text-amber-600'
+                            ? 'text-amber-700 border-b-2 border-amber-500'
+                            : 'text-gray-600 hover:text-amber-600'
                             }`}
                         onClick={() => setActiveTab('gallery')}
                     >
@@ -317,8 +324,8 @@ const VendorDetails = () => {
                     </button>
                     <button
                         className={`px-4 py-3 font-medium transition-colors flex items-center ${activeTab === 'pets'
-                                ? 'text-amber-700 border-b-2 border-amber-500'
-                                : 'text-gray-600 hover:text-amber-600'
+                            ? 'text-amber-700 border-b-2 border-amber-500'
+                            : 'text-gray-600 hover:text-amber-600'
                             }`}
                         onClick={() => setActiveTab('pets')}
                     >

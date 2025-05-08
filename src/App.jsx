@@ -33,6 +33,7 @@ import VendorRoute from "./routes/VendorRoute";
 import NotFoundPage from "./routes/NotFoundPage";
 import AllPetsAdmin from "./Admin/AllPetsAdmin";
 import AllAdmins from "./Admin/AllAdmins";
+import AllAdoptionRequests from "./Admin/AllAdoptionRequests";
 
 const App = () => {
   return (
@@ -69,6 +70,7 @@ const App = () => {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/all-pets" element={<AllPetsAdmin />} />
           <Route path="/admin/all-admins" element={<AllAdmins />} />
+          <Route path="/admin/all-adoptions" element={<AllAdoptionRequests />} />
         </Route>
 
         {/* Vendor Routes */}

@@ -1,8 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { message } from "antd";
 
 const FavouriteButton = ({ petId }) => {
     const [isFavourited, setIsFavourited] = useState(false);
@@ -38,7 +37,7 @@ const FavouriteButton = ({ petId }) => {
 
     const toggleFavourite = async () => {
         if (!userData?.userId) {
-            toast.warning("Please login to add to favorites");
+            message.warning("Please login to add to favorites");
             return;
         }
 
@@ -69,17 +68,17 @@ const FavouriteButton = ({ petId }) => {
             if (!response.ok) {
                 setIsFavourited(!isAdding);
                 if (response.status === 400) {
-                    toast.warning(data.message);
+                    message.warning(data.message);
                 } else if (response.status === 404) {
-                    toast.error(data.message);
+                    message.error(data.message);
                 } else {
-                    toast.error("Something went wrong. Please try again.");
+                    message.error("Something went wrong. Please try again.");
                 }
             } else {
                 if (isAdding) {
-                    toast.success("Pet added to favorites!");
+                    message.success("Pet added to favorites!");
                 } else {
-                    toast.info("Pet removed from favorites");
+                    message.success("Pet removed from favorites");
                 }
             }
 
@@ -89,7 +88,7 @@ const FavouriteButton = ({ petId }) => {
         } catch (error) {
             const action = !isFavourited ? "adding to" : "removing from";
             console.error(`Error ${action} favourites:`, error);
-            toast.error(`Error ${action} favourites. Please try again.`);
+            message.error(`Error ${action} favourites. Please try again.`);
             setIsFavourited(!isFavourited);
             setIsAnimating(false);
         }

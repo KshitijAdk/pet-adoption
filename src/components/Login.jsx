@@ -4,11 +4,10 @@ import { PawPrint, Mail, Lock } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
-import { toast } from "react-toastify";
-import ToastComponent from './ui/ToastComponent';
 import Loading from "./ui/Loading";
 import OAuth from "./OAuth";
 import axios from "axios";
+import { message } from 'antd'
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -42,14 +41,18 @@ const Login = () => {
         // Optional: Store in localStorage if needed elsewhere
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        toast.success("Login successful! Redirecting...");
+        message.success("Login successful!");
         navigate("/");
+        window.location.reload(); // Reload the page to reflect changes
       } else {
         throw new Error(data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(error.response?.data?.message || "Login failed");
+      const errorMessage = error.response?.status === 403
+        ? `Account is banned: ${error.response?.data?.banReason || 'No reason provided'}`
+        : error.response?.data?.message || "Login failed";
+      message.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +147,6 @@ const Login = () => {
       </div>
 
       {isLoading && <Loading text="Signing you in..." />}
-      <ToastComponent />
     </div>
   );
 };

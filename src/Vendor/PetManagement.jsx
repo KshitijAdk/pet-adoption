@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { PlusCircle, Home, PawPrint, ListChecks } from 'lucide-react';
+import { message } from 'antd';
 import PetForm from './PetForm';
 import PetList from './PetList';
 import { AppContent } from '../context/AppContext';
@@ -45,11 +46,14 @@ const PetManagement = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setPets(data.pets);
+                    message.success('Pets loaded successfully');
                 } else {
-                    console.error('Failed to fetch pets');
+                    const errorData = await response.json();
+                    message.error(errorData.message || 'Failed to fetch pets');
                 }
             } catch (error) {
                 console.error('Error fetching pets:', error);
+                message.error('Error fetching pets. Please try again.');
             } finally {
                 setLoading(false);
             }
@@ -86,7 +90,7 @@ const PetManagement = () => {
                 body: JSON.stringify({
                     ...formData,
                     vendorId: userData.vendorDetails.vendorId,
-                    imageUrl: formData.imageUrl || '' // fallback to empty string
+                    imageUrl: formData.imageUrl || ''
                 }),
             });
 
@@ -94,12 +98,14 @@ const PetManagement = () => {
 
             if (response.ok && result.pet) {
                 setPets((prev) => [...prev, result.pet]);
-                handleCancelEdit(); // Clear the form or close modal
+                message.success('Pet added successfully!');
+                handleCancelEdit();
             } else {
-                console.error('Failed to add pet:', result.message || 'Unknown error');
+                message.error(result.message || 'Failed to add pet');
             }
         } catch (error) {
             console.error('Error adding pet:', error);
+            message.error('Error adding pet. Please try again.');
         }
     };
 
@@ -107,7 +113,6 @@ const PetManagement = () => {
         setFormData({
             ...pet,
             imageUrl: pet.imageUrl,
-            // Ensure arrays are properly set for checkboxes
             goodWith: pet.goodWith || [],
             traits: pet.traits || []
         });
@@ -118,6 +123,9 @@ const PetManagement = () => {
     const handleUpdatePet = async (e) => {
         e.preventDefault();
 
+        console.log('Updating pet with ID:', editingPetId);
+        console.log('Form data being sent:', formData);
+
         try {
             const response = await fetch(`/api/pets/${editingPetId}`, {
                 method: 'PUT',
@@ -127,16 +135,20 @@ const PetManagement = () => {
 
             const result = await response.json();
 
+            console.log('Response from server:', result);
+
             if (response.ok && result.pet) {
                 setPets((prevPets) =>
                     prevPets.map((pet) => (pet._id === editingPetId ? result.pet : pet))
                 );
+                message.success('Pet updated successfully!');
                 handleCancelEdit();
             } else {
-                console.error('Failed to update pet:', result.message || 'Unknown error');
+                message.error(result.message || 'Failed to update pet');
             }
         } catch (error) {
             console.error('Error updating pet:', error);
+            message.error('Error updating pet. Please try again.');
         }
     };
 
@@ -161,23 +173,21 @@ const PetManagement = () => {
     };
 
     const handleDeletePet = async (petId) => {
-        if (!window.confirm('Are you sure you want to delete this pet?')) return;
-
         try {
-            const response = await fetch(`/api/pets/${petId}`, {
+            const response = await fetch(`http://localhost:3000/api/pets/${petId}`, {
                 method: 'DELETE',
             });
 
             if (response.ok) {
                 setPets((prevPets) => prevPets.filter((pet) => pet._id !== petId));
+                message.success('Pet deleted successfully!');
             } else {
                 const result = await response.json();
-                console.error('Failed to delete pet:', result.message);
-                alert(result.message || 'Failed to delete pet');
+                message.error(result.message || 'Failed to delete pet');
             }
         } catch (error) {
             console.error('Error deleting pet:', error);
-            alert('Error deleting pet');
+            message.error('Error deleting pet. Please try again.');
         }
     };
 
@@ -207,7 +217,6 @@ const PetManagement = () => {
                         >
                             <option value="all">All Pets</option>
                             <option value="available">Available</option>
-                            <option value="pending">Pending</option>
                             <option value="adopted">Adopted</option>
                         </select>
                         <button

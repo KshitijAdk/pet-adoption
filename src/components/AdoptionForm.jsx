@@ -6,8 +6,8 @@ import Button from './ui/button';
 import { AppContent } from '../context/AppContext';
 import Label from './ui/label';
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'react-toastify';
 import AdoptionConfirmationModal from './AdoptionConfirmationModal';
+import { message } from 'antd';
 
 const AdoptionFormModal = ({ isOpen, onClose, vendorId }) => {
   const { userData, backendUrl } = useContext(AppContent);
@@ -48,20 +48,20 @@ const AdoptionFormModal = ({ isOpen, onClose, vendorId }) => {
 
       if (!response.ok) {
         if (response.status === 409) {
-          toast.error(result.message || 'You have already applied for this pet.');
+          message.error(result.message || 'You have already applied for this pet.');
         } else {
-          toast.error(result.message || 'Something went wrong. Please try again.');
+          message.error(result.message || 'Something went wrong. Please try again.');
         }
         setSubmitting(false);
         return;
       }
 
-      toast.success('Adoption request submitted successfully!');
+      message.success('Adoption request submitted successfully!');
       onClose();
       setTimeout(() => setShowConfirmation(true), 2000);
     } catch (err) {
       console.error('Submission Error:', err);
-      toast.error('Something went wrong. Please try again.');
+      message.error('Something went wrong. Please try again.');
       setSubmitting(false);
     }
   };

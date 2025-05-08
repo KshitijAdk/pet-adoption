@@ -3,8 +3,7 @@ import { PawPrint, User, Mail, Lock, Check, X } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
-import { toast } from "react-toastify";
-import ToastComponent from './ui/ToastComponent';
+import { message } from 'antd'
 import Loading from "./ui/Loading";
 import OAuth from "./OAuth";
 
@@ -53,7 +52,7 @@ const Signup = () => {
     const handleSignup = async (e) => {
         e.preventDefault();
         if (!isValidPassword) {
-            return toast.error("Password must include a letter, number, and special character.");
+            return message.error("Password must include a letter, number, and special character.");
         }
 
         setIsLoading(true);
@@ -74,18 +73,18 @@ const Signup = () => {
 
             if (!response.ok) {
                 if (response.status === 409 && data.isResend) {
-                    toast.info("Existing verification found. New OTP sent.");
+                    message.info("Existing verification found. New OTP sent.");
                     setShowVerification(true);
                     return;
                 }
                 throw new Error(data.message || "Registration failed");
             }
 
-            toast.success("OTP sent to your email!");
+            message.success("OTP sent to your email!");
             setShowVerification(true);
             setTimeLeft(180);
         } catch (error) {
-            toast.error(error.message || "Signup failed");
+            message.error(error.message || "Signup failed");
         } finally {
             setIsLoading(false);
         }
@@ -114,8 +113,8 @@ const Signup = () => {
     const handleVerify = async () => {
         const enteredOtp = otp.join("");
 
-        if (enteredOtp.length < 6) return toast.error("Please enter the full 6-digit OTP.");
-        if (timeLeft <= 0) return toast.error("OTP has expired. Please request a new one.");
+        if (enteredOtp.length < 6) return message.error("Please enter the full 6-digit OTP.");
+        if (timeLeft <= 0) return message.error("OTP has expired. Please request a new one.");
 
         setIsLoading(true);
 
@@ -129,10 +128,10 @@ const Signup = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "Verification failed");
 
-            toast.success("Email verified! Redirecting...");
+            message.success("Email verified! Redirecting...");
             setTimeout(() => (window.location.href = "/login"), 1500);
         } catch (error) {
-            toast.error(error.message || "Invalid OTP. Try again.");
+            message.error(error.message || "Invalid OTP. Try again.");
         } finally {
             setIsLoading(false);
         }
@@ -156,9 +155,9 @@ const Signup = () => {
             if (!response.ok) throw new Error(data.message || "Resend failed");
 
             setTimeLeft(180);
-            toast.success("New OTP sent!");
+            message.success("New OTP sent!");
         } catch (error) {
-            toast.error(error.message || "Failed to resend OTP.");
+            message.error(error.message || "Failed to resend OTP.");
             setResendDisabled(false);
         }
     };
@@ -290,7 +289,6 @@ const Signup = () => {
             </div>
 
             {isLoading && <Loading text={showVerification ? "Verifying your email..." : "Creating your account..."} />}
-            <ToastComponent />
         </div>
     );
 };

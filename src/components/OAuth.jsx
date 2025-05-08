@@ -1,10 +1,11 @@
 import React from 'react';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { app } from '../firebase';
+import { app } from '../utils/firebase.js'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { signInStart, signInSuccess, signInFail } from '../redux/slices/userSlice.js';
-import { toast } from 'react-toastify';
+import { message } from 'antd';
+
 
 const OAuth = () => {
     const navigate = useNavigate();
@@ -14,36 +15,34 @@ const OAuth = () => {
         try {
             dispatch(signInStart());
 
-            // Initialize auth and provider
+            // Initialize Google auth provider
             const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' }); // Forces account selection
-            const auth = getAuth(app);
+            provider.setCustomParameters({ prompt: 'select_account' }); // Always ask account
 
-            // Sign in with Google
+            const auth = getAuth(app);
             const result = await signInWithPopup(auth, provider);
+
             const { displayName, email, photoURL } = result.user;
 
-            // Validate essential data
             if (!email) {
                 throw new Error('Google authentication failed - no email provided');
             }
 
-            // Prepare user data for backend
             const userData = {
-                name: displayName || email.split('@')[0], // Fallback to email prefix if no name
+                name: displayName || email.split('@')[0],
                 email: email.toLowerCase().trim(),
-                photo: photoURL || null
+                photo: photoURL || null,
             };
-            console.log(userData);
 
-            // Send to backend
+            console.log('Google User Data:', userData);
+
             const response = await fetch(`http://localhost:3000/api/auth/google`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(userData),
-                credentials: 'include' // Important for cookies
+                credentials: 'include',
             });
 
             const data = await response.json();
@@ -54,32 +53,33 @@ const OAuth = () => {
 
             if (data.success) {
                 dispatch(signInSuccess(data.user));
-                toast.success('Signed in successfully!');
+                message.success('Signed in successfully!');
                 navigate("/");
 
-                // Wait for navigation to complete before scrolling and refreshing
                 setTimeout(() => {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                    });
-                    window.location.reload(); // Refresh the page
-                }, 100); // Small delay to allow navigation
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    window.location.reload();
+                }, 100);
             } else {
                 throw new Error(data.message || 'Authentication failed');
             }
-
 
         } catch (error) {
             console.error('Google Sign-In Error:', error);
             dispatch(signInFail(error.message));
 
-            // User-friendly error messages
-            const errorMessage = error.code === 'auth/popup-closed-by-user'
-                ? 'Sign in process cancelled'
-                : error.message || 'Failed to sign in with Google';
+            let errorMessage = 'Login failed';
 
-            toast.error(errorMessage);
+            if (error.response?.status === 403) {
+                errorMessage = `Account is banned: ${error.response?.data?.banReason || 'No reason provided'}`;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = 'Sign in process cancelled';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            message.error(errorMessage);
         }
     };
 

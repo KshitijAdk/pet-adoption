@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Home, Users, Clock, ListChecks, PawPrint, ChevronDown, BarChart2, PieChart as PieChartIcon, Shield } from "lucide-react";
-import Sidebar from "../components/ui/Sidebar";
+import Sidebar from "./Sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/adminCard'
 import { BarChart, PieChart } from '../components/ui/charts'
 import { Skeleton } from '../components/ui/skeleton'
@@ -13,14 +13,6 @@ const AdminDashboard = () => {
     const [chartType, setChartType] = useState('pet-status'); // 'pet-status', 'adoption-status', 'species'
     const [chartDisplay, setChartDisplay] = useState('pie'); // 'pie' or 'bar'
 
-    const adminMenuItems = [
-        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
-        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
-        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
-        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
-        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
-    ];
 
     const chartOptions = [
         { id: 'pet-status', label: 'Pet Status' },
@@ -101,7 +93,6 @@ const AdminDashboard = () => {
                 <Sidebar
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
-                    menuItems={adminMenuItems}
                     title="Admin Panel"
                 />
                 <div className="flex-1 p-4">
@@ -120,15 +111,14 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen">
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
-                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
 
-            <div className="flex-1 p-4 overflow-auto">
+            <div className="flex-1 p-6">
                 {/* Header */}
                 <div className="bg-white shadow-sm mb-4 p-3 rounded-lg">
                     <h1 className="text-xl font-semibold text-gray-800">Admin Dashboard</h1>

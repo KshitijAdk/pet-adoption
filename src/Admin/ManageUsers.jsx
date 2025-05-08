@@ -1,12 +1,11 @@
-import Sidebar from "../components/ui/Sidebar";
+import Sidebar from "./Sidebar";
 import { useState, useEffect, useContext } from "react";
 import { Trash, Ban, Check, Eye, Clock as ClockIcon, PawPrint, Shield } from "lucide-react";
 import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import FeedbackModal from "../components/ui/FeedbackModal";
-import { Home, Users, Clock, ListChecks } from "lucide-react";
-import { AppContent } from '../context/AppContext'
+import { AppContent } from '../context/AppContext';
 import { UserDetailModal } from "./DetailsModal";
-import { message } from 'antd'; // Import message from antd
+import { message } from 'antd';
 
 const ManageUsers = () => {
     const { userData } = useContext(AppContent);
@@ -21,7 +20,7 @@ const ManageUsers = () => {
         action: null
     });
     const [selectedUser, setSelectedUser] = useState(null);
-    const [messageApi, contextHolder] = message.useMessage(); // Initialize message API
+    const [messageApi, contextHolder] = message.useMessage();
 
     useEffect(() => {
         fetchUsers();
@@ -62,22 +61,35 @@ const ManageUsers = () => {
             .then((data) => {
                 if (data.success) {
                     setUsers(users.filter(user => user._id !== userId));
-                    messageApi.success('User deleted successfully!'); // Show success message
+                    messageApi.success('User deleted successfully!');
                 } else {
                     setError("Failed to delete user.");
-                    messageApi.error(data.message || 'Failed to delete user'); // Show error message
+                    messageApi.error(data.message || 'Failed to delete user');
                 }
             })
             .catch((error) => {
                 setError("Error deleting user.");
                 console.error("Error deleting user:", error);
-                messageApi.error('Error deleting user'); // Show error message
+                messageApi.error('Error deleting user');
             });
     };
 
     const handleBanUnban = (userId, isBanned, remarks = "") => {
         const action = isBanned ? 'unban' : 'ban';
         const adminId = userData?.userId;
+
+        // Optimistically update the UI
+        const previousUsers = [...users];
+        setUsers(users.map(user =>
+            user._id === userId ? {
+                ...user,
+                banInfo: {
+                    ...user.banInfo,
+                    isBanned: !isBanned,
+                    remarks: action === 'ban' ? remarks : user.banInfo?.remarks
+                }
+            } : user
+        ));
 
         fetch(`http://localhost:3000/api/user/${action}`, {
             method: "PUT",
@@ -99,16 +111,20 @@ const ManageUsers = () => {
                             banInfo: data.user.banInfo
                         } : user
                     ));
-                    messageApi.success(`User ${action === 'ban' ? 'banned' : 'unbanned'} successfully!`); // Show success message
+                    messageApi.success(`User ${action === 'ban' ? 'banned' : 'unbanned'} successfully!`);
                 } else {
+                    // Revert optimistic update on failure
+                    setUsers(previousUsers);
                     setError(`Failed to ${action} user: ${data.message}`);
-                    messageApi.error(data.message || `Failed to ${action} user`); // Show error message
+                    messageApi.error(data.message || `Failed to ${action} user`);
                 }
             })
             .catch((error) => {
+                // Revert optimistic update on error
+                setUsers(previousUsers);
                 setError(`Error ${action}ning user.`);
                 console.error(`Error ${action}ning user:`, error);
-                messageApi.error(`Error ${action}ning user`); // Show error message
+                messageApi.error(`Error ${action}ning user`);
             });
     };
 
@@ -138,7 +154,7 @@ const ManageUsers = () => {
         if (action === 'ban') {
             const user = users.find(u => u._id === userId);
             if (user) {
-                handleBanUnban(userId, user.isBanned, feedback);
+                handleBanUnban(userId, user.banInfo?.isBanned, feedback);
             }
         }
 
@@ -154,23 +170,12 @@ const ManageUsers = () => {
         setSelectedUser(user);
     };
 
-    const adminMenuItems = [
-        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
-        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
-        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
-        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
-        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
-
-    ];
-
     return (
         <div className="flex h-screen">
-            {contextHolder} {/* This is where the messages will appear */}
+            {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
-                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
             <div className="flex-1 p-6">
@@ -274,8 +279,23 @@ const ManageUsers = () => {
                     isOpen={!!confirmAction}
                     onConfirm={handleConfirmAction}
                     onCancel={() => setConfirmAction(null)}
+                    title={
+                        confirmAction.action === 'delete'
+                            ? 'Delete User'
+                            : confirmAction.action === 'unban'
+                                ? 'Unban User'
+                                : undefined
+                    }
+                    message={
+                        confirmAction.action === 'delete'
+                            ? 'Are you sure you want to delete this user? This action cannot be undone.'
+                            : confirmAction.action === 'unban'
+                                ? 'Are you sure you want to unban this user?'
+                                : undefined
+                    }
                 />
             )}
+
             <FeedbackModal
                 isOpen={feedbackModal.isOpen}
                 onClose={() => setFeedbackModal({ isOpen: false, userId: null, action: null })}
@@ -284,7 +304,6 @@ const ManageUsers = () => {
                 description="Please provide a reason for banning this user. This information will be stored and may be displayed to the user."
                 placeholder="Enter ban reason..."
             />
-            {/* User Detail Modal */}
             {selectedUser && (
                 <UserDetailModal
                     user={selectedUser}

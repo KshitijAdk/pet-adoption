@@ -1,7 +1,6 @@
-import Sidebar from "../components/ui/Sidebar";
+import Sidebar from "./Sidebar";
 import { useState, useEffect, useContext } from "react";
 import { Eye, PawPrint, Plus } from "lucide-react";
-import { Home, Users, Clock, ListChecks, Shield } from "lucide-react";
 import { AppContent } from '../context/AppContext'
 import { UserDetailModal } from "./DetailsModal";
 import { message, Modal, Input, Button, Form } from 'antd';
@@ -79,22 +78,12 @@ const AllAdmins = () => {
         }
     };
 
-    const adminMenuItems = [
-        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
-        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
-        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
-        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
-        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
-        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
-    ];
-
     return (
         <div className="flex h-screen">
             {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
-                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
             <div className="flex-1 p-6">
