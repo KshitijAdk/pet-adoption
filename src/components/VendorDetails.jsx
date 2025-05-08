@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -89,9 +88,9 @@ const VendorDetails = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-amber-50 text-amber-600">
-                < div className="h-16 w-16 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin mb-4" ></div >
+                <div className="h-16 w-16 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin mb-4"></div>
                 <p className="text-lg font-medium animate-pulse">Loading shelter details...</p>
-            </div >
+            </div>
         );
     }
 
@@ -120,24 +119,24 @@ const VendorDetails = () => {
             {/* Image Preview Modal */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-auto"
+                    className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 overflow-auto"
                     onClick={closeImagePreview}
                 >
                     <div
-                        className="relative max-w-4xl w-full max-h-screen p-2"
+                        className="relative max-w-3xl w-full max-h-screen p-2"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={closeImagePreview}
-                            className="absolute top-2 right-2 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                            className="absolute top-4 right-4 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-lg"
                             aria-label="Close image preview"
                         >
-                            <X className="w-6 h-6 text-white" />
+                            <X className="w-5 h-5 text-white" />
                         </button>
                         <img
                             src={selectedImage}
                             alt="Preview"
-                            className="w-full h-auto max-h-screen object-contain rounded-lg"
+                            className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl"
                         />
                     </div>
                 </div>
@@ -174,7 +173,8 @@ const VendorDetails = () => {
                             <img
                                 src={vendor.fonepayQr}
                                 alt="Fonepay QR Code"
-                                className="w-64 h-64 object-contain shadow-sm rounded-lg bg-white p-2 border border-amber-200"
+                                className="w-64 h-64 object-contain shadow-sm rounded-lg bg-white p-2 border border-amber-200 cursor-pointer"
+                                onClick={() => openImagePreview(vendor.fonepayQr)}
                             />
                         </div>
 
@@ -242,8 +242,7 @@ const VendorDetails = () => {
                                 <img
                                     src={vendor.image}
                                     alt={vendor.organization}
-                                    className="w-full h-64 object-contain cursor-pointer"
-                                    onClick={() => openImagePreview(vendor.image)}
+                                    className="w-full h-64 object-contain"
                                 />
                             </div>
                             <div className="flex flex-wrap items-center gap-3 mt-4">
