@@ -1,5 +1,5 @@
 import Sidebar from "../components/ui/Sidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
     Calendar,
     Clock,
@@ -16,6 +16,7 @@ import BigModal from "../components/ui/BigModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
 import { VendorDetailsModal } from "./DetailsModal";
+import { AppContent } from "../context/AppContext";
 
 const PendingApplications = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -24,6 +25,7 @@ const PendingApplications = () => {
     const [error, setError] = useState(null);
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const { backendUrl } = useContext(AppContent);
 
     const adminMenuItems = [
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
@@ -31,14 +33,14 @@ const PendingApplications = () => {
         { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
-        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
-
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield },
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
     ];
 
     useEffect(() => {
         const fetchVendors = async () => {
             try {
-                const response = await fetch("http://localhost:3000/api/vendors/pending-vendors");
+                const response = await fetch(`${backendUrl}/api/vendors/pending-vendors`);
                 if (!response.ok) throw new Error("Failed to fetch vendors");
                 const data = await response.json();
                 setVendors(data.vendors || []); // Ensure vendors is always set to an array
@@ -54,7 +56,7 @@ const PendingApplications = () => {
 
     const approveVendor = async (vendorId) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/vendors/approve-vendor/${vendorId}`, {
+            const response = await fetch(`${backendUrl}/api/vendors/approve-vendor/${vendorId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });
@@ -71,7 +73,7 @@ const PendingApplications = () => {
 
     const rejectVendor = async (vendorId) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/vendors/reject-vendor/${vendorId}`, {
+            const response = await fetch(`${backendUrl}/api/vendors/reject-vendor/${vendorId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });
@@ -100,19 +102,7 @@ const PendingApplications = () => {
         setLoading(true);
         setError(null);
 
-        fetch("http://localhost:3000/api/vendors/pending-vendors")
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to fetch vendors");
-                return response.json();
-            })
-            .then(data => {
-                setVendors(data.vendors || []);
-                setLoading(false);
-            })
-            .catch(err => {
-                setError(err.message);
-                setLoading(false);
-            });
+        window.location.reload(); // Refresh the page to get updated data
     };
 
     const columns = [

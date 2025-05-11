@@ -8,7 +8,6 @@ import Sidebar from '../components/ui/Sidebar';
 import { AppContent } from '../context/AppContext';
 import { PieChart, BarChart } from '../components/ui/charts';
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
 
 const VendorDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -38,7 +37,7 @@ const VendorDashboard = () => {
       } catch (err) {
         console.error("Error fetching vendor data:", err);
         setError("Failed to load dashboard data");
-        toast.error("Failed to load dashboard data");
+        message.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }

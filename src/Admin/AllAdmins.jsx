@@ -1,12 +1,12 @@
-import Sidebar from "./Sidebar";
+import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Eye, PawPrint, Plus } from "lucide-react";
+import { Eye, PawPrint, Plus, Home, Users, ListChecks, Clock, Shield } from "lucide-react";
 import { AppContent } from '../context/AppContext'
 import { UserDetailModal } from "./DetailsModal";
 import { message, Modal, Input, Button, Form } from 'antd';
 
 const AllAdmins = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ const AllAdmins = () => {
     }, []);
 
     const fetchUsers = () => {
-        fetch("http://localhost:3000/api/user/admins")
+        fetch(`${backendUrl}/api/user/admins`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
@@ -54,7 +54,7 @@ const AllAdmins = () => {
 
     const handleAddAdminSubmit = async (values) => {
         try {
-            const response = await fetch("http://localhost:3000/api/user/create-admin", {
+            const response = await fetch(`${backendUrl}/api/user/create-admin`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,12 +78,23 @@ const AllAdmins = () => {
         }
     };
 
+    const adminMenuItems = [
+        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
+        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield },
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+    ];
+
     return (
         <div className="flex h-screen">
             {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
+                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
             <div className="flex-1 p-6">

@@ -35,6 +35,8 @@ import AllPetsAdmin from "./Admin/AllPetsAdmin";
 import AllAdmins from "./Admin/AllAdmins";
 import AllAdoptionRequests from "./Admin/AllAdoptionRequests";
 
+
+
 const App = () => {
   return (
     <>
@@ -55,6 +57,7 @@ const App = () => {
         <Route path="/fullblogs" element={<BlogPage />} />
         <Route path="/aboutUs" element={<AboutUs />} />
         <Route path="/vendor-registration" element={<VendorRegistration />} />
+
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>

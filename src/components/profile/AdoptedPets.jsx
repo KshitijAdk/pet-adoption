@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const AdoptedPets = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [adoptedPets, setAdoptedPets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ const AdoptedPets = () => {
                 setLoading(true);
                 setError(null);
 
-                const response = await axios.get(`http://localhost:3000/api/adoption/adopted/${userData.userId}`);
+                const response = await axios.get(`${backendUrl}/api/adoption/adopted/${userData.userId}`);
 
                 if (response.data?.adoptedPets) {
                     setAdoptedPets(response.data.adoptedPets);

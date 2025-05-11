@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Home, Users, Clock, ListChecks, PawPrint, ChevronDown, BarChart2, PieChart as PieChartIcon, Shield } from "lucide-react";
-import Sidebar from "./Sidebar";
+import Sidebar from "../components/ui/Sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/adminCard'
 import { BarChart, PieChart } from '../components/ui/charts'
 import { Skeleton } from '../components/ui/skeleton'
+import { AppContent } from "../context/AppContext";
 
 const AdminDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const { backendUrl } = useContext(AppContent);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('month'); // 'day', 'week', 'month', 'year'
@@ -25,8 +27,8 @@ const AdminDashboard = () => {
             try {
                 setLoading(true);
                 const [dashboardRes, statsRes] = await Promise.all([
-                    fetch('http://localhost:3000/api/admin/dashboard'),
-                    fetch(`http://localhost:3000/api/admin/stats?period=${timeRange}`)
+                    fetch(`${backendUrl}/api/admin/dashboard`),
+                    fetch(`${backendUrl}/api/admin/stats?period=${timeRange}`)
                 ]);
 
                 const dashboardData = await dashboardRes.json();
@@ -110,11 +112,23 @@ const AdminDashboard = () => {
         );
     }
 
+
+    const adminMenuItems = [
+        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
+        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield },
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+    ];
+
     return (
         <div className="flex min-h-screen">
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
+                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
 

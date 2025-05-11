@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { Upload, Building, Phone, MapPin, FileText, User, Mail, File, X, QrCode } from "lucide-react";
 import { AppContent } from "../context/AppContext";
-import { toast } from "react-toastify";
+import {message} from 'antd'
 
 export default function VendorRegistration() {
     const { backendUrl, userData } = useContext(AppContent);
@@ -81,15 +81,15 @@ export default function VendorRegistration() {
 
         // Required files
         if (!files.orgImage) {
-            toast.error("Organization image is required");
+            message.error("Organization image is required");
             isValid = false;
         }
         if (!files.fonepayQr) {
-            toast.error("Fonepay QR code is required");
+            message.error("Fonepay QR code is required");
             isValid = false;
         }
         if (files.idDocuments.length === 0) {
-            toast.error("At least one identity document is required");
+            message.error("At least one identity document is required");
             isValid = false;
         }
 
@@ -125,7 +125,7 @@ export default function VendorRegistration() {
             const data = await response.json();
 
             if (response.ok) {
-                toast.success("Vendor registration sent successfully!");
+                message.success("Vendor registration sent successfully!");
                 // Reset form
                 setFormData({
                     fullName: userData?.name || "",
@@ -138,10 +138,10 @@ export default function VendorRegistration() {
                 setFiles({ orgImage: null, fonepayQr: null, idDocuments: [] });
                 setErrors({});
             } else {
-                toast.error(data.message || "Registration failed. Please try again.");
+                message.error(data.message || "Registration failed. Please try again.");
             }
         } catch (error) {
-            toast.error("Something went wrong. Please try again.");
+            message.error("Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }

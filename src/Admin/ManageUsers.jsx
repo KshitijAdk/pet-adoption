@@ -1,14 +1,15 @@
-import Sidebar from "./Sidebar";
+import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Trash, Ban, Check, Eye, Clock as ClockIcon, PawPrint, Shield } from "lucide-react";
+import { Trash, Ban, Check, Eye, Clock, PawPrint, Shield , Home, ListChecks, Users} from "lucide-react";
 import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import FeedbackModal from "../components/ui/FeedbackModal";
 import { AppContent } from '../context/AppContext';
 import { UserDetailModal } from "./DetailsModal";
 import { message } from 'antd';
 
+
 const ManageUsers = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ const ManageUsers = () => {
     }, []);
 
     const fetchUsers = () => {
-        fetch("http://localhost:3000/api/user")
+        fetch(`${backendUrl}/api/user`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
@@ -50,7 +51,7 @@ const ManageUsers = () => {
     };
 
     const handleDelete = (userId) => {
-        fetch("http://localhost:3000/api/user/delete-user", {
+        fetch(`${backendUrl}/api/user/delete-user`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -91,7 +92,7 @@ const ManageUsers = () => {
             } : user
         ));
 
-        fetch(`http://localhost:3000/api/user/${action}`, {
+        fetch(`${backendUrl}/api/user/${action}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -111,6 +112,7 @@ const ManageUsers = () => {
                             banInfo: data.user.banInfo
                         } : user
                     ));
+
                     messageApi.success(`User ${action === 'ban' ? 'banned' : 'unbanned'} successfully!`);
                 } else {
                     // Revert optimistic update on failure
@@ -170,12 +172,24 @@ const ManageUsers = () => {
         setSelectedUser(user);
     };
 
+    const adminMenuItems = [
+        { path: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { path: "/admin/manage-users", label: "Manage Users", icon: Users },
+        { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
+        { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
+        { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield },
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+    ];
+
     return (
         <div className="flex h-screen">
+
             {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
+                menuItems={adminMenuItems}
                 title="Admin Panel"
             />
             <div className="flex-1 p-6">

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Table, Button, Modal, Tag, Image, Divider } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 import { PawPrint, Home, Users, Clock, ListChecks, Shield } from 'lucide-react';
 import Sidebar from '../components/ui/Sidebar';
+import { AppContent } from '../context/AppContext';
 
 const AllPetsAdmin = () => {
     const [pets, setPets] = useState([]);
@@ -10,11 +11,12 @@ const AllPetsAdmin = () => {
     const [selectedPet, setSelectedPet] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const { backendUrl } = useContext(AppContent);
 
     useEffect(() => {
         const fetchPets = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/pets/all-pets');
+                const response = await fetch(`${backendUrl}/api/pets/all-pets`);
                 const data = await response.json();
                 setPets(data.data);
                 setLoading(false);
@@ -32,7 +34,8 @@ const AllPetsAdmin = () => {
         { path: "/admin/pending-vendors", label: "Pending Applications", icon: Clock },
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
-        { path: "/admin/all-admins", label: "All Admins", icon: Shield }
+        { path: "/admin/all-admins", label: "All Admins", icon: Shield },
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
     ];
 
     const columns = [

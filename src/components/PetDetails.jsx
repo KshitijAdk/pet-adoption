@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Heart, MapPin, ChevronLeft, CheckCircle, MessageCircle, Calendar } from "lucide-react";
+import { MapPin, ChevronLeft, CheckCircle, MessageCircle, Calendar } from "lucide-react";
 import Loading from "./ui/Loading";
 import AdoptionFormModal from "./AdoptionForm";
 import { AppContent } from "../context/AppContext";
 import FavouriteButton from "./ui/FavouriteButton";
+import { message } from "antd";
 
 const PetDetails = () => {
   const { petId } = useParams();
@@ -48,6 +49,9 @@ const PetDetails = () => {
       }
     };
 
+    console.log(userData);
+
+
     fetchPetDetails();
   }, [petId, userData?.favoritePets]);
 
@@ -65,8 +69,22 @@ const PetDetails = () => {
   const handleAdoptNowClick = () => {
     if (!isLoggedin) {
       navigate("/login");
+    } else if (userData?.role === "admin") {
+      message.error("Admin accounts cannot adopt pets.");
+    } else if (userData?.vendorDetails?.vendorId === vendorId) {
+      message.error("You cannot adopt your own posted pet.");
     } else {
       setIsModalOpen(true);
+    }
+  };
+
+  const handleContactClick = () => {
+    if (!isLoggedin) {
+      navigate("/login");
+    } else {
+      // Generate roomId consistently: sort userId and vendorId, then join
+      const roomId = [userData.userId, vendorId].sort().join('_');
+      navigate(`/messages/${roomId}`, { state: { receiverId: vendorId } });
     }
   };
 
@@ -193,7 +211,10 @@ const PetDetails = () => {
               >
                 Adopt Now
               </button>
-              <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center">
+              <button
+                onClick={handleContactClick}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center"
+              >
                 <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
                 Contact
               </button>
@@ -206,7 +227,7 @@ const PetDetails = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         petId={petId}
-        vendorId={vendorId}  // Add this line
+        vendorId={vendorId}
       />
     </div>
   );

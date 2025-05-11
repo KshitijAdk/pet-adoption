@@ -230,3 +230,114 @@ export const VendorDetailsModal = ({ vendor, onClose }) => {
         </div>
     );
 };
+
+export const AdoptionRequestModal = ({ request, onClose }) => {
+    // Helper function to safely access nested properties
+    const getSafeValue = (obj, path, fallback = "N/A") => {
+        try {
+            const value = path.split('.').reduce((acc, key) => acc?.[key], obj);
+            return value !== undefined && value !== null ? value : fallback;
+        } catch {
+            return fallback;
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Adoption Request Details</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700"
+                        aria-label="Close modal"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    {/* Adoption Details */}
+                    <div className="border-b pb-4">
+                        <h3 className="font-medium text-gray-900">Adoption Information</h3>
+                        <div className="space-y-1 text-sm text-gray-700">
+                            <p><strong>Adoption ID:</strong> {getSafeValue(request, 'adoptionId')}</p>
+                            <p><strong>Status:</strong>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${request.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                                    request.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                        'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                    {getSafeValue(request, 'status', 'Pending')}
+                                </span>
+                            </p>
+                            <p><strong>Created At:</strong> {new Date(getSafeValue(request, 'createdAt')).toLocaleString()}</p>
+                            <p><strong>Reason:</strong> {getSafeValue(request, 'adoptionReason')}</p>
+                        </div>
+                    </div>
+
+                    {/* Pet Information */}
+                    <div className="border-b pb-4">
+                        <h3 className="font-medium text-gray-900">Pet Information</h3>
+                        <div className="flex gap-4">
+                            {request.pet?.imageUrl && (
+                                <img
+                                    src={request.pet.imageUrl}
+                                    alt={request.pet.name || 'Pet image'}
+                                    className="w-32 h-32 object-cover rounded"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                            )}
+                            <div className="space-y-1 text-sm text-gray-700">
+                                <p><strong>Name:</strong> {getSafeValue(request, 'pet.name')}</p>
+                                <p><strong>Species:</strong> {getSafeValue(request, 'pet.species')}</p>
+                                <p><strong>Breed:</strong> {getSafeValue(request, 'pet.breed')}</p>
+                                <p><strong>Age:</strong> {getSafeValue(request, 'pet.age')}</p>
+                                <p><strong>Gender:</strong> {getSafeValue(request, 'pet.gender')}</p>
+                                <p><strong>Status:</strong> {getSafeValue(request, 'pet.status')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Applicant Information */}
+                    <div className="border-b pb-4">
+                        <h3 className="font-medium text-gray-900">Applicant Information</h3>
+                        <div className="flex gap-4">
+                            {request.applicant?.image && (
+                                <img
+                                    src={request.applicant.image}
+                                    alt={request.applicant.name || 'Applicant image'}
+                                    className="w-16 h-16 rounded-full"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                            )}
+                            <div className="space-y-1 text-sm text-gray-700">
+                                <p><strong>Name:</strong> {getSafeValue(request, 'applicant.name')}</p>
+                                <p><strong>Email:</strong> {getSafeValue(request, 'applicant.email')}</p>
+                                <p><strong>Contact:</strong> {getSafeValue(request, 'applicant.contact')}</p>
+                                <p><strong>Address:</strong> {getSafeValue(request, 'applicant.address')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Vendor Information */}
+                    <div>
+                        <h3 className="font-medium text-gray-900">Vendor Information</h3>
+                        <div className="space-y-1 text-sm text-gray-700">
+                            <p><strong>Organization:</strong> {getSafeValue(request, 'vendor.organization')}</p>
+                            <p><strong>Email:</strong> {getSafeValue(request, 'vendor.email')}</p>
+                            <p><strong>Contact:</strong> {getSafeValue(request, 'vendor.contact')}</p>
+                            <p><strong>Address:</strong> {getSafeValue(request, 'vendor.address')}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                        <span className="font-medium">Submitted on:</span> {new Date(getSafeValue(request, 'createdAt')).toLocaleString()}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};

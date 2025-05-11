@@ -1,10 +1,9 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
-import { PawPrint, Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { PawPrint, Menu, X, User, LogOut, Settings, LayoutDashboard, Store, UserPlus } from "lucide-react";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
-import ToastComponent from "./ui/ToastComponent";
+import { message } from "antd"
 
 const Navbar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } = useContext(AppContent);
@@ -41,31 +40,48 @@ const Navbar = () => {
         Cookies.remove("token");
         setIsLoggedin(false);
         setUserData(null);
-        toast.success("Successfully logged out!");
+        message.success("Successfully logged out!");
         navigate("/");
       } else {
         throw new Error(data.message || "Logout failed");
       }
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("An error occurred during logout. Please try again.");
+      message.error("An error occurred during logout. Please try again.");
     }
   };
+
+  console.log(userData);
+
+
 
   const getDashboardLink = () => {
     if (!userData?.role) return null;
 
     switch (userData.role) {
       case 'admin':
-        return { path: "/admin/dashboard", label: "Admin Dashboard" };
+        return {
+          path: "/admin/dashboard",
+          label: "Admin Dashboard",
+          icon: <LayoutDashboard className="w-4 h-4 mr-2" />,
+        };
       case 'vendor':
-        return { path: "/vendor-dashboard", label: "Vendor Dashboard" };
+        return {
+          path: "/vendor-dashboard",
+          label: "Vendor Dashboard",
+          icon: <Store className="w-4 h-4 mr-2" />,
+        };
       case 'user':
-        return { path: "/user/dashboard", label: "User Dashboard" };
+        return {
+          path: "/vendor-registration",
+          label: "Apply for Vendor",
+          icon: <UserPlus className="w-4 h-4 mr-2" />,
+        };
       default:
         return null;
     }
   };
+
 
   const dashboardLink = getDashboardLink();
 
@@ -106,31 +122,34 @@ const Navbar = () => {
             </div>
 
             {/* User Menu / Login Button */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center">
               {isLoggedin ? (
                 <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="flex items-center space-x-2 focus:outline-none"
+                    className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-gray-200 to-gray-200 rounded-full border border-gray-300 hover:shadow-md transition-all duration-200"
+                    aria-expanded={isProfileMenuOpen}
+                    aria-label="Open user menu"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-200 hover:border-amber-400 transition-colors">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-amber-50 flex items-center justify-center ring-2 ring-amber-100">
                       {userData?.image ? (
                         <img
                           src={userData?.image}
-                          alt={userData.name}
+                          alt={userData.name || "User"}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-amber-100 flex items-center justify-center">
-                          <User className="w-5 h-5 text-amber-600" />
-                        </div>
+                        <User className="w-4 h-4 text-amber-500" />
                       )}
                     </div>
+                    <Menu
+                      className={`w-5 h-5 text-gray-800 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
                   {/* Profile Dropdown */}
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 ring-1 ring-black ring-opacity-5 z-50 transform origin-top-right transition-all duration-200">
                       <div className="px-4 py-3 border-b">
                         <p className="text-sm font-medium text-gray-900 truncate">{userData?.name}</p>
                         <p className="text-xs text-gray-500 truncate">{userData?.email}</p>
@@ -142,10 +161,11 @@ const Navbar = () => {
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
-                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          <span className="mr-2">{dashboardLink.icon}</span>
                           {dashboardLink.label}
                         </Link>
                       )}
+
 
                       <Link
                         to="/profile"
@@ -233,7 +253,6 @@ const Navbar = () => {
           </div>
         )}
       </nav>
-      <ToastComponent />
     </>
   );
 };
