@@ -54,6 +54,11 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'vendor', 'admin'],
         default: 'user'
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor',
+        default: null
+    },
     contact: {
         type: String,
         default: "",
@@ -93,19 +98,19 @@ const userSchema = new mongoose.Schema({
             type: Date,
             default: null
         },
-        willBeUnbannedAt: {  // Add this field
+        willBeUnbannedAt: {
             type: Date,
             default: null
         },
-        unbannedAt: {  // Add this field
+        unbannedAt: {
             type: Date,
             default: null
         },
-        unbanReason: {  // Add this field
+        unbanReason: {
             type: String,
             default: ""
         },
-        unbannedBy: {  // Add this field
+        unbannedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null

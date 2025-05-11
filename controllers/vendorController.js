@@ -1,7 +1,7 @@
-import userModel from '../models/userModel.js';
 import Vendor from '../models/Vendor.js';
 import Pet from '../models/pet.model.js';
 import VendorApplication from '../models/venderApplication.js';
+import User from '../models/userModel.js';
 
 export const registerVendor = async (req, res) => {
     try {
@@ -77,7 +77,6 @@ export const getAllVendorApplications = async (req, res) => {
 export const approveVendor = async (req, res) => {
     try {
         const { vendorId } = req.params;
-        const { adminNotes } = req.body; // Optional: Add approval notes
 
         // 1. Find and validate vendor application
         const vendorApplication = await VendorApplication.findById(vendorId);
@@ -89,27 +88,15 @@ export const approveVendor = async (req, res) => {
             return res.status(400).json({ message: "Application already approved" });
         }
 
-        // 2. Update user role to "vendor"
-        const updatedUser = await userModel.findOneAndUpdate(
-            { email: vendorApplication.email },
-            {
-                $set: {
-                    role: "vendor",
-                    image: vendorApplication.image,
-                    address: vendorApplication.address,
-                    contact: vendorApplication.contact,
-                    description: vendorApplication.description,
-                }
-            },
-            { new: true }
-        );
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: "User not found" });
+        // 2. Find the user associated with the application
+        const user = await User.findOne({ email: vendorApplication.email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found for this application" });
         }
 
-        // 3. Create vendor profile (with reference to the application)
+        // 3. Create vendor profile
         const newVendor = new Vendor({
+            user: user._id, // ✅ Add the required user reference
             fullName: vendorApplication.fullName,
             organization: vendorApplication.organization,
             email: vendorApplication.email,
@@ -120,13 +107,21 @@ export const approveVendor = async (req, res) => {
             fonepayQr: vendorApplication.fonepayQr,
             idDocuments: vendorApplication.idDocuments,
             application: vendorApplication._id,
-            approvedAt: new Date(), // Track approval time
-            adminNotes: adminNotes || null, // Optional approval notes
+            approvedAt: new Date(),
         });
 
         await newVendor.save();
 
-        // 4. Update application status and link to the new vendor
+        // 4. Update user role to "vendor" and add vendor reference
+        user.role = "vendor";
+        user.vendorId = newVendor._id;
+        user.image = vendorApplication.image;
+        user.address = vendorApplication.address;
+        user.contact = vendorApplication.contact;
+        user.description = vendorApplication.description;
+        await user.save();
+
+        // 5. Update application status
         vendorApplication.status = "Approved";
         vendorApplication.approvedVendor = newVendor._id;
         vendorApplication.processedAt = new Date();
@@ -135,7 +130,7 @@ export const approveVendor = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Vendor approved successfully!",
-            user: updatedUser,
+            user,
             vendor: newVendor,
             application: vendorApplication,
         });
@@ -172,7 +167,7 @@ export const rejectVendor = async (req, res) => {
         }
 
         // 3. Reset user role to "user" (if they were a vendor)
-        const updatedUser = await userModel.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
             { email: vendorApplication.email },
             { $set: { role: "user" } },
             { new: true }
