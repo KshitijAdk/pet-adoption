@@ -10,7 +10,7 @@ import vendorRoutes from './routes/vendorRoutes.js'
 import petRoutes from './routes/petRoutes.js'
 import adoptionRoutes from './routes/adoptionRoutes.js'
 import adminStats from './routes/adminStats.js'
-
+import blogRoutes from './routes/blogsRoutes.js'; // Import the blog routes
 import whatsappRoutes from './routes/whatsapp.js'; // Import the WhatsApp routes
 
 const app = express();
@@ -43,6 +43,7 @@ app.use("/api/pets", petRoutes); // Mount pet routes
 app.use("/api/adoption", adoptionRoutes); // Mount pet routes
 app.use("/api/admin", adminStats); // Mount pet routes
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/blogs', blogRoutes); // Mount blog routes
 
 
 // Start the server

@@ -361,17 +361,17 @@ export const google = async (req, res, next) => {
         // Check if user exists
         const existingUser = await userModel.findOne({ email });
 
-        // Check if user is banned
-        if (existingUser.banInfo.isBanned) {
-            return res.status(403).json({
-                success: false,
-                message: 'Account is banned',
-                banReason: existingUser.banInfo.reason || 'No reason provided'
-            });
-        }
-
+        // If user exists, check if they are banned
         if (existingUser) {
-            // User exists - generate token and respond
+            if (existingUser.banInfo.isBanned) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Account is banned',
+                    banReason: existingUser.banInfo.reason || 'No reason provided'
+                });
+            }
+
+            // User exists and is not banned - generate token and respond
             const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
                 expiresIn: '7d'
             });

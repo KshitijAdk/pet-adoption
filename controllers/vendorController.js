@@ -3,40 +3,47 @@ import Pet from '../models/pet.model.js';
 import VendorApplication from '../models/venderApplication.js';
 import User from '../models/userModel.js';
 
+
 export const registerVendor = async (req, res) => {
     try {
-        const { fullName, organization, email, contact, address, description } = req.body;
+        console.log("Request body:", req.body);
 
-        // Check if vendor with this email already exists
+        const {
+            fullName,
+            organization,
+            email,
+            contact,
+            address,
+            description,
+            image,       // single image URL string
+            fonepayQr,   // single QR code URL string
+            idDocuments  // array of document URLs
+        } = req.body;
+
+        // Check if vendor with email already exists
         const existingVendor = await VendorApplication.findOne({ email });
         if (existingVendor) {
             return res.status(409).json({
+                success: false,
                 message: "Application with this email already exists"
             });
         }
 
-        if (!req.files || !req.files.image || req.files.image.length === 0) {
-            return res.status(400).json({
-                message: "Organization image is required"
-            });
+        // Validate presence of URLs
+        if (!image) {
+            return res.status(400).json({ success: false, message: "Organization image URL is required" });
+        }
+        if (!fonepayQr) {
+            return res.status(400).json({ success: false, message: "Fonepay QR code URL is required" });
+        }
+        if (!idDocuments || !Array.isArray(idDocuments) || idDocuments.length === 0) {
+            return res.status(400).json({ success: false, message: "At least one identity document URL is required" });
+        }
+        if (idDocuments.length > 5) {
+            return res.status(400).json({ success: false, message: "A maximum of 5 identity document URLs are allowed" });
         }
 
-        if (!req.files.fonepayQr || req.files.fonepayQr.length === 0) {
-            return res.status(400).json({
-                message: "Fonepay QR code is required"
-            });
-        }
-
-        if (!req.files.idDocuments || req.files.idDocuments.length === 0) {
-            return res.status(400).json({
-                message: "At least one identity document is required"
-            });
-        }
-
-        const image = req.files.image[0].path;
-        const fonepayQr = req.files.fonepayQr[0].path;
-        const idDocumentUrls = req.files.idDocuments.map(file => file.path);
-
+        // Create and save new vendor application
         const newVendor = new VendorApplication({
             fullName,
             organization,
@@ -46,22 +53,33 @@ export const registerVendor = async (req, res) => {
             description,
             image,
             fonepayQr,
-            idDocuments: idDocumentUrls
+            idDocuments,
+            status: "Pending"
         });
 
         await newVendor.save();
 
         res.status(201).json({
-            message: 'Vendor registered successfully!',
-            vendor: newVendor
+            success: true,
+            message: "Vendor application submitted successfully!",
+            data: {
+                id: newVendor._id,
+                fullName: newVendor.fullName,
+                organization: newVendor.organization,
+                email: newVendor.email,
+                status: newVendor.status
+            }
         });
+
     } catch (error) {
-        console.error(error);
+        console.error('Error in vendor registration:', error);
         res.status(500).json({
-            message: 'Something went wrong, please try again.'
+            success: false,
+            message: error.message
         });
     }
 };
+
 
 
 export const getAllVendorApplications = async (req, res) => {
