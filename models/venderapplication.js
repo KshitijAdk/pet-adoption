@@ -19,6 +19,10 @@ const vendorApplicationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Vendor'
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
      // Will be populated when approved
 }, { timestamps: true });
 

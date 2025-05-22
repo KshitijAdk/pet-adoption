@@ -17,7 +17,8 @@ export const registerVendor = async (req, res) => {
             description,
             image,       // single image URL string
             fonepayQr,   // single QR code URL string
-            idDocuments  // array of document URLs
+            idDocuments,  // array of document URLs
+            userId
         } = req.body;
 
         // Check if vendor with email already exists
@@ -54,6 +55,7 @@ export const registerVendor = async (req, res) => {
             image,
             fonepayQr,
             idDocuments,
+            user: userId, // Reference to the user who is applying
             status: "Pending"
         });
 

@@ -5,6 +5,7 @@ import userModel from '../models/userModel.js';
 import { sendAdoptionStatusEmail } from '../config/nodemailer.js';
 import { sendWhatsAppMessage } from '../utils/sendWhatsappMsg.js';
 import mongoose from 'mongoose';
+import VendorApplication from '../models/venderApplication.js';
 
 export const submitAdoptionRequest = async (req, res) => {
     console.log("Request Body:", req.body); // Log request for debugging
@@ -335,11 +336,13 @@ export const getVendorAdoptionRequests = async (req, res) => {
     }
 };
 
-// Get user's adoption applications
+
+// Get user's adoption applications and vendor application if exists
 export const getUserApplications = async (req, res) => {
     try {
         const { userId } = req.params;
 
+        // Fetch user and populate adoption applications
         const user = await userModel.findById(userId)
             .populate({
                 path: 'applications',
@@ -357,10 +360,15 @@ export const getUserApplications = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        // Fetch full vendor application details if exists
+        const vendorApplication = await VendorApplication.findOne({ user: userId })
+
         res.status(200).json({
             applications: user.applications,
-            count: user.applications.length
+            count: user.applications.length,
+            vendorApplication: vendorApplication || null
         });
+
     } catch (error) {
         console.error("Error fetching user applications:", error);
         res.status(500).json({
