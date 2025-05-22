@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "./ui/InputField";
 import Button from "./ui/button";
@@ -18,36 +18,53 @@ export default function ResetPassword() {
     const { backendUrl } = useContext(AppContent);
     const navigate = useNavigate();
 
+    // Debug step changes
+    useEffect(() => {
+        console.log("Step changed to:", step);
+    }, [step]);
+
     const handleSendOtp = async () => {
         if (!email) {
-            message.error("Please enter your email address.");
+            message.error("Please enter a valid email address.");
             return;
         }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            message.error("Please enter a valid email format.");
+            return;
+        }
+
         try {
+            const messageKey = "sendOtp";
+            message.loading({ content: "Sending OTP...", key: messageKey });
+
             const response = await fetch(`${backendUrl}/api/auth/send-reset-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
                 credentials: "include",
             });
+
             const data = await response.json();
-            if (data.success) {
-                message.success("OTP has been sent to your email.");
-                setStep(2);
+
+            if (response.ok && data.success) {
+                message.success({ content: "OTP sent to your email. Please check your inbox or spam folder.", key: messageKey });
+                setStep(2); // This should now properly update the step
                 setResendDisabled(true);
                 startCountdown();
             } else {
-                message.error(data.message || "Failed to send OTP. Please try again.");
+                message.error({ content: data.message || "Failed to send OTP. Please try again.", key: messageKey });
             }
         } catch (error) {
-            message.error("Something went wrong. Please try again later.");
+            message.error({ content: "An error occurred while sending OTP. Please try again later.", key: messageKey });
+            console.error("Send OTP error:", error);
         }
     };
 
     const startCountdown = () => {
         setCountdown(30);
         const timer = setInterval(() => {
-            setCountdown(prev => {
+            setCountdown((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
                     setResendDisabled(false);
@@ -59,24 +76,35 @@ export default function ResetPassword() {
     };
 
     const handleResendOtp = async () => {
+        if (!email) {
+            message.error("Email is missing. Please start over.");
+            setStep(1);
+            return;
+        }
+
         setResendDisabled(true);
         startCountdown();
 
         try {
+            const messageKey = "resendOtp";
+            message.loading({ content: "Resending OTP...", key: messageKey });
+
             const response = await fetch(`${backendUrl}/api/auth/send-reset-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
                 credentials: "include",
             });
+
             const data = await response.json();
-            if (data.success) {
-                message.success("OTP has been resent to your email.");
+            if (response.ok && data.success) {
+                message.success({ content: "OTP resent to your email. Please check your inbox or spam folder.", key: messageKey });
             } else {
-                message.error(data.message || "Failed to resend OTP. Please try again.");
+                message.error({ content: data.message || "Failed to resend OTP. Please try again.", key: messageKey });
             }
         } catch (error) {
-            message.error("Something went wrong. Please try again later.");
+            message.error({ content: "An error occurred while resending OTP. Please try again later.", key: messageKey });
+            console.error("Resend OTP error:", error);
         }
     };
 
@@ -85,37 +113,82 @@ export default function ResetPassword() {
             message.error("Please enter the OTP sent to your email.");
             return;
         }
-        message.success("OTP verified successfully! Proceeding to password reset.");
-        setStep(3);
+
+        if (otp.length !== 6) {
+            message.error("Please enter a valid 6-digit OTP.");
+            return;
+        }
+
+        const key = "verifyOtpMessage";
+
+        try {
+            message.loading({ content: "Verifying OTP...", key });
+
+            const response = await fetch(`${backendUrl}/api/auth/verify-reset-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp }),
+                credentials: "include",
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                message.success({
+                    content: "OTP verified successfully! Proceed to reset your password.",
+                    key,
+                });
+                setStep(3);
+            } else {
+                // Use status code to determine the specific issue if available
+                let errorMsg = data.message || "Invalid OTP. Please try again.";
+                message.error({ content: errorMsg, key });
+            }
+        } catch (error) {
+            message.error({
+                content: "An error occurred while verifying OTP. Please try again later.",
+                key,
+            });
+            console.error("Verify OTP error:", error);
+        }
     };
+
 
     const handleResetPassword = async () => {
         if (!newPassword) {
             message.error("Please enter a new password.");
             return;
         }
-
+        if (newPassword.length < 8) {
+            message.error("Password must be at least 8 characters long.");
+            return;
+        }
         if (newPassword !== confirmPassword) {
             message.error("Passwords do not match. Please check and try again.");
             return;
         }
 
         try {
+            const messageKey = "resetPassword";
+            message.loading({ content: "Resetting password...", key: messageKey });
+
             const response = await fetch(`${backendUrl}/api/auth/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp, newPassword }),
                 credentials: "include",
             });
+
             const data = await response.json();
-            if (data.success) {
-                message.success("Your password has been reset successfully!");
+            if (response.ok && data.success) {
+                message.success({ content: "Password reset successfully! Redirecting to login...", key: messageKey });
                 setTimeout(() => navigate("/login"), 2000);
             } else {
-                message.error(data.message || "Failed to reset password. Please try again.");
+                message.error({ content: data.message || "Failed to reset password. Please try again.", key: messageKey });
             }
         } catch (error) {
-            message.error("Something went wrong. Please try again later.");
+            message.error({ content: "An error occurred while resetting password. Please try again later.", key: messageKey });
+            console.error("Reset password error:", error);
         }
     };
 
@@ -124,9 +197,14 @@ export default function ResetPassword() {
             <div className="flex justify-center mb-6">
                 {[1, 2, 3].map((num) => (
                     <div key={num} className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === num ? "bg-blue-600 text-white" :
-                            step > num ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
-                            }`}>
+                        <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === num
+                                ? "bg-blue-600 text-white"
+                                : step > num
+                                    ? "bg-green-500 text-white"
+                                    : "bg-gray-200 text-gray-600"
+                                }`}
+                        >
                             {step > num ? "✓" : num}
                         </div>
                         {num < 3 && (
@@ -140,10 +218,14 @@ export default function ResetPassword() {
 
     const getStepTitle = () => {
         switch (step) {
-            case 1: return "Email Verification";
-            case 2: return "Enter OTP";
-            case 3: return "New Password";
-            default: return "Reset Password";
+            case 1:
+                return "Email Verification";
+            case 2:
+                return "Enter OTP";
+            case 3:
+                return "New Password";
+            default:
+                return "Reset Password";
         }
     };
 
@@ -152,11 +234,11 @@ export default function ResetPassword() {
             <Card className="w-96 shadow-xl bg-white/95 backdrop-blur-sm">
                 <CardContent className="text-center">
                     <div className="mb-6 mt-2">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Reset Password</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{getStepTitle()}</h2>
                         <p className="text-gray-600 text-sm mb-2">
-                            {step === 1 && "Enter your email to receive a password reset code"}
-                            {step === 2 && "Enter the verification code sent to your email"}
-                            {step === 3 && "Create a new secure password for your account"}
+                            {step === 1 && "Enter your email to receive a password reset code."}
+                            {step === 2 && "Enter the 6-digit code sent to your email."}
+                            {step === 3 && "Create a new secure password for your account."}
                         </p>
                     </div>
 
@@ -174,7 +256,7 @@ export default function ResetPassword() {
                             <Button
                                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
                                 onClick={handleSendOtp}
-                                text="Continue"
+                                text="Send OTP"
                             />
                         </>
                     )}
@@ -191,11 +273,10 @@ export default function ResetPassword() {
                             <Button
                                 className="w-full mb-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
                                 onClick={handleVerifyOtp}
-                                text="Verify Code"
+                                text="Verify OTP"
                             />
-
                             <div className="text-sm text-gray-600 mb-2">
-                                Didn't receive the code?{' '}
+                                Didn't receive the code?{" "}
                                 {resendDisabled ? (
                                     <span className="text-blue-500">Resend in {countdown}s</span>
                                 ) : (
@@ -203,7 +284,7 @@ export default function ResetPassword() {
                                         className="text-blue-600 font-medium hover:text-blue-800 transition-colors"
                                         onClick={handleResendOtp}
                                     >
-                                        Resend Code
+                                        Resend OTP
                                     </button>
                                 )}
                             </div>
@@ -235,7 +316,10 @@ export default function ResetPassword() {
                     )}
 
                     <div className="mt-4 text-xs text-gray-500">
-                        Remember your password? <a href="/login" className="text-blue-600 hover:underline">Back to login</a>
+                        Remember your password?{" "}
+                        <a href="/login" className="text-blue-600 hover:underline">
+                            Back to login
+                        </a>
                     </div>
                 </CardContent>
             </Card>

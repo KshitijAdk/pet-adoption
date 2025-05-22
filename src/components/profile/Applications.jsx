@@ -6,6 +6,7 @@ import PetDetailModal from './PetDetailModal';
 const Applications = () => {
     const { userData } = useContext(AppContent);
     const [applications, setApplications] = useState([]);
+    const [vendorApplication, setVendorApplication] = useState(null);
     const [selectedPet, setSelectedPet] = useState(null);
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,8 +22,9 @@ const Applications = () => {
 
                 if (data.applications) {
                     setApplications(data.applications);
-                } else {
-                    console.error('No applications found');
+                }
+                if (data.vendorApplication) {
+                    setVendorApplication(data.vendorApplication);
                 }
             } catch (error) {
                 console.error('Error fetching applications:', error);
@@ -124,6 +126,75 @@ const Applications = () => {
                 )}
             </div>
 
+            {vendorApplication && (
+                <div className="px-6 py-5 border-t border-gray-200">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900">Vendor Application</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Details of your vendor application.
+                    </p>
+                    <div className="mt-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-900">Organization Information</h4>
+                                <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                                    <li><span className="font-medium">Name:</span> {vendorApplication.fullName}</li>
+                                    <li><span className="font-medium">Organization:</span> {vendorApplication.organization}</li>
+                                    <li><span className="font-medium">Email:</span> {vendorApplication.email}</li>
+                                    <li><span className="font-medium">Contact:</span> {vendorApplication.contact}</li>
+                                    <li><span className="font-medium">Address:</span> {vendorApplication.address}</li>
+                                    <li><span className="font-medium">Description:</span> {vendorApplication.description}</li>
+                                    <li><span className="font-medium">Status:</span>
+                                        <span className={`ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${vendorApplication.status === 'Approved'
+                                            ? 'bg-green-100 text-green-800'
+                                            : vendorApplication.status === 'Rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                            {vendorApplication.status}
+                                        </span>
+                                    </li>
+                                    <li><span className="font-medium">Submitted:</span> {formatDate(vendorApplication.createdAt)}</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-900">Documents</h4>
+                                <div className="mt-2">
+                                    <div className="mb-2">
+                                        <p className="text-sm font-medium text-gray-700">Profile Image:</p>
+                                        <img
+                                            src={vendorApplication.image}
+                                            alt="Vendor Profile"
+                                            className="h-24 w-24 rounded-md object-cover mt-1"
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        <p className="text-sm font-medium text-gray-700">Fonepay QR:</p>
+                                        <img
+                                            src={vendorApplication.fonepayQr}
+                                            alt="Fonepay QR"
+                                            className="h-24 w-24 rounded-md object-cover mt-1"
+                                        />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">ID Documents:</p>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {vendorApplication.idDocuments.map((doc, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={doc}
+                                                    alt={`ID Document ${index + 1}`}
+                                                    className="h-16 w-16 rounded-md object-cover"
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Pet Detail Modal */}
             <PetDetailModal
                 isOpen={isModalOpen}
@@ -191,8 +262,8 @@ const Applications = () => {
                                 <li><span className="font-medium">Submitted:</span> {selectedApplication && formatDate(selectedApplication.createdAt)}</li>
                                 <li><span className="font-medium">Status:</span>
                                     <span className={`ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${selectedApplication?.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                                            selectedApplication?.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                                'bg-yellow-100 text-yellow-800'
+                                        selectedApplication?.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                            'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {selectedApplication?.status}
                                     </span>
