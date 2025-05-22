@@ -1,5 +1,5 @@
 import React from "react";
-import { Ban, X, Mail, Phone, HomeIcon, Info, Eye, Shield, CheckCircle, Calendar, Clock as ClockIcon } from "lucide-react";
+import { Ban, X, Mail, Phone, HomeIcon, Info, Eye, Shield, CreditCard, CheckCircle, Calendar, Clock as ClockIcon } from "lucide-react";
 
 // New UserDetailModal component
 export const UserDetailModal = ({ user, onClose }) => {
@@ -176,6 +176,27 @@ export const VendorDetailsModal = ({ vendor, onClose }) => {
                         )}
                     </div>
                 </div>
+
+                {vendor.fonepayQr && (
+                    <div className="flex items-start">
+                        <div className="bg-green-100 p-2 rounded-full mr-3">
+                            <CreditCard className="text-green-600" size={18} />
+                        </div>
+                        <div>
+                            <h4 className="font-medium text-gray-700">Payment QR Code</h4>
+                            <div className="mt-2">
+                                <div className="w-48 h-48 border border-gray-200 rounded-md overflow-hidden">
+                                    <img
+                                        src={vendor.fonepayQr}
+                                        alt="Fonepay QR Code"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Fonepay QR Code</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex items-start">
                     <div className="bg-purple-100 p-2 rounded-full mr-3">

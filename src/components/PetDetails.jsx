@@ -69,24 +69,13 @@ const PetDetails = () => {
   const handleAdoptNowClick = () => {
     if (!isLoggedin) {
       navigate("/login");
-    } else if (userData?.role === "admin") {
-      message.error("Admin accounts cannot adopt pets.");
-    } else if (userData?.vendorDetails?.vendorId === vendorId) {
-      message.error("You cannot adopt your own posted pet.");
+    } else if (userData?.role !== "user") {
+      message.error("Only users can adopt pets.");
     } else {
       setIsModalOpen(true);
     }
   };
 
-  const handleContactClick = () => {
-    if (!isLoggedin) {
-      navigate("/login");
-    } else {
-      // Generate roomId consistently: sort userId and vendorId, then join
-      const roomId = [userData.userId, vendorId].sort().join('_');
-      navigate(`/messages/${roomId}`, { state: { receiverId: vendorId } });
-    }
-  };
 
   const handleCloseModal = () => setIsModalOpen(false);
 
@@ -210,13 +199,6 @@ const PetDetails = () => {
                 className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg transition duration-300 text-sm"
               >
                 Adopt Now
-              </button>
-              <button
-                onClick={handleContactClick}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center"
-              >
-                <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                Contact
               </button>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, Clock, CheckCircle, XCircle, MoreHorizontal } from "lucide-react";
 
 const Table = ({
@@ -27,6 +28,7 @@ const Table = ({
     const dropdownRefs = useRef({});
     const buttonRefs = useRef({});
 
+
     const toggleDropdown = (id, e) => {
         e.stopPropagation();
         setDropdownOpen(dropdownOpen === id ? null : id);
@@ -34,13 +36,12 @@ const Table = ({
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            const clickedOutsideDropdown = Object.values(dropdownRefs.current).every(ref => {
-                return ref && !ref.contains(event.target);
-            });
-
-            const clickedOutsideButton = Object.values(buttonRefs.current).every(ref => {
-                return ref && !ref.contains(event.target);
-            });
+            const clickedOutsideDropdown = Object.values(dropdownRefs.current).every(ref =>
+                ref && !ref.contains(event.target)
+            );
+            const clickedOutsideButton = Object.values(buttonRefs.current).every(ref =>
+                ref && !ref.contains(event.target)
+            );
 
             if (clickedOutsideDropdown && clickedOutsideButton) {
                 setDropdownOpen(null);
@@ -54,22 +55,18 @@ const Table = ({
     }, []);
 
     const renderCell = (column, row) => {
-        // Custom render function has highest priority
         if (column.customRender) {
             return column.customRender(row);
         }
 
-        // Handle status cells
         if (column.key === statusConfig?.key) {
             return renderStatus(row);
         }
 
-        // Handle date cells
         if (column.key === dateConfig?.key) {
             return renderDate(row);
         }
 
-        // Default rendering
         return row[column.key] || "N/A";
     };
 
@@ -111,21 +108,51 @@ const Table = ({
         }
     };
 
-    // Render loading, error, or empty state
-    if (loading) {
-        return (
-            <div className="p-4 text-center text-gray-500">
-                Loading...
-            </div>
+    // Dropdown component to be portaled
+    const DropdownPortal = ({ rowId, actions, row }) => {
+        const dropdownRef = dropdownRefs.current[rowId];
+        const buttonRef = buttonRefs.current[rowId];
+        const [position, setPosition] = useState({ top: 0, left: 0 });
+
+        useEffect(() => {
+            if (buttonRef && dropdownOpen === rowId) {
+                const rect = buttonRef.getBoundingClientRect();
+                setPosition({
+                    top: rect.bottom + window.scrollY,
+                    left: rect.left + window.scrollX - 150, // Adjust based on dropdown width
+                });
+            }
+        }, [buttonRef, dropdownOpen, rowId]);
+
+        if (!dropdownOpen || dropdownOpen !== rowId) return null;
+
+        return createPortal(
+            <div
+                ref={dropdownRef}
+                className="fixed z-50 bg-white shadow-lg rounded-lg w-48 py-2 border border-gray-200"
+                style={{ top: position.top, left: position.left }}
+            >
+                {actions.map((action) => (
+                    <button
+                        key={action.key}
+                        onClick={(e) => handleAction(action, row, e)}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                    >
+                        <action.icon className="w-5 h-5" />
+                        <span>{action.label}</span>
+                    </button>
+                ))}
+            </div>,
+            document.body
         );
+    };
+
+    if (loading) {
+        return <div className="p-4 text-center text-gray-500">Loading...</div>;
     }
 
     if (error) {
-        return (
-            <div className="p-4 text-center text-red-500">
-                {error}
-            </div>
-        );
+        return <div className="p-4 text-center text-red-500">{error}</div>;
     }
 
     if (!data || data.length === 0) {
@@ -190,24 +217,6 @@ const Table = ({
                                                 >
                                                     <MoreHorizontal size={20} />
                                                 </button>
-                                                {dropdownOpen === (row._id || row.id) && (
-                                                    <div
-                                                        ref={el => dropdownRefs.current[row._id || row.id] = el}
-                                                        className="absolute right-0 z-10 bg-white shadow-lg rounded-lg mt-2 w-48 py-2 border border-gray-200"
-                                                        style={{ top: '100%' }}
-                                                    >
-                                                        {dropdownActions.map((action) => (
-                                                            <button
-                                                                key={action.key}
-                                                                onClick={(e) => handleAction(action, row, e)}
-                                                                className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                                                            >
-                                                                <action.icon className="w-5 h-5" />
-                                                                <span>{action.label}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -217,8 +226,17 @@ const Table = ({
                     ))}
                 </tbody>
             </table>
+            {data.map((row) => (
+                <DropdownPortal
+                    key={row._id || row.id}
+                    rowId={row._id || row.id}
+                    actions={dropdownActions}
+                    row={row}
+                />
+            ))}
         </div>
     );
 };
+
 
 export default Table;

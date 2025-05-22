@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { Upload, Building, Phone, MapPin, FileText, User, Mail, File, X, QrCode } from "lucide-react";
 import { AppContent } from "../context/AppContext";
-import {message} from 'antd'
+import { message } from 'antd';
 
 export default function VendorRegistration() {
     const { backendUrl, userData } = useContext(AppContent);
@@ -21,6 +21,9 @@ export default function VendorRegistration() {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
     useEffect(() => {
         if (userData?.email) {
             setFormData(prev => ({
@@ -39,11 +42,21 @@ export default function VendorRegistration() {
             const newDocs = fileList.map(file => ({
                 file,
                 name: file.name,
-                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+                preview: URL.createObjectURL(file),
+                type: file.type
             }));
             setFiles(prev => ({ ...prev, idDocuments: [...prev.idDocuments, ...newDocs] }));
         } else {
-            setFiles(prev => ({ ...prev, [field]: fileList[0] }));
+            const file = fileList[0];
+            setFiles(prev => ({
+                ...prev,
+                [field]: {
+                    file,
+                    name: file.name,
+                    preview: URL.createObjectURL(file),
+                    type: file.type
+                }
+            }));
         }
 
         e.target.value = null;
@@ -52,10 +65,11 @@ export default function VendorRegistration() {
     const removeFile = (field, index) => {
         if (field === 'idDocuments') {
             const updated = [...files.idDocuments];
-            if (updated[index].preview) URL.revokeObjectURL(updated[index].preview);
+            URL.revokeObjectURL(updated[index].preview);
             updated.splice(index, 1);
             setFiles(prev => ({ ...prev, idDocuments: updated }));
         } else {
+            if (files[field]?.preview) URL.revokeObjectURL(files[field].preview);
             setFiles(prev => ({ ...prev, [field]: null }));
         }
     };
@@ -70,7 +84,6 @@ export default function VendorRegistration() {
         const newErrors = {};
         let isValid = true;
 
-        // Required text fields
         const requiredFields = ['fullName', 'organization', 'contact', 'address', 'description'];
         requiredFields.forEach(field => {
             if (!formData[field].trim()) {
@@ -79,17 +92,27 @@ export default function VendorRegistration() {
             }
         });
 
-        // Required files
         if (!files.orgImage) {
-            message.error("Organization image is required");
+            newErrors.orgImage = "Organization image is required";
+            isValid = false;
+        } else if (Array.isArray(files.orgImage) && files.orgImage.length !== 1) {
+            newErrors.orgImage = "Only one organization image is allowed";
             isValid = false;
         }
+
         if (!files.fonepayQr) {
-            message.error("Fonepay QR code is required");
+            newErrors.fonepayQr = "Fonepay QR code is required";
+            isValid = false;
+        } else if (Array.isArray(files.fonepayQr) && files.fonepayQr.length !== 1) {
+            newErrors.fonepayQr = "Only one Fonepay QR code image is allowed";
             isValid = false;
         }
-        if (files.idDocuments.length === 0) {
-            message.error("At least one identity document is required");
+
+        if (!files.idDocuments || files.idDocuments.length === 0) {
+            newErrors.idDocuments = "At least one identity document is required";
+            isValid = false;
+        } else if (files.idDocuments.length > 5) {
+            message.error("Maximum 5 identity documents are allowed");
             isValid = false;
         }
 
@@ -97,36 +120,88 @@ export default function VendorRegistration() {
         return isValid;
     };
 
+    const uploadToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file.file || file);
+        formData.append('upload_preset', uploadPreset);
+
+        // Determine the correct endpoint based on file type
+        const isImage = file.type.startsWith('image/');
+        const endpoint = isImage
+            ? `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+            : `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                return data.secure_url;
+            } else {
+                throw new Error(data.error?.message || 'Failed to upload file');
+            }
+        } catch (error) {
+            console.error(`Cloudinary upload error for ${file.name || 'file'}:`, error.message);
+            throw error;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
 
         try {
-            const formDataToSend = new FormData();
+            // Prepare vendor data before uploads to ensure logging
+            const preliminaryVendorData = {
+                ...formData,
+                image: null, // Will be updated after upload
+                fonepayQr: null, // Will be updated after upload
+                idDocuments: [] // Will be updated after upload
+            };
 
-            // Append form data
-            Object.entries(formData).forEach(([key, value]) => {
-                formDataToSend.append(key, value);
-            });
+            // Log preliminary data
+            console.log("Preliminary data prepared for backend:", JSON.stringify(preliminaryVendorData, null, 2));
 
-            // Append files
-            formDataToSend.append("image", files.orgImage);
-            formDataToSend.append("fonepayQr", files.fonepayQr);
-            files.idDocuments.forEach(doc => {
-                formDataToSend.append("idDocuments", doc.file);
-            });
+            // Upload all files to Cloudinary
+            const [orgImageUrl, fonepayQrUrl] = await Promise.all([
+                files.orgImage ? uploadToCloudinary(files.orgImage) : Promise.reject(new Error("Organization image missing")),
+                files.fonepayQr ? uploadToCloudinary(files.fonepayQr) : Promise.reject(new Error("Fonepay QR missing"))
+            ]);
+
+            const idDocumentUrls = await Promise.all(
+                files.idDocuments.map(doc => uploadToCloudinary(doc))
+            );
+
+            // Final vendor data with uploaded URLs
+            const vendorData = {
+                ...formData,
+                image: orgImageUrl,
+                fonepayQr: fonepayQrUrl,
+                idDocuments: idDocumentUrls
+            };
+
+            // Log final data being sent to backend
+            console.log("Final data being sent to backend:", JSON.stringify(vendorData, null, 2));
 
             const response = await fetch(`${backendUrl}/api/vendors/register`, {
                 method: "POST",
-                body: formDataToSend,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(vendorData)
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                message.success("Vendor registration sent successfully!");
-                // Reset form
+                message.success("Vendor registration submitted successfully!");
                 setFormData({
                     fullName: userData?.name || "",
                     organization: "",
@@ -139,30 +214,34 @@ export default function VendorRegistration() {
                 setErrors({});
             } else {
                 message.error(data.message || "Registration failed. Please try again.");
+                console.error("Registration error:", data);
             }
         } catch (error) {
-            message.error("Something went wrong. Please try again.");
+            message.error(`Something went wrong: ${error.message}. Please try again.`);
+            console.error("Submission error:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Clean up object URLs
     useEffect(() => {
         return () => {
+            if (files.orgImage?.preview) URL.revokeObjectURL(files.orgImage.preview);
+            if (files.fonepayQr?.preview) URL.revokeObjectURL(files.fonepayQr.preview);
             files.idDocuments.forEach(doc => {
                 if (doc.preview) URL.revokeObjectURL(doc.preview);
             });
         };
-    }, [files.idDocuments]);
+    }, [files]);
 
     const FileUploadBox = ({ field, label, accept, multiple = false }) => (
         <div className="mb-4">
-            <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+            <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                 {field === 'orgImage' ? <Upload size={16} className="mr-2" /> :
                     field === 'fonepayQr' ? <QrCode size={16} className="mr-2" /> :
                         <File size={16} className="mr-2" />}
                 {label}
+                {errors[field] && <span className="text-red-500 text-xs ml-2">({errors[field]})</span>}
             </label>
 
             {(!files[field] || (multiple && files[field].length === 0)) ? (
@@ -183,7 +262,7 @@ export default function VendorRegistration() {
                         files[field].map((doc, index) => (
                             <div key={index} className="flex items-center justify-between mb-2 last:mb-0">
                                 <div className="flex items-center">
-                                    {doc.preview ? (
+                                    {doc.type.startsWith('image/') ? (
                                         <img src={doc.preview} alt="Preview" className="h-10 w-10 object-cover rounded mr-3" />
                                     ) : (
                                         <File className="h-10 w-10 text-gray-400 p-2 bg-gray-100 rounded mr-3" />
@@ -202,9 +281,9 @@ export default function VendorRegistration() {
                     ) : (
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                {field === 'orgImage' || field === 'fonepayQr' ? (
+                                {files[field].type.startsWith('image/') ? (
                                     <img
-                                        src={URL.createObjectURL(files[field])}
+                                        src={files[field].preview}
                                         alt="Preview"
                                         className="h-10 w-10 object-cover rounded mr-3"
                                     />
@@ -236,32 +315,15 @@ export default function VendorRegistration() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Left Column - File Uploads */}
                             <div>
-                                <FileUploadBox
-                                    field="orgImage"
-                                    label="Organization Logo"
-                                    accept="image/*"
-                                />
-
-                                <FileUploadBox
-                                    field="fonepayQr"
-                                    label="Fonepay QR Code"
-                                    accept="image/*"
-                                />
-
-                                <FileUploadBox
-                                    field="idDocuments"
-                                    label="Identity Documents"
-                                    accept="image/*,.pdf"
-                                    multiple
-                                />
+                                <FileUploadBox field="orgImage" label="Organization Logo" accept="image/*" />
+                                <FileUploadBox field="fonepayQr" label="Fonepay QR Code" accept="image/*" />
+                                <FileUploadBox field="idDocuments" label="Identity Documents" accept="image/*,.pdf" multiple />
                             </div>
 
-                            {/* Right Column - Form Fields */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                                         <User size={16} className="mr-2" />
                                         Full Name
                                     </label>
@@ -271,12 +333,12 @@ export default function VendorRegistration() {
                                         value={formData.fullName}
                                         onChange={handleChange}
                                         readOnly
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 bg-gray-100"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                                         <Mail size={16} className="mr-2" />
                                         Email
                                     </label>
@@ -285,7 +347,7 @@ export default function VendorRegistration() {
                                         name="email"
                                         value={formData.email}
                                         readOnly
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 bg-gray-100"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
                                     />
                                 </div>
 
@@ -299,13 +361,13 @@ export default function VendorRegistration() {
                                         name="organization"
                                         value={formData.organization}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                        className={`w-full px-3 py-2 border ${errors.organization ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                     />
-                                    {errors.organization && <p className="mt-1 text-sm text-red-600">{errors.organization}</p>}
+                                    {errors.organization && <p className="text-sm text-red-600 mt-1">{errors.organization}</p>}
                                 </div>
 
                                 <div>
-                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                                         <Phone size={16} className="mr-2" />
                                         Contact Number
                                     </label>
@@ -314,13 +376,13 @@ export default function VendorRegistration() {
                                         name="contact"
                                         value={formData.contact}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                        className={`w-full px-3 py-2 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                     />
-                                    {errors.contact && <p className="mt-1 text-sm text-red-600">{errors.contact}</p>}
+                                    {errors.contact && <p className="text-sm text-red-600 mt-1">{errors.contact}</p>}
                                 </div>
 
                                 <div>
-                                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                                         <MapPin size={16} className="mr-2" />
                                         Address
                                     </label>
@@ -329,15 +391,15 @@ export default function VendorRegistration() {
                                         name="address"
                                         value={formData.address}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                        className={`w-full px-3 py-2 border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                     />
-                                    {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+                                    {errors.address && <p className="text-sm text-red-600 mt-1">{errors.address}</p>}
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                                 <FileText size={16} className="mr-2" />
                                 Organization Description
                             </label>
@@ -346,19 +408,19 @@ export default function VendorRegistration() {
                                 rows={4}
                                 value={formData.description}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                className={`w-full px-3 py-2 border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                 placeholder="Tell us about your organization..."
                             />
-                            {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                            {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
                         </div>
 
                         <div>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
+                                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition disabled:opacity-70"
                             >
-                                {isLoading ? "Processing..." : "Submit Application"}
+                                {isLoading ? "Submitting..." : "Submit Registration"}
                             </button>
                         </div>
                     </form>
