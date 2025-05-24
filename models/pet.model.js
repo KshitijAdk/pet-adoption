@@ -16,7 +16,10 @@ const petSchema = new mongoose.Schema({
     description: { type: String, required: true },
     status: { type: String, enum: ['Available', 'Adopted', 'Pending'], default: 'Available' },
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
+    isLocked: { type: Boolean, default: false },
+    lockReason: { type: String, default: null }, // New field for locking reason
     createdAt: { type: Date, default: Date.now },
+
 });
 
 const Pet = mongoose.models.Pet || mongoose.model('Pet', petSchema);

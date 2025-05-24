@@ -3,6 +3,7 @@ import userModel from "../models/userModel.js";
 import Vendor from "../models/Vendor.js";
 import mongoose from "mongoose";
 import AdoptionRequest from '../models/adoptionRequest.model.js';
+import { sendWhatsAppMessage } from '../utils/sendWhatsappMsg.js'
 
 // controllers/petController.js
 export const addPetToVendor = async (req, res) => {
@@ -172,21 +173,41 @@ export const getPetData = async (req, res) => {
 };
 
 
+
 export const getAllPetsWithVendor = async (req, res) => {
     try {
-        const pets = await Pet.find({ status: 'Available' }) // only available pets
-            .sort({ createdAt: -1 }) // latest first
+        // Step 1: Get pets that are Available and not locked, and populate vendor info
+        const pets = await Pet.find({
+            status: 'Available',
+            isLocked: false
+        })
+            .sort({ createdAt: -1 })
             .populate({
                 path: 'vendorId',
-                select: 'organization image address' // only get these fields from vendor
+                select: 'organization image address user', // include vendor's user reference
             });
 
-        res.status(200).json({ pets });
+        // Step 2: Filter out pets whose vendor's user is banned
+        const filteredPets = [];
+
+        for (const pet of pets) {
+            const vendor = pet.vendorId;
+            if (!vendor || !vendor.user) continue;
+
+            const user = await userModel.findById(vendor.user).select('banInfo.isBanned');
+
+            if (user && !user.banInfo?.isBanned) {
+                filteredPets.push(pet);
+            }
+        }
+
+        res.status(200).json({ pets: filteredPets });
     } catch (error) {
-        console.error('Error fetching available pets with vendor info:', error);
+        console.error('Error fetching available, unlocked, unbanned pets:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 export const addToFavourite = async (req, res) => {
     const { userId, petId } = req.body;
@@ -271,10 +292,10 @@ export const getFavouritePets = async (req, res) => {
 export const getAllPets = async (req, res) => {
     try {
         const pets = await Pet.find({})
-        .populate({
-            path: "vendorId",
-            select: "fullName organization email contact address description image"
-        });
+            .populate({
+                path: "vendorId",
+                select: "fullName organization email contact address description image"
+            });
         res.status(200).json({
             success: true,
             count: pets.length,
@@ -286,4 +307,102 @@ export const getAllPets = async (req, res) => {
             error: 'Server Error'
         });
     }
+};
+
+
+export const lockPet = async (req, res) => {
+    const { petId, feedback } = req.body;
+
+    console.log(`Locking pet with ID: ${petId} and feedback: ${feedback}`);
+
+    // Validate petId
+    if (!petId) {
+        res.status(400);
+        throw new Error('Pet ID is required');
+    }
+
+    // Find the pet
+    const pet = await Pet.findById(petId);
+
+    if (!pet) {
+        res.status(404);
+        throw new Error('Pet not found');
+    }
+
+    // Check if pet is already locked
+    if (pet.isLocked) {
+        res.status(400);
+        throw new Error('Pet is already locked');
+    }
+
+    // Fetch the vendor using the vendorId from the pet
+    const vendor = await Vendor.findById(pet.vendorId); // assuming `vendorId` is the field name
+
+    if (!vendor) {
+        res.status(404);
+        throw new Error('Vendor not found');
+    }
+
+    // Send whatsApp message to vendor with pet name and feedback
+    const message = `Pet ${pet.name} has been locked. Lock reason: ${feedback}`;
+    try {
+        await sendWhatsAppMessage(vendor.contact, message);
+    } catch (error) {
+        console.error('Error sending WhatsApp message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send WhatsApp message to vendor',
+            error: error.message
+        });
+        return;
+    }
+
+    // Update pet to locked and save feedback as lock reason
+    pet.isLocked = true;
+    pet.lockReason = feedback;
+    await pet.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Pet locked successfully',
+        data: {
+            pet,
+            vendorContact: vendor.contact || 'Contact not available'
+        }
+    });
+};
+
+
+export const unlockPet = async (req, res) => {
+    const { petId } = req.body;
+
+    // Validate petId
+    if (!petId) {
+        res.status(400);
+        throw new Error('Pet ID is required');
+    }
+
+    // Find the pet
+    const pet = await Pet.findById(petId);
+
+    if (!pet) {
+        res.status(404);
+        throw new Error('Pet not found');
+    }
+
+    // Check if pet is already unlocked
+    if (!pet.isLocked) {
+        res.status(400);
+        throw new Error('Pet is already unlocked');
+    }
+
+    // Update pet to unlocked
+    pet.isLocked = false;
+    await pet.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Pet unlocked successfully',
+        data: pet,
+    });
 };

@@ -5,6 +5,7 @@ import sendEmail from "../utils/emailTemplates.js";
 import VendorApplication from "../models/venderApplication.js";
 import Pet from "../models/pet.model.js";
 import AdoptionRequest from "../models/adoptionRequest.model.js";
+import { sendWhatsAppMessage } from "../utils/sendWhatsappMsg.js";
 
 export const getUserData = async (req, res) => {
     try {
@@ -36,6 +37,7 @@ export const getUserData = async (req, res) => {
             adoptedPets: user.adoptedPets,
             favouritePets: user.favouritePets,
             applications: user.applications,
+            banInfo: user.banInfo,
         };
 
         // If the user is a vendor, fetch additional data from the Vendor collection
@@ -289,9 +291,9 @@ export const banUser = async (req, res) => {
             });
         }
 
-        // Calculate unban date (1 minute from now)
+        // Calculate unban date (5 minute from now)
         const unbanDate = new Date();
-        unbanDate.setMinutes(unbanDate.getMinutes() + 1);
+        unbanDate.setMinutes(unbanDate.getMinutes() + 5); // Set unban date to 5 minutes from now
 
         // Update ban info
         user.banInfo = {
@@ -304,7 +306,7 @@ export const banUser = async (req, res) => {
 
         await user.save();
 
-        // Schedule auto-unban (after 1 minute)
+        // Schedule auto-unban (after 5 minute)
         setTimeout(async () => {
             try {
                 const userToUnban = await userModel.findById(userId);
@@ -313,7 +315,7 @@ export const banUser = async (req, res) => {
                         ...userToUnban.banInfo,
                         isBanned: false,
                         unbannedBy: null, // System-initiated
-                        unbanReason: 'Automatic unban after 1 minute',
+                        unbanReason: 'Automatic unban after 5 minute',
                         unbannedAt: new Date()
                     };
                     await userToUnban.save();
@@ -325,17 +327,28 @@ export const banUser = async (req, res) => {
                             'account-unbanned',
                             {
                                 userName: userToUnban.name || userToUnban.username,
-                                adminEmail: 'system@yourdomain.com'
+                                adminEmail: 'system@nayasathi.com'
                             }
                         );
                     } catch (emailError) {
                         console.error("Email sending failed:", emailError);
                     }
+
+                    // Send WhatsApp message
+                    try {
+                        await sendWhatsAppMessage(
+                            userToUnban.contact,
+                            `Hello ${userToUnban.name || userToUnban.username},\n\nYour account has been unbanned by System.\nThank you.`
+                        );
+                    } catch (whatsAppError) {
+                        console.error("WhatsApp message sending failed:", whatsAppError);
+                    }
                 }
             } catch (error) {
                 console.error("Error in auto-unban process:", error);
             }
-        }, 60 * 1000); // 1 minute in milliseconds
+        }, 60 * 5000); // 5 minute in milliseconds
+
 
         // Send email notification
         try {
@@ -352,6 +365,17 @@ export const banUser = async (req, res) => {
         } catch (emailError) {
             console.error("Email sending failed:", emailError);
         }
+
+        // Send whatsApp message
+        try {
+            await sendWhatsAppMessage(
+                user.contact,
+                `Hello ${user.name || user.username},\n\nYour account has been banned due to: ${remarks || "Violation of terms of service"}.\nThank you.`
+            );
+        } catch (whatsAppError) {
+            console.error("WhatsApp message sending failed:", whatsAppError);
+        }
+
 
         res.status(200).json({
             success: true,
@@ -414,6 +438,16 @@ export const unbanUser = async (req, res) => {
             );
         } catch (emailError) {
             console.error("Email sending failed:", emailError);
+        }
+
+        // Send whatsApp message
+        try {
+            await sendWhatsAppMessage(
+                user.contact,
+                `Hello ${user.name || user.username},\n\nYour account has been unbanned by ${admin.name || admin.username}.\n\nThank you.`
+            );
+        } catch (whatsAppError) {
+            console.error("WhatsApp message sending failed:", whatsAppError);
         }
 
         res.status(200).json({
