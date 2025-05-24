@@ -2,6 +2,9 @@ import userModel from "../models/userModel.js";
 import Vendor from "../models/Vendor.js";
 import bcrypt from 'bcryptjs';
 import sendEmail from "../utils/emailTemplates.js";
+import VendorApplication from "../models/venderApplication.js";
+import Pet from "../models/pet.model.js";
+import AdoptionRequest from "../models/adoptionRequest.model.js";
 
 export const getUserData = async (req, res) => {
     try {
@@ -87,24 +90,71 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+
 export const deleteUser = async (req, res) => {
     try {
         const { userId } = req.body;
 
-        // Ensure userId is provided
         if (!userId) {
             return res.json({ success: false, message: 'User ID is required' });
         }
 
-        // Find and delete the user
-        const deletedUser = await userModel.findByIdAndDelete(userId);
+        let adoptionRequestsDeleted = 0;
 
+        // Delete VendorApplication if exists
+        const vendorApplication = await VendorApplication.findOne({ user: userId });
+        if (vendorApplication) {
+            await vendorApplication.deleteOne();
+        }
+
+        // Check if the user is a vendor
+        const vendor = await Vendor.findOne({ user: userId });
+
+        let petsDeletedCount = 0;
+
+        if (vendor) {
+            // Delete adoption requests where vendor is involved
+            const vendorAdoptions = await AdoptionRequest.deleteMany({ vendorId: vendor._id });
+            adoptionRequestsDeleted += vendorAdoptions.deletedCount;
+
+            // Delete pets of this vendor
+            const pets = await Pet.find({ vendorId: vendor._id });
+
+            for (const pet of pets) {
+                // Delete adoption requests linked to each pet
+                const petAdoptions = await AdoptionRequest.deleteMany({ petId: pet._id });
+                adoptionRequestsDeleted += petAdoptions.deletedCount;
+            }
+
+            // Delete the pets
+            const petDeleteResult = await Pet.deleteMany({ vendorId: vendor._id });
+            petsDeletedCount = petDeleteResult.deletedCount;
+
+            // Delete vendor
+            await vendor.deleteOne();
+        }
+
+        // Delete adoption requests where user is applicant
+        const userAdoptions = await AdoptionRequest.deleteMany({ applicantId: userId });
+        adoptionRequestsDeleted += userAdoptions.deletedCount;
+
+        // Delete user
+        const deletedUser = await userModel.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.json({ success: false, message: 'User not found' });
         }
 
-        // Return success response
-        res.json({ success: true, message: 'User deleted successfully' });
+        res.json({
+            success: true,
+            message: 'User and related data deleted successfully',
+            details: {
+                userDeleted: true,
+                vendorDeleted: !!vendor,
+                applicationDeleted: !!vendorApplication,
+                petsDeleted: petsDeletedCount,
+                adoptionRequestsDeleted
+            }
+        });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

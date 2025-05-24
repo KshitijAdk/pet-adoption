@@ -9,6 +9,7 @@ import {
     removeFromFavourite,
     getFavouritePets,
     getAllPets,
+    updatePetById,
 } from "../controllers/petController.js";
 import multer from "multer";
 import { storage } from "../config/cloudinary.js";
@@ -26,5 +27,6 @@ router.post("/add-to-favourite", addToFavourite);
 router.post("/remove-from-favourite", removeFromFavourite);
 router.get("/favourite/:userId", getFavouritePets);
 router.get("/all-pets", getAllPets);
+router.put('/:id', upload.single('image'), updatePetById); // 🆕 added route to update pet details
 
 export default router;

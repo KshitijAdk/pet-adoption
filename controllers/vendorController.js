@@ -2,7 +2,7 @@ import Vendor from '../models/Vendor.js';
 import Pet from '../models/pet.model.js';
 import VendorApplication from '../models/venderApplication.js';
 import User from '../models/userModel.js';
-
+import { sendWhatsAppMessage } from '../utils/sendWhatsappMsg.js';
 
 export const registerVendor = async (req, res) => {
     try {
@@ -147,6 +147,12 @@ export const approveVendor = async (req, res) => {
         vendorApplication.processedAt = new Date();
         await vendorApplication.save();
 
+        if (vendorApplication.contact) {
+            // Send WhatsApp message to the vendor
+            const message = `Congratulations ${vendorApplication.fullName}, your application for Vendor has been approved! Now you can start listing your pets.`;
+            await sendWhatsAppMessage(vendorApplication.contact, message);
+        }
+
         res.status(200).json({
             success: true,
             message: "Vendor approved successfully!",
@@ -202,6 +208,12 @@ export const rejectVendor = async (req, res) => {
         vendorApplication.rejectionReason = rejectionReason || null;
         vendorApplication.processedAt = new Date();
         await vendorApplication.save();
+
+        // 5. Optionally send WhatsApp message to the vendor
+        if (vendorApplication.contact) {
+            const message = `Dear ${vendorApplication.fullName}, your application for Vendor has been rejected. Reason: ${rejectionReason || "No reason provided. Please contact us for more details."}`;
+            await sendWhatsAppMessage(vendorApplication.contact, message);
+        }
 
         res.status(200).json({
             success: true,

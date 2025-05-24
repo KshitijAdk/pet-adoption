@@ -79,6 +79,10 @@ export const submitAdoptionRequest = async (req, res) => {
         // Save the adoption request
         const savedRequest = await newAdoptionRequest.save();
 
+        // Send WhatsApp message to vendor
+        const waMessage = `New adoption request for ${pet.name} from ${fullName}. Contact: ${phone}`;
+        await sendWhatsAppMessage(vendor.contact, waMessage);
+
         // Update user's applications
         user.applications.push({
             adoptionId: savedRequest._id,
