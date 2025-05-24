@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Home, Users, Clock, ListChecks, PawPrint, ChevronDown, BarChart2, PieChart as PieChartIcon, Shield } from "lucide-react";
+import { Home, Users, Clock, ListChecks, PawPrint, ChevronDown, BarChart2, PieChart as PieChartIcon, Shield, FileText } from "lucide-react";
 import Sidebar from "../components/ui/Sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/adminCard'
 import { BarChart, PieChart } from '../components/ui/charts'
@@ -120,9 +120,9 @@ const AdminDashboard = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
-
     return (
         <div className="flex min-h-screen">
             <Sidebar

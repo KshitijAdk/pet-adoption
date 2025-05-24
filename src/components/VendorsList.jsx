@@ -35,14 +35,15 @@ export default function VendorsList() {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="text-3xl font-bold text-gray-900">Partner Organizations</h1>
-                    <p className="mt-3 text-lg text-gray-500 max-w-2xl mx-auto">
-                        Connecting pets with loving homes through our trusted partners
+                    <p className="mt-3 text-lg text-gray-500 max-w-4xl mx-auto">
+                        Connecting pets with loving homes through our trusted partner organizations.
+                        You can donate to these organizations to support their efforts in rescuing and rehabilitating animals.
                     </p>
                 </div>
 
                 {/* Search Bar */}
                 <div className="relative mb-12 max-w-lg mx-auto">
-                    <div className="flex items-center bg-white rounded-full border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-transparent overflow-hidden">
+                    <div className="flex items-center bg-white rounded-full border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-amber-400 focus-within:border-transparent overflow-hidden">
                         <Search className="ml-4 text-gray-400" size={18} />
                         <input
                             type="text"
@@ -72,29 +73,29 @@ export default function VendorsList() {
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-3">
                                     <h2 className="text-xl font-medium text-gray-800">{vendor.organization}</h2>
-                                    <ChevronRight size={18} className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <ChevronRight size={18} className="text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
 
                                 <div className="space-y-2 text-gray-600 mb-5">
                                     <div className="flex items-center">
-                                        <MapPin size={14} className="mr-2 text-blue-500" />
+                                        <MapPin size={14} className="mr-2 text-amber-500" />
                                         <span className="text-sm">{vendor.address}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <Mail size={14} className="mr-2 text-blue-500" />
+                                        <Mail size={14} className="mr-2 text-amber-500" />
                                         <a
                                             href={`mailto:${vendor.email}`}
-                                            className="text-sm hover:text-blue-600 transition-colors"
+                                            className="text-sm hover:text-amber-600 transition-colors"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {vendor.email}
                                         </a>
                                     </div>
                                     <div className="flex items-center">
-                                        <Phone size={14} className="mr-2 text-blue-500" />
+                                        <Phone size={14} className="mr-2 text-amber-500" />
                                         <a
                                             href={`tel:${vendor.contact}`}
-                                            className="text-sm hover:text-blue-600 transition-colors"
+                                            className="text-sm hover:text-amber-600 transition-colors"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {vendor.contact}
@@ -103,7 +104,7 @@ export default function VendorsList() {
                                 </div>
 
                                 <button
-                                    className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                                    className="w-full py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         navigate(`/vendor/${vendor._id}`);

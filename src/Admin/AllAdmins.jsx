@@ -1,6 +1,6 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Eye, PawPrint, Plus, Home, Users, ListChecks, Clock, Shield } from "lucide-react";
+import { Eye, PawPrint, Plus, Home, Users, ListChecks, Clock, Shield, FileText } from "lucide-react";
 import { AppContent } from '../context/AppContext'
 import { UserDetailModal } from "./DetailsModal";
 import { message, Modal, Input, Button, Form } from 'antd';
@@ -85,9 +85,9 @@ const AllAdmins = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
-
     return (
         <div className="flex h-screen">
             {contextHolder}

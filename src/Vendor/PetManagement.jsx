@@ -127,7 +127,7 @@ const PetManagement = () => {
         console.log('Form data being sent:', formData);
 
         try {
-            const response = await fetch(`/api/pets/${editingPetId}`, {
+            const response = await fetch(`http://localhost:3000/api/pets/${editingPetId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

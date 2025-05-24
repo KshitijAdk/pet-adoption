@@ -27,6 +27,7 @@ const SearchBar = ({ placeholder = "Search...", searchTerm, setSearchTerm, toggl
     );
 };
 
+
 const FilterDropdown = ({ filters, setFilters, showFilters, toggleFilters }) => {
     if (!showFilters) return null;
 
@@ -42,18 +43,17 @@ const FilterDropdown = ({ filters, setFilters, showFilters, toggleFilters }) => 
                 <button
                     className="text-blue-500 text-xs flex items-center"
                     onClick={() => {
-                        setFilters({ type: "All", breed: "All", age: "All", gender: "All", size: "All" });
+                        setFilters({ type: "All", age: "All", gender: "All", size: "All" });
                         toggleFilters(); // Close the dropdown
                     }}
                 >
                     <X size={14} className="mr-1" /> Clear All
                 </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[
                     { label: "Pet Type", key: "type", options: ["All", "Dog", "Cat"] },
-                    { label: "Breed", key: "breed", options: ["All", "Golden", "Siamese", "German Shepherd"] },
-                    { label: "Age", key: "age", options: ["All", "Puppy", "Young", "Adult"] },
+                    { label: "Age", key: "age", options: ["All", "0-1 years", "1-3 years", "3-7 years", "7+ years"] },
                     { label: "Gender", key: "gender", options: ["All", "Male", "Female"] },
                     { label: "Size", key: "size", options: ["All", "Small", "Medium", "Large"] },
                 ].map(({ label, key, options }) => (
@@ -77,5 +77,6 @@ const FilterDropdown = ({ filters, setFilters, showFilters, toggleFilters }) => 
         </motion.div>
     );
 };
+
 
 export { SearchBar, FilterDropdown };

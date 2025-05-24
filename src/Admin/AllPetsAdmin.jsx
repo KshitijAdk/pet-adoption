@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Table, Button, Modal, Tag, Image, Divider } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import { PawPrint, Home, Users, Clock, ListChecks, Shield } from 'lucide-react';
+import { PawPrint, Home, Users, Clock, ListChecks, Shield, FileText } from 'lucide-react';
 import Sidebar from '../components/ui/Sidebar';
 import { AppContent } from '../context/AppContext';
 
@@ -28,6 +28,7 @@ const AllPetsAdmin = () => {
         fetchPets();
     }, []);
 
+
     const adminMenuItems = [
         { path: "/admin/dashboard", label: "Dashboard", icon: Home },
         { path: "/admin/manage-users", label: "Manage Users", icon: Users },
@@ -35,7 +36,8 @@ const AllPetsAdmin = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
 
     const columns = [

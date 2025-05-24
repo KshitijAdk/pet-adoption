@@ -1,6 +1,6 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { CheckCircle, XCircle, Calendar, Clock, Home, Shield, Users, ListChecks, Eye, PawPrint } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, Clock, Home, Shield, Users, ListChecks, Eye, PawPrint, FileText } from "lucide-react";
 import { VendorDetailsModal } from "./DetailsModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
@@ -23,7 +23,8 @@ const ManageVendors = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
 
     useEffect(() => {

@@ -10,7 +10,8 @@ import {
     ListChecks,
     Eye,
     PawPrint,
-    Shield
+    Shield,
+    FileText
 } from "lucide-react";
 import BigModal from "../components/ui/BigModal";
 import Table from "../components/ui/Table";
@@ -34,7 +35,8 @@ const PendingApplications = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
 
     useEffect(() => {

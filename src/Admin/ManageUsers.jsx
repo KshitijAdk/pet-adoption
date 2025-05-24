@@ -1,6 +1,6 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Trash, Ban, Check, Eye, Clock, PawPrint, Shield , Home, ListChecks, Users} from "lucide-react";
+import { Trash, Ban, Check, Eye, Clock, PawPrint, Shield, Home, ListChecks, Users, FileText } from "lucide-react";
 import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import FeedbackModal from "../components/ui/FeedbackModal";
 import { AppContent } from '../context/AppContext';
@@ -179,7 +179,8 @@ const ManageUsers = () => {
         { path: "/admin/manage-vendors", label: "All Applications", icon: ListChecks },
         { path: "/admin/all-pets", label: "All Pets", icon: PawPrint },
         { path: "/admin/all-admins", label: "All Admins", icon: Shield },
-        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield }
+        { path: "/admin/all-adoptions", label: "All Adoptions", icon: Shield },
+        { path: "/admin/manage-blogs", label: "Manage Blog", icon: FileText }
     ];
 
     return (

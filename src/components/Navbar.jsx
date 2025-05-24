@@ -51,9 +51,6 @@ const Navbar = () => {
     }
   };
 
-  console.log(userData);
-
-
 
   const getDashboardLink = () => {
     if (!userData?.role) return null;

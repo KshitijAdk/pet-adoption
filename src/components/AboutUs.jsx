@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Info, Users, MessageSquare, Star, Trophy, PawPrint, Calendar, Phone, Mail, MapPin, Home } from 'lucide-react';
 import AnimateOnScroll, { AnimatedChild } from "../components/ui/AnimateOnScroll"
+import image from '../assests/kshitij.jpg';
 
 const stats = [
     { number: "10k+", label: "Pets Adopted", icon: <PawPrint className="h-5 w-5" /> },
@@ -10,34 +11,22 @@ const stats = [
 ];
 
 const team = [
+
     {
-        name: "Dr. Sarah Johnson",
-        role: "Founder & Director",
-        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-        quote: "Every animal deserves a loving home."
+        name: "Kshitij Adhikari",
+        role: "Founder and Developer",
+        image: image,
+        quote: "Empowering pet adoption through technology.",
     },
-    {
-        name: "Michael Chen",
-        role: "Head Veterinarian",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-        quote: "Quality medical care is essential for every pet."
-    },
-    {
-        name: "Emma Williams",
-        role: "Adoption Coordinator",
-        image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-        quote: "Finding the perfect match is our priority."
-    }
+
 ];
 
 const timeline = [
-    { year: "2018", title: "Foundation", description: "PawsAndHearts was established." },
-    { year: "2019", title: "First Shelter", description: "Opened our first dedicated shelter." },
-    { year: "2020", title: "Network Growth", description: "Partnered with 20+ local shelters." },
-    { year: "2021", title: "Medical Center", description: "Launched our veterinary center." },
-    { year: "2022", title: "Digital Platform", description: "Introduced online adoption platform." },
-    { year: "2023", title: "National Expansion", description: "Extended to multiple states." }
+    { year: "2023", title: "Project Initiation", description: "Started development of NayaSathi – a pet adoption platform." },
+    { year: "2024", title: "Core Feature Development", description: "Implemented vendor registration, pet listing, user authentication, and adoption management modules." },
+    { year: "2025", title: "System Completion & Expansion", description: "Integrated admin controls, document verification, and prepared the system for deployment and future enhancements." }
 ];
+
 
 export default function AboutUs() {
     return (
@@ -78,12 +67,12 @@ export default function AboutUs() {
                             <AnimateOnScroll animation="slideInRight">
                                 <h2 className="text-2xl font-bold text-gray-800 mb-4">About Our Mission</h2>
                                 <p className="text-gray-600 text-sm mb-4">
-                                    Founded in 2018, PawsAndHearts is dedicated to finding loving homes for abandoned and rescued animals.
-                                    We believe every pet deserves a second chance at happiness.
+                                    NayaSathi is an online platform built to connect potential adopters with pet vendors and shelters.
+                                    Our goal is to make pet adoption easier, transparent, and more accessible for everyone.
                                 </p>
                                 <p className="text-gray-600 text-sm mb-6">
-                                    Our network of shelters and foster homes works tirelessly to rehabilitate, care for, and match pets
-                                    with their perfect forever families.
+                                    From verified vendor applications to adoption request tracking,
+                                    we streamline the adoption process for both pet seekers and providers.
                                 </p>
                             </AnimateOnScroll>
 
@@ -169,10 +158,11 @@ export default function AboutUs() {
                 <div className="container mx-auto px-4 max-w-5xl">
                     <AnimateOnScroll animation="fadeIn">
                         <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Meet Our Team</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className={`gap-6 ${team.length === 1 ? "flex justify-center" : "grid grid-cols-1 md:grid-cols-3"}`}>
                             {team.map((member, index) => (
                                 <AnimatedChild key={index}>
-                                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 text-center">
+                                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 text-center mx-auto">
+                                        {/* member content */}
                                         <img
                                             src={member.image}
                                             alt={member.name}
@@ -188,6 +178,7 @@ export default function AboutUs() {
                     </AnimateOnScroll>
                 </div>
             </section>
+
 
             {/* Timeline Section - More compact */}
             <section className="py-12 bg-amber-50">

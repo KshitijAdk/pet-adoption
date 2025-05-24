@@ -1,19 +1,17 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
-import { usePets } from "../context/PetContext"; // 👈 import the Pet context
+import { usePets } from "../context/PetContext";
 import { SearchBar, FilterDropdown } from "./ui/SearchFilter";
 import PetCard from "./ui/petcard";
 
 const PetListing = () => {
   const { userData } = useContext(AppContent);
-  const { pets, loading, error } = usePets(); // 👈 get pets from context
-
+  const { pets, loading, error } = usePets();
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     type: "All",
-    breed: "All",
     age: "All",
     gender: "All",
     size: "All",
@@ -27,12 +25,25 @@ const PetListing = () => {
 
   const toggleFilters = () => setShowFilters((prev) => !prev);
 
+  // Helper function to check if pet age falls within the selected range
+  const isAgeInRange = (petAge, range) => {
+    if (range === "All") return true;
+    const [min, max] = range.includes("+")
+      ? [parseInt(range), Infinity]
+      : range.split("-").map((val) => parseInt(val));
+    return petAge >= min && (max === Infinity || petAge <= max);
+  };
+
   // Filter and sort logic
   const filteredPets = pets
-    .filter((pet) => pet.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((pet) =>
+      pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pet.species.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pet.gender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pet.size.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     .filter((pet) => (filters.type === "All" ? true : pet.species === filters.type))
-    .filter((pet) => (filters.breed === "All" ? true : pet.breed === filters.breed))
-    .filter((pet) => (filters.age === "All" ? true : pet.age === filters.age))
+    .filter((pet) => isAgeInRange(pet.age, filters.age))
     .filter((pet) => (filters.gender === "All" ? true : pet.gender === filters.gender))
     .filter((pet) => (filters.size === "All" ? true : pet.size === filters.size))
     .sort((a, b) => {
@@ -50,7 +61,7 @@ const PetListing = () => {
       <div className="max-w-6xl mx-auto">
         <SearchBar
           searchTerm={searchTerm}
-          placeholder="Breed, Gender, Size"
+          placeholder="Search by name, type, gender, or size"
           setSearchTerm={setSearchTerm}
           toggleFilters={toggleFilters}
           showFilters={showFilters}

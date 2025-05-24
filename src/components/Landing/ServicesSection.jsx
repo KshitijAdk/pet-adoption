@@ -4,67 +4,68 @@ import AnimateOnScroll, { AnimatedChild } from '../ui/AnimateOnScroll'
 
 const services = [
   {
-    title: 'Adoption Services',
-    description: 'Find your perfect companion through our thorough matching process designed to ensure lifelong happiness for both pets and owners.',
-    icon: <PawPrint className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Pet Adoption',
+    description: 'Browse and adopt pets lovingly cared for by verified vendors, helping you find your new furry family member.',
+    icon: <PawPrint className="h-7 w-7 text-amber-600" />,
+    link: '/adoption',
   },
   {
-    title: 'Foster Programs',
-    description: 'Temporarily open your home to a pet in need. Our foster program provides crucial care for animals awaiting their forever homes.',
-    icon: <Heart className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Vendor Registration',
+    description: 'Apply to become a trusted vendor and list pets available for adoption to connect with responsible pet owners.',
+    icon: <Users className="h-7 w-7 text-amber-600" />,
+    link: '/vendor-registration',
   },
   {
-    title: 'Behavioral Support',
-    description: 'Access professional advice and training resources to help your new pet adjust to their home and address any behavioral challenges.',
-    icon: <Phone className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Adoption Requests Management',
+    description: 'Easily manage and track adoption requests through your vendor dashboard for smooth communication and approvals.',
+    icon: <MessageSquare className="h-7 w-7 text-amber-600" />,
+    link: '/vendor/adoption-requests',
   },
   {
-    title: 'Educational Resources',
-    description: 'Access our library of articles, videos, and workshops on pet care, training, nutrition, and health to be the best pet parent possible.',
-    icon: <Info className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Pet Care Resources',
+    description: 'Explore articles and guides on pet health, nutrition, and behavior to ensure a happy and healthy companion.',
+    icon: <Info className="h-7 w-7 text-amber-600" />,
+    link: '/resources',
   },
   {
-    title: 'Community Events',
-    description: 'Join our adoption fairs, fundraisers, and pet-friendly gatherings to connect with fellow animal lovers and support our cause.',
-    icon: <Users className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Community Support',
+    description: 'Join community events and forums to share experiences, ask questions, and connect with fellow pet lovers.',
+    icon: <Heart className="h-7 w-7 text-amber-600" />,
+    link: '/community',
   },
   {
-    title: 'Volunteer Opportunities',
-    description: 'Make a difference in the lives of animals by volunteering your time and skills at our shelters, events, or administrative offices.',
-    icon: <MessageSquare className="h-8 w-8 text-amber-600" />,
-    link: '#',
+    title: 'Volunteer & Donate',
+    description: 'Contribute your time or resources to support shelters and pet welfare initiatives featured on NayaSathi.',
+    icon: <Phone className="h-7 w-7 text-amber-600" />,
+    link: '/volunteer',
   },
 ];
 
 const ServicesSection = () => {
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-6">
+    <section className="py-10 bg-gray-50">
+      <div className="max-w-6xl mx-auto px-16">
         <AnimateOnScroll animation="fadeInUp">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Our Services</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">We offer a range of services to help pets and their owners live their best lives together.</p>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-3">Our Services</h2>
+            <p className="text-gray-600 max-w-3xl mx-auto text-sm md:text-base">
+              NayaSathi offers a variety of services to support pet adoption, vendors, and the pet-loving community.
+            </p>
           </div>
         </AnimateOnScroll>
 
         <AnimateOnScroll staggerChildren={0.1}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
             {services.map((service, index) => (
               <AnimatedChild key={index} animation="scaleUp">
-                <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                  <div className="bg-amber-100 p-4 rounded-full inline-block mb-6">
-                    {service.icon}
+                <div className="bg-white p-7 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-80 h-72 flex flex-col justify-between">
+                  <div>
+                    <div className="bg-amber-100 p-3 rounded-full inline-block mb-5">
+                      {service.icon}
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{service.title}</h3>
+                    <p className="text-gray-600 text-sm">{service.description}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">{service.title}</h3>
-                  <p className="text-gray-600 mb-4">{service.description}</p>
-                  <a href={service.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
-                    Learn More <ChevronRight className="ml-1 h-5 w-5" />
-                  </a>
                 </div>
               </AnimatedChild>
             ))}

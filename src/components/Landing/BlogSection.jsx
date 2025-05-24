@@ -1,35 +1,74 @@
-import React from 'react';
-import { ChevronRight, ArrowRight } from 'lucide-react';
-import AnimateOnScroll, { AnimatedChild } from '../ui/AnimateOnScroll';
-
-const blogPosts = [
-  {
-    title: '10 Essential Tips for New Pet Parents',
-    date: 'May 15, 2025',
-    category: 'Pet Care',
-    description: 'Bringing a new pet home is exciting but can also be overwhelming. Here are our top tips to help you and your new companion adjust.',
-    imageUrl: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    link: '#',
-  },
-  {
-    title: "Understanding Your Pet's Vaccination Schedule",
-    date: 'April 28, 2025',
-    category: 'Health',
-    description: "Keeping up with your pet's vaccinations is crucial for their health. Learn about the essential vaccines and when they're needed.",
-    imageUrl: 'https://images.unsplash.com/photo-1560743641-3914f2c45636?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    link: '#',
-  },
-  {
-    title: "From Shelter to Sofa: Bella's Journey Home",
-    date: 'April 10, 2025',
-    category: 'Success Stories',
-    description: 'After two years in our shelter, Bella finally found her forever family. Read about her heartwarming adoption story.',
-    imageUrl: 'https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    link: '#',
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { ArrowRight } from 'lucide-react';
+import AnimateOnScroll from '../ui/AnimateOnScroll';
+import BlogCard from '../ui/BlogCard';
 
 const BlogSection = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/blogs/');
+        if (!response.ok) throw new Error('Failed to fetch blogs');
+        const data = await response.json();
+        // Sort by createdAt (newest first) and take the first 3
+        const sortedBlogs = data
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 3);
+        setBlogs(sortedBlogs);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-4 text-amber-800">Loading blogs...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md mx-auto border border-amber-100">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Error loading blogs</h2>
+            <p className="text-gray-700 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-full font-medium transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
@@ -42,33 +81,28 @@ const BlogSection = () => {
 
         <AnimateOnScroll staggerChildren={0.15}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post, index) => (
-              <AnimatedChild key={index} animation="fadeInUp">
-                <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                  <div className="h-48 overflow-hidden">
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="text-xs text-gray-500 mb-2">{post.date} • {post.category}</div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">{post.title}</h3>
-                    <p className="text-gray-600 mb-4">{post.description}</p>
-                    <a href={post.link} className="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
-                      Read More <ChevronRight className="ml-1 h-5 w-5" />
-                    </a>
-                  </div>
-                </div>
-              </AnimatedChild>
+            {blogs.map((blog) => (
+              <BlogCard
+                key={blog._id}
+                blog={{
+                  _id: blog._id,
+                  title: blog.title,
+                  createdAt: blog.createdAt,
+                  category: blog.category,
+                  content: blog.content,
+                  image: blog.image,
+                  author: blog.author || 'Unknown', // Fallback for author
+                  link: blog.link || '#', // Fallback for link
+                }}
+                formatDate={formatDate}
+              />
             ))}
           </div>
         </AnimateOnScroll>
 
         <AnimateOnScroll animation="fadeInUp" delay={0.3}>
           <div className="text-center mt-10">
-            <a href="#" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
+            <a href="/fullblogs" className="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold">
               View All Blog Posts <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </div>
