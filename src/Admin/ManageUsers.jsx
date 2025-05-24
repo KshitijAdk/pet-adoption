@@ -1,17 +1,18 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { Trash, Ban, Check, Eye, Clock, PawPrint, Shield, Home, ListChecks, Users, FileText } from "lucide-react";
+import { Trash, Ban, Check, Eye, Clock, PawPrint, Shield, Home, ListChecks, Users, FileText, Search, RefreshCw } from "lucide-react";
 import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import FeedbackModal from "../components/ui/FeedbackModal";
 import { AppContent } from '../context/AppContext';
 import { UserDetailModal } from "./DetailsModal";
 import { message } from 'antd';
 
-
 const ManageUsers = () => {
     const { userData, backendUrl } = useContext(AppContent);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
@@ -27,7 +28,23 @@ const ManageUsers = () => {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        if (searchQuery.trim() === "") {
+            setFilteredUsers(users);
+        } else {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            setFilteredUsers(
+                users.filter(
+                    (user) =>
+                        user.name.toLowerCase().includes(lowerCaseQuery) ||
+                        user.email.toLowerCase().includes(lowerCaseQuery)
+                )
+            );
+        }
+    }, [searchQuery, users]);
+
     const fetchUsers = () => {
+        setLoading(true); // Set loading state to true when refreshing
         fetch(`${backendUrl}/api/user`)
             .then((response) => {
                 if (!response.ok) {
@@ -38,8 +55,11 @@ const ManageUsers = () => {
             .then((data) => {
                 if (data.success) {
                     setUsers(data.users);
+                    setFilteredUsers(data.users);
+                    messageApi.success('Users refreshed successfully!');
                 } else {
                     setError("Failed to fetch users.");
+                    messageApi.error('Failed to fetch users');
                 }
                 setLoading(false);
             })
@@ -47,6 +67,7 @@ const ManageUsers = () => {
                 setError("Error fetching users.");
                 setLoading(false);
                 console.error("Error fetching users:", error);
+                messageApi.error('Error fetching users');
             });
     };
 
@@ -79,7 +100,6 @@ const ManageUsers = () => {
         const action = isBanned ? 'unban' : 'ban';
         const adminId = userData?.userId;
 
-        // Optimistically update the UI
         const previousUsers = [...users];
         setUsers(users.map(user =>
             user._id === userId ? {
@@ -112,17 +132,14 @@ const ManageUsers = () => {
                             banInfo: data.user.banInfo
                         } : user
                     ));
-
                     messageApi.success(`User ${action === 'ban' ? 'banned' : 'unbanned'} successfully!`);
                 } else {
-                    // Revert optimistic update on failure
                     setUsers(previousUsers);
                     setError(`Failed to ${action} user: ${data.message}`);
                     messageApi.error(data.message || `Failed to ${action} user`);
                 }
             })
             .catch((error) => {
-                // Revert optimistic update on error
                 setUsers(previousUsers);
                 setError(`Error ${action}ning user.`);
                 console.error(`Error ${action}ning user:`, error);
@@ -185,7 +202,6 @@ const ManageUsers = () => {
 
     return (
         <div className="flex h-screen">
-
             {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
@@ -195,13 +211,35 @@ const ManageUsers = () => {
             />
             <div className="flex-1 p-6">
                 <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Users</h1>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-80">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search by name or email..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                            <button
+                                onClick={fetchUsers}
+                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg border border-gray-300 flex items-center gap-2"
+                                title="Refresh Users"
+                            >
+                                <RefreshCw size={18} />
+                                <span className="text-sm">Refresh</span>
+                            </button>
+                        </div>
+                    </div>
                     {loading && <p className="text-center text-gray-500">Loading users...</p>}
                     {error && <p className="text-center text-red-500">{error}</p>}
-                    {!loading && !error && users.length === 0 && (
+                    {!loading && !error && filteredUsers.length === 0 && (
                         <p className="text-center text-gray-500">No users found.</p>
                     )}
-                    {!loading && !error && users.length > 0 && (
+                    {!loading && !error && filteredUsers.length > 0 && (
                         <div className="overflow-x-auto">
                             <table className="w-full border border-gray-200 rounded-lg text-left">
                                 <thead>
@@ -215,7 +253,7 @@ const ManageUsers = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map((user) => (
+                                    {filteredUsers.map((user) => (
                                         <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-50 text-sm">
                                             <td className="p-4 flex items-center space-x-3">
                                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -310,7 +348,6 @@ const ManageUsers = () => {
                     }
                 />
             )}
-
             <FeedbackModal
                 isOpen={feedbackModal.isOpen}
                 onClose={() => setFeedbackModal({ isOpen: false, userId: null, action: null })}

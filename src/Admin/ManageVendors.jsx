@@ -1,15 +1,18 @@
 import Sidebar from "../components/ui/Sidebar";
 import { useState, useEffect, useContext } from "react";
-import { CheckCircle, XCircle, Calendar, Clock, Home, Shield, Users, ListChecks, Eye, PawPrint, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, Clock, Home, Shield, Users, ListChecks, Eye, PawPrint, FileText, Search, RefreshCw } from "lucide-react";
 import { VendorDetailsModal } from "./DetailsModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
 import BigModal from "../components/ui/BigModal";
 import { AppContent } from "../context/AppContext";
+import { message } from "antd";
 
 const ManageVendors = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [vendors, setVendors] = useState([]);
+    const [filteredVendors, setFilteredVendors] = useState([]); // State for filtered vendors
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedVendor, setSelectedVendor] = useState(null);
@@ -36,9 +39,11 @@ const ManageVendors = () => {
                 }
                 const data = await response.json();
                 setVendors(data.data || []);
+                setFilteredVendors(data.data || []); // Initialize filtered vendors
             } catch (err) {
                 setError(err.message);
                 setVendors([]);
+                setFilteredVendors([]);
             } finally {
                 setLoading(false);
             }
@@ -46,6 +51,22 @@ const ManageVendors = () => {
 
         fetchVendors();
     }, []);
+
+    // Update filtered vendors whenever vendors or search query changes
+    useEffect(() => {
+        if (searchQuery.trim() === "") {
+            setFilteredVendors(vendors);
+        } else {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            setFilteredVendors(
+                vendors.filter(
+                    (vendor) =>
+                        (vendor.fullName?.toLowerCase().includes(lowerCaseQuery) || false) ||
+                        (vendor.email?.toLowerCase().includes(lowerCaseQuery) || false)
+                )
+            );
+        }
+    }, [searchQuery, vendors]);
 
     const approveVendor = async (vendorId) => {
         try {
@@ -59,9 +80,14 @@ const ManageVendors = () => {
                     vendor._id === vendorId ? { ...vendor, status: "Approved" } : vendor
                 )
             );
+            setFilteredVendors((prevVendors) =>
+                prevVendors.map((vendor) =>
+                    vendor._id === vendorId ? { ...vendor, status: "Approved" } : vendor
+                )
+            );
         } catch (error) {
             console.error(error);
-            alert("Error approving vendor");
+            message.error("Error approving vendor");
         }
     };
 
@@ -77,15 +103,21 @@ const ManageVendors = () => {
                     vendor._id === vendorId ? { ...vendor, status: "Rejected" } : vendor
                 )
             );
+            setFilteredVendors((prevVendors) =>
+                prevVendors.map((vendor) =>
+                    vendor._id === vendorId ? { ...vendor, status: "Rejected" } : vendor
+                )
+            );
         } catch (error) {
             console.error(error);
-            alert("Error rejecting vendor");
+            message.error("Error rejecting vendor");
         }
     };
 
     const refreshVendors = () => {
         setLoading(true);
         setError(null);
+        setSearchQuery(""); // Clear search query on refresh
 
         fetch(`${backendUrl}/api/vendors/all-vendor-applications`)
             .then(response => {
@@ -94,11 +126,14 @@ const ManageVendors = () => {
             })
             .then(data => {
                 setVendors(data.data || []);
+                setFilteredVendors(data.data || []);
                 setLoading(false);
+                message.success("Vendors refreshed successfully!");
             })
             .catch(err => {
                 setError(err.message);
                 setLoading(false);
+                message.error("Error refreshing vendors");
             });
     };
 
@@ -173,7 +208,6 @@ const ManageVendors = () => {
         icon: Calendar
     };
 
-    // Empty state for all vendor applications
     const vendorsEmptyState = (
         <EmptyState
             icon={ListChecks}
@@ -197,13 +231,34 @@ const ManageVendors = () => {
             />
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <div className="p-6 flex-1 flex flex-col">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Vendors</h1>
-
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">Manage Vendors</h1>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-80">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search by name or email..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                            <button
+                                onClick={refreshVendors}
+                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg border border-gray-300 flex items-center gap-2"
+                                title="Refresh Vendors"
+                            >
+                                <RefreshCw size={18} />
+                                <span className="text-sm">Refresh</span>
+                            </button>
+                        </div>
+                    </div>
                     <div className="bg-white rounded-lg shadow-lg p-6 flex-1 flex flex-col">
                         <div className="flex-1 overflow-auto">
                             <Table
                                 columns={columns}
-                                data={vendors}
+                                data={filteredVendors}
                                 loading={loading}
                                 error={error}
                                 emptyMessage={vendorsEmptyState}
@@ -216,7 +271,6 @@ const ManageVendors = () => {
                     </div>
                 </div>
             </div>
-
             <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
                 <VendorDetailsModal vendor={selectedVendor} onClose={closeModal} />
             </BigModal>

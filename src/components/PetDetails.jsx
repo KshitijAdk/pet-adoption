@@ -71,6 +71,8 @@ const PetDetails = () => {
       navigate("/login");
     } else if (userData?.role !== "user") {
       message.error("Only users can adopt pets.");
+    } else if (userData?.banInfo?.isBanned) {
+      message.error("You are banned from adopting pets.");
     } else {
       setIsModalOpen(true);
     }

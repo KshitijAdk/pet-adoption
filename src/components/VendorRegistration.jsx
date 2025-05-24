@@ -184,6 +184,8 @@ export default function VendorRegistration() {
         }
         setIsLoading(true);
 
+        message.loading("Submitting your registration...");
+
         try {
             // Validate file sizes again before upload (redundant but ensures no oversized files slip through)
             if (files.orgImage?.file.size > MAX_FILE_SIZE || files.fonepayQr?.file.size > MAX_FILE_SIZE ||
@@ -458,6 +460,7 @@ export default function VendorRegistration() {
                                 className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition disabled:opacity-70"
                             >
                                 {isLoading ? "Submitting..." : "Submit Registration"}
+
                             </button>
                         </div>
                     </form>
@@ -465,4 +468,4 @@ export default function VendorRegistration() {
             </div>
         </div>
     );
-}
+};

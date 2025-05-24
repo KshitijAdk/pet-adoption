@@ -5,6 +5,7 @@ import axios from 'axios';
 import Sidebar from '../components/ui/Sidebar';
 import Table from '../components/ui/Table';
 import PetDetailModal from '../components/profile/PetDetailModal';
+import { message } from 'antd';
 
 const AdoptionRequests = () => {
     const { userData } = useContext(AppContent);
@@ -21,7 +22,7 @@ const AdoptionRequests = () => {
         { path: "/vendor/adoption-requests", label: "Adoption Requests", icon: ListChecks }
     ];
 
-    const sidebarTitle = `${userData?.name}`;
+    // const sidebarTitle = `${userData?.name}`;
 
     useEffect(() => {
         const fetchAdoptionRequests = async () => {
@@ -61,11 +62,11 @@ const AdoptionRequests = () => {
                         req._id === row._id ? { ...req, status: 'approved' } : req
                     )
                 );
-                alert('Request approved!');
+                message('Request approved!');
             }
         } catch (error) {
             console.error("Error approving request:", error);
-            alert('Failed to approve request.');
+            message('Failed to approve request.');
         }
     };
 
@@ -82,11 +83,11 @@ const AdoptionRequests = () => {
                         req._id === row._id ? { ...req, status: 'rejected' } : req
                     )
                 );
-                alert('Request rejected!');
+                message('Request rejected!');
             }
         } catch (error) {
             console.error("Error rejecting request:", error);
-            alert('Failed to reject request.');
+            message('Failed to reject request.');
         }
     };
 
@@ -262,7 +263,7 @@ const AdoptionRequests = () => {
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
                 menuItems={vendorMenuItems}
-                title={sidebarTitle}
+                title="Vendor Panel"
             />
 
             <div className="flex-1 ml-8 p-4">

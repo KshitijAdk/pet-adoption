@@ -20,12 +20,13 @@ import {
     PlusOutlined,
     CloseOutlined,
     EyeOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    SearchOutlined
 } from '@ant-design/icons';
+import { RefreshCw, Home, Users, Clock, ListChecks, PawPrint, Shield, FileText } from "lucide-react";
 import Sidebar from '../components/ui/Sidebar';
-import { Home, Users, Clock, ListChecks, PawPrint, Shield, FileText } from "lucide-react";
 
-const { Header, Content, Sider } = Layout;
+const { Content } = Layout;
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -34,6 +35,8 @@ const AdminBlogs = () => {
     const [form] = Form.useForm();
     const [visible, setVisible] = useState(false);
     const [blogs, setBlogs] = useState([]);
+    const [filteredBlogs, setFilteredBlogs] = useState([]); // State for filtered blogs
+    const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [imageFile, setImageFile] = useState(null);
@@ -41,31 +44,56 @@ const AdminBlogs = () => {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [selectedBlog, setSelectedBlog] = useState(null);
     const [viewModalVisible, setViewModalVisible] = useState(false);
-    const [collapsed, setCollapsed] = useState(false);
-    const fileInputRef = useRef(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const fileInputRef = useRef(null);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
     // Fetch blogs from API
     useEffect(() => {
-        const fetchBlogs = async () => {
-            try {
-                console.log('Fetching blogs...');
-                const response = await fetch('http://localhost:3000/api/blogs');
-                const data = await response.json();
-                console.log('Blogs fetched successfully:', data);
-                setBlogs(data);
-            } catch (error) {
-                console.error('Error fetching blogs:', error);
-                message.error('Failed to fetch blogs');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchBlogs();
     }, []);
+
+    // Update filtered blogs whenever blogs or search query changes
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredBlogs(blogs);
+        } else {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            setFilteredBlogs(
+                blogs.filter(
+                    (blog) =>
+                        (blog.title?.toLowerCase().includes(lowerCaseQuery) || false) ||
+                        (blog.author?.toLowerCase().includes(lowerCaseQuery) || false) ||
+                        (blog.category?.toLowerCase().includes(lowerCaseQuery) || false)
+                )
+            );
+        }
+    }, [searchQuery, blogs]);
+
+    const fetchBlogs = async () => {
+        setLoading(true);
+        setSearchQuery(''); // Clear search query on refresh
+        try {
+            console.log('Fetching blogs...');
+            const response = await fetch('http://localhost:3000/api/blogs');
+            if (!response.ok) {
+                throw new Error('Failed to fetch blogs');
+            }
+            const data = await response.json();
+            console.log('Blogs fetched successfully:', data);
+            setBlogs(data);
+            setFilteredBlogs(data); // Initialize filtered blogs
+            messageApi.success('Blogs fetched successfully!');
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+            messageApi.error('Failed to fetch blogs');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleImageUpload = async (file) => {
         setUploadingImage(true);
@@ -88,10 +116,10 @@ const AdminBlogs = () => {
             console.log('Image uploaded successfully:', data.secure_url);
             setImagePreview(data.secure_url);
             form.setFieldsValue({ image: data.secure_url });
-            message.success('Image uploaded successfully!');
+            messageApi.success('Image uploaded successfully!');
         } catch (error) {
             console.error('Error uploading image:', error);
-            message.error('Failed to upload image');
+            messageApi.error('Failed to upload image');
         } finally {
             setUploadingImage(false);
         }
@@ -102,11 +130,11 @@ const AdminBlogs = () => {
         if (!file) return;
 
         if (!file.type.match('image.*')) {
-            message.error('You can only upload image files!');
+            messageApi.error('You can only upload image files!');
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            message.error('Image must be smaller than 5MB!');
+            messageApi.error('Image must be smaller than 5MB!');
             return;
         }
 
@@ -124,7 +152,7 @@ const AdminBlogs = () => {
         console.log('Submitting blog form with values:', values);
 
         if (!values.image) {
-            message.error('Please upload an image for the blog');
+            messageApi.error('Please upload an image for the blog');
             return;
         }
 
@@ -148,14 +176,15 @@ const AdminBlogs = () => {
             console.log('Blog created successfully:', newBlog);
 
             setBlogs([newBlog, ...blogs]);
-            message.success('Blog created successfully!');
+            setFilteredBlogs([newBlog, ...filteredBlogs]);
+            messageApi.success('Blog created successfully!');
             setVisible(false);
             form.resetFields();
             setImageFile(null);
             setImagePreview('');
         } catch (error) {
             console.error('Error creating blog:', error);
-            message.error('Failed to create blog');
+            messageApi.error('Failed to create blog');
         } finally {
             setSubmitting(false);
         }
@@ -172,10 +201,11 @@ const AdminBlogs = () => {
             }
 
             setBlogs(blogs.filter(blog => blog._id !== id));
-            message.success('Blog deleted successfully!');
+            setFilteredBlogs(filteredBlogs.filter(blog => blog._id !== id));
+            messageApi.success('Blog deleted successfully!');
         } catch (error) {
             console.error('Error deleting blog:', error);
-            message.error('Failed to delete blog');
+            messageApi.error('Failed to delete blog');
         }
     };
 
@@ -270,8 +300,8 @@ const AdminBlogs = () => {
     ];
 
     return (
-        <div className="flex">
-
+        <div className="flex h-screen">
+            {contextHolder}
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
@@ -279,41 +309,55 @@ const AdminBlogs = () => {
                 title="Admin Panel"
             />
             <Layout>
-                <Header className="bg-white p-0 px-6 shadow-sm" style={{ padding: 2 }}>
-                    <div className="flex justify-between items-center h-full">
-                        <Title level={3} className="m-3">Manage Blogs</Title>
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={() => setVisible(true)}
-                            className="flex items-center"
-                        >
-                            Add Blog
-                        </Button>
-                    </div>
-                </Header>
-
-                <Content className="p-6" style={{ minHeight: 'calc(100vh - 64px)' }}>
-                    {loading ? (
-                        <div className="text-center py-12">
-                            <Spin size="large" />
-                        </div>
-                    ) : (
-                        <div className="max-w-6xl mx-auto">
-                            <Card>
-                                <Table
-                                    columns={columns}
-                                    dataSource={blogs}
-                                    rowKey="_id"
-                                    pagination={{ pageSize: 10 }}
-                                    scroll={{ x: true }}
+                <div className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">Manage Blogs</h1>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-80">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search by title, author, or category..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 />
-                            </Card>
+                                <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            </div>
+                            <Button
+                                onClick={fetchBlogs}
+                                className="flex items-center gap-2 border border-gray-300 rounded-lg text-blue-500 hover:bg-blue-50"
+                                title="Refresh Blogs"
+                            >
+                                <RefreshCw size={18} />
+                                <span>Refresh</span>
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => setVisible(true)}
+                                className="flex items-center bg-blue-600 hover:bg-blue-700"
+                            >
+                                Add Blog
+                            </Button>
                         </div>
-                    )}
-                </Content>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <Spin size="large" />
+                            </div>
+                        ) : (
+                            <Table
+                                columns={columns}
+                                dataSource={filteredBlogs}
+                                rowKey="_id"
+                                pagination={{ pageSize: 10 }}
+                                scroll={{ x: true }}
+                            />
+                        )}
+                    </div>
+                </div>
             </Layout>
-
             {/* Create Blog Modal */}
             <Modal
                 title="Create New Blog"
@@ -355,7 +399,6 @@ const AdminBlogs = () => {
                     >
                         <Input placeholder="Enter blog title" className="rounded" />
                     </Form.Item>
-
                     <Form.Item
                         name="author"
                         label="Author Name"
@@ -366,7 +409,6 @@ const AdminBlogs = () => {
                     >
                         <Input placeholder="Enter author name" className="rounded" />
                     </Form.Item>
-
                     <Form.Item
                         name="category"
                         label="Category"
@@ -379,7 +421,6 @@ const AdminBlogs = () => {
                             <Option value="Success Stories">Success Stories</Option>
                         </Select>
                     </Form.Item>
-
                     <Form.Item
                         name="image"
                         label="Blog Image"
@@ -429,7 +470,6 @@ const AdminBlogs = () => {
                             )}
                         </div>
                     </Form.Item>
-
                     <Form.Item
                         name="content"
                         label="Content"
@@ -439,7 +479,6 @@ const AdminBlogs = () => {
                     </Form.Item>
                 </Form>
             </Modal>
-
             {/* View Blog Modal */}
             <Modal
                 title={selectedBlog?.title}
