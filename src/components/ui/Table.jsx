@@ -28,7 +28,6 @@ const Table = ({
     const dropdownRefs = useRef({});
     const buttonRefs = useRef({});
 
-
     const toggleDropdown = (id, e) => {
         e.stopPropagation();
         setDropdownOpen(dropdownOpen === id ? null : id);
@@ -124,15 +123,18 @@ const Table = ({
             }
         }, [buttonRef, dropdownOpen, rowId]);
 
-        if (!dropdownOpen || dropdownOpen !== rowId) return null;
+        // Determine the actions to render
+        const actionsToRender = typeof actions === 'function' ? actions(row) : actions;
+
+        if (!dropdownOpen || dropdownOpen !== rowId || !actionsToRender.length) return null;
 
         return createPortal(
             <div
-                ref={dropdownRef}
+                ref={el => dropdownRefs.current[rowId] = el}
                 className="fixed z-50 bg-white shadow-lg rounded-lg w-48 py-2 border border-gray-200"
                 style={{ top: position.top, left: position.left }}
             >
-                {actions.map((action) => (
+                {actionsToRender.map((action) => (
                     <button
                         key={action.key}
                         onClick={(e) => handleAction(action, row, e)}
@@ -237,6 +239,5 @@ const Table = ({
         </div>
     );
 };
-
 
 export default Table;

@@ -9,23 +9,23 @@ const Footer = () => {
                     {/* About Section */}
                     <div className="space-y-4">
                         <div className="flex items-center">
-                            <PawPrint className="text-purple-400 mr-2" size={24} />
+                            <PawPrint className="text-amber-400 mr-2" size={24} />
                             <h3 className="text-xl font-bold">NayaSathi</h3>
                         </div>
                         <p className="text-gray-300 text-sm">
                             Connecting loving homes with pets in need. Our mission is to reduce animal homelessness through adoption, education, and community support.
                         </p>
                         <div className="flex space-x-4 pt-2">
-                            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-purple-600 transition">
+                            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-amber-600 transition">
                                 <Facebook size={18} />
                             </a>
-                            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-purple-600 transition">
+                            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-amber-600 transition">
                                 <Twitter size={18} />
                             </a>
-                            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-purple-600 transition">
+                            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-amber-600 transition">
                                 <Instagram size={18} />
                             </a>
-                            <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-purple-600 transition">
+                            <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="bg-gray-700 p-2 rounded-full hover:bg-amber-600 transition">
                                 <MessageCircle size={18} />
                             </a>
                         </div>
@@ -36,31 +36,31 @@ const Footer = () => {
                         <h3 className="text-lg font-semibold border-b border-gray-700 pb-2">Quick Links</h3>
                         <ul className="space-y-2 text-gray-300">
                             <li>
-                                <a href="/adopt" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/pets" className="flex items-center hover:text-amber-400 transition">
                                     <Heart className="mr-2" size={16} />
                                     Adopt a Pet
                                 </a>
                             </li>
                             <li>
-                                <a href="/our-partner-organizations" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/our-partner-organizations" className="flex items-center hover:text-amber-400 transition">
                                     <Heart className="mr-2" size={16} />
                                     Organizations
                                 </a>
                             </li>
                             <li>
-                                <a href="/donate" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/our-partner-organizations" className="flex items-center hover:text-amber-400 transition">
                                     <Heart className="mr-2" size={16} />
                                     Donate
                                 </a>
                             </li>
                             <li>
-                                <a href="/success-stories" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/fullblogs" className="flex items-center hover:text-amber-400 transition">
                                     <Heart className="mr-2" size={16} />
                                     Success Stories
                                 </a>
                             </li>
                             <li>
-                                <a href="/blog" className="flex items-center hover:text-purple-400 transition">
+                                <a href="/fullblogs" className="flex items-center hover:text-amber-400 transition">
                                     <Heart className="mr-2" size={16} />
                                     Blog
                                 </a>
@@ -78,11 +78,11 @@ const Footer = () => {
                             </div>
                             <div className="flex items-center">
                                 <Mail className="mr-2" size={16} />
-                                <a href="mailto:info@nayasathi.com" className="hover:text-purple-400 transition">info@nayasathi.com</a>
+                                <a href="mailto:info@nayasathi.com" className="hover:text-amber-400 transition">info@nayasathi.com</a>
                             </div>
                             <div className="flex items-center">
                                 <MessageCircle className="mr-2" size={16} />
-                                <a href="tel:+9771234567890" className="hover:text-purple-400 transition">+977 123-456-7890</a>
+                                <a href="tel:+9771234567890" className="hover:text-amber-400 transition">+977 123-456-7890</a>
                             </div>
                             <div className="flex items-start">
                                 <Clock className="mr-2 mt-1 flex-shrink-0" size={16} />
@@ -101,12 +101,12 @@ const Footer = () => {
                             <input
                                 type="email"
                                 placeholder="Your email address"
-                                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-purple-500"
+                                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-amber-500"
                                 required
                             />
                             <button
                                 type="submit"
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition w-full"
+                                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded transition w-full"
                             >
                                 Subscribe
                             </button>

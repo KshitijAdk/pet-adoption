@@ -267,7 +267,7 @@ const AdoptionRequests = () => {
             />
 
             <div className="flex-1 ml-8 p-4">
-                <h1 className="text-xl font-bold text-gray-800 mb-4">Adoption Requests</h1>
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">Adoption Requests</h1>
 
                 <div className="mb-4">
                     <div className="relative">

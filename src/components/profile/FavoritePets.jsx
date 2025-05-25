@@ -81,9 +81,9 @@ const FavoritePets = () => {
                                                 View Details
                                             </button>
                                         </Link>
-                                        <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                        {/* <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                             Adopt
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             </div>

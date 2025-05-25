@@ -5,18 +5,22 @@ import { VendorDetailsModal } from "./DetailsModal";
 import Table from "../components/ui/Table";
 import EmptyState from "../components/ui/EmptyState";
 import BigModal from "../components/ui/BigModal";
+import ConfirmationPopup from "../components/ui/ConfirmationPopup";
 import { AppContent } from "../context/AppContext";
 import { message } from "antd";
 
 const ManageVendors = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [vendors, setVendors] = useState([]);
-    const [filteredVendors, setFilteredVendors] = useState([]); // State for filtered vendors
-    const [searchQuery, setSearchQuery] = useState(""); // State for search query
+    const [filteredVendors, setFilteredVendors] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+    const [confirmType, setConfirmType] = useState("warning");
     const { backendUrl } = useContext(AppContent);
 
     const adminMenuItems = [
@@ -39,7 +43,7 @@ const ManageVendors = () => {
                 }
                 const data = await response.json();
                 setVendors(data.data || []);
-                setFilteredVendors(data.data || []); // Initialize filtered vendors
+                setFilteredVendors(data.data || []);
             } catch (err) {
                 setError(err.message);
                 setVendors([]);
@@ -50,9 +54,8 @@ const ManageVendors = () => {
         };
 
         fetchVendors();
-    }, []);
+    }, [backendUrl]);
 
-    // Update filtered vendors whenever vendors or search query changes
     useEffect(() => {
         if (searchQuery.trim() === "") {
             setFilteredVendors(vendors);
@@ -85,9 +88,12 @@ const ManageVendors = () => {
                     vendor._id === vendorId ? { ...vendor, status: "Approved" } : vendor
                 )
             );
+            message.success("Vendor approved successfully!");
         } catch (error) {
             console.error(error);
             message.error("Error approving vendor");
+        } finally {
+            setShowConfirmPopup(false);
         }
     };
 
@@ -108,16 +114,31 @@ const ManageVendors = () => {
                     vendor._id === vendorId ? { ...vendor, status: "Rejected" } : vendor
                 )
             );
+            message.success("Vendor rejected successfully!");
         } catch (error) {
             console.error(error);
             message.error("Error rejecting vendor");
+        } finally {
+            setShowConfirmPopup(false);
         }
+    };
+
+    const handleConfirmAction = (vendorId, actionType) => {
+        setConfirmType(actionType);
+        setConfirmAction(() => () => {
+            if (actionType === "approve") {
+                approveVendor(vendorId);
+            } else if (actionType === "reject") {
+                rejectVendor(vendorId);
+            }
+        });
+        setShowConfirmPopup(true);
     };
 
     const refreshVendors = () => {
         setLoading(true);
         setError(null);
-        setSearchQuery(""); // Clear search query on refresh
+        setSearchQuery("");
 
         fetch(`${backendUrl}/api/vendors/all-vendor-applications`)
             .then(response => {
@@ -173,26 +194,36 @@ const ManageVendors = () => {
         { key: "createdAt", label: "Date" }
     ];
 
-    const dropdownActions = [
-        {
-            key: "approve",
-            label: "Approve",
-            icon: CheckCircle,
-            onClick: (vendor) => approveVendor(vendor._id)
-        },
-        {
-            key: "reject",
-            label: "Reject",
-            icon: XCircle,
-            onClick: (vendor) => rejectVendor(vendor._id)
-        },
-        {
-            key: "view",
-            label: "View Details",
-            icon: Eye,
-            onClick: openModal
+    const getDropdownActions = (vendor) => {
+        const baseActions = [
+            {
+                key: "view",
+                label: "View Details",
+                icon: Eye,
+                onClick: openModal
+            }
+        ];
+
+        if (vendor.status?.toLowerCase() !== "approved" && vendor.status?.toLowerCase() !== "rejected") {
+            return [
+                {
+                    key: "approve",
+                    label: "Approve",
+                    icon: CheckCircle,
+                    onClick: (vendor) => handleConfirmAction(vendor._id, "approve")
+                },
+                {
+                    key: "reject",
+                    label: "Reject",
+                    icon: XCircle,
+                    onClick: (vendor) => handleConfirmAction(vendor._id, "reject")
+                },
+                ...baseActions
+            ];
         }
-    ];
+
+        return baseActions;
+    };
 
     const statusConfig = {
         key: 'status',
@@ -263,7 +294,7 @@ const ManageVendors = () => {
                                 error={error}
                                 emptyMessage={vendorsEmptyState}
                                 onRowClick={openModal}
-                                dropdownActions={dropdownActions}
+                                dropdownActions={getDropdownActions}
                                 statusConfig={statusConfig}
                                 dateConfig={dateConfig}
                             />
@@ -274,6 +305,14 @@ const ManageVendors = () => {
             <BigModal isOpen={showModal} onClose={closeModal} title="Vendor Application Details">
                 <VendorDetailsModal vendor={selectedVendor} onClose={closeModal} />
             </BigModal>
+            <ConfirmationPopup
+                isOpen={showConfirmPopup}
+                onConfirm={confirmAction}
+                onCancel={() => setShowConfirmPopup(false)}
+                type={confirmType}
+                confirmText={confirmType === "approve" ? "Approve" : "Reject"}
+                confirmColor={confirmType === "approve" ? "bg-green-600" : "bg-red-600"}
+            />
         </div>
     );
 };
