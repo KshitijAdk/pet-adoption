@@ -67,7 +67,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, menuItems = [], title }) => 
                     )}
                 </nav>
 
-                {/* Footer */}
+                {/* Footer 
                 <div className="p-2 border-t border-gray-100">
                     <button
                         className={`flex items-center w-full p-2 rounded-md 
@@ -78,7 +78,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, menuItems = [], title }) => 
                         {isSidebarOpen && <span className="ml-3 text-sm">Logout</span>}
                     </button>
 
-                </div>
+                </div>*/}
             </div>
         </div>
     );

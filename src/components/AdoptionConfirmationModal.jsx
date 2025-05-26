@@ -44,7 +44,7 @@ const AdoptionConfirmationModal = ({ isOpen, onClose, vendorId }) => {
                                 <div className="flex items-center justify-center gap-2 bg-amber-50 px-4 py-3 rounded-lg">
                                     <HeartHandshake className="h-5 w-5 text-amber-600" />
                                     <p className="text-sm font-medium text-amber-800">
-                                        Would you like to donate to this organization?
+                                        Please consider donating to support our cause and help more pets find loving homes.
                                     </p>
                                 </div>
                             </div>
