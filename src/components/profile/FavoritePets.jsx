@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import FavouriteButton from '../ui/FavouriteButton';
 
 const FavoritePets = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [favoritePets, setFavoritePets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -15,7 +15,7 @@ const FavoritePets = () => {
         const fetchFavoritePets = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3000/api/pets/favourite/${userData.userId}`);
+                const response = await axios.get(`${backendUrl}/api/pets/favourite/${userData.userId}`);
                 setFavoritePets(response.data.favouritePets);
 
             } catch (error) {

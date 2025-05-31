@@ -4,7 +4,7 @@ import { AppContent } from '../../context/AppContext';
 import PetDetailModal from './PetDetailModal';
 
 const Applications = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [applications, setApplications] = useState([]);
     const [vendorApplication, setVendorApplication] = useState(null);
     const [selectedPet, setSelectedPet] = useState(null);
@@ -17,7 +17,7 @@ const Applications = () => {
                 const userId = userData?.userId;
                 if (!userId) return;
 
-                const response = await fetch(`http://localhost:3000/api/adoption/user/${userId}`);
+                const response = await fetch(`${backendUrl}/api/adoption/user/${userId}`);
                 const data = await response.json();
 
                 if (data.applications) {

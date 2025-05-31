@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
+import { AppContent } from '../context/AppContext';
 
 export default function VendorsList() {
     const [vendors, setVendors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+    const { backendUrl } = useContext(AppContent);
 
     useEffect(() => {
         const fetchVendors = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/vendors/all-vendors');
+                const res = await fetch(`${backendUrl}/api/vendors/all-vendors`);
                 const data = await res.json();
                 if (data.success) {
                     setVendors(data.data);

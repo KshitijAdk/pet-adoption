@@ -8,7 +8,7 @@ import PetDetailModal from '../components/profile/PetDetailModal';
 import { message } from 'antd';
 
 const AdoptionRequests = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [requests, setRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
@@ -27,7 +27,7 @@ const AdoptionRequests = () => {
     useEffect(() => {
         const fetchAdoptionRequests = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/adoption/vendor/${userData?.vendorDetails?.vendorId}`);
+                const response = await axios.get(`${backendUrl}/api/adoption/vendor/${userData?.vendorDetails?.vendorId}`);
                 const requestsData = response.data.requests || [];
                 setRequests(requestsData);
                 setLoading(false);
@@ -50,7 +50,7 @@ const AdoptionRequests = () => {
 
     const handleApprove = async (row) => {
         try {
-            const response = await axios.post('http://localhost:3000/api/adoption/approve', {
+            const response = await axios.post(`${backendUrl}/api/adoption/approve`, {
                 adoptionId: row._id,
                 petId: row.petId._id,
                 applicantId: row.applicantId._id
@@ -72,7 +72,7 @@ const AdoptionRequests = () => {
 
     const handleReject = async (row) => {
         try {
-            const response = await axios.post('http://localhost:3000/api/adoption/reject', {
+            const response = await axios.post(`${backendUrl}/api/adoption/reject`, {
                 adoptionId: row._id,
                 petId: row.petId._id
             });

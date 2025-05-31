@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppContent } from './AppContext';
+
 
 const PetContext = createContext();
 
@@ -6,11 +8,13 @@ export const PetProvider = ({ children }) => {
     const [pets, setPets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { backendUrl } = useContext(AppContent);
+
 
     const fetchAllPets = async () => {
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:3000/api/pets/pets-with-vendor');
+            const res = await fetch(`${backendUrl}/api/pets/pets-with-vendor`);
             const data = await res.json();
 
             if (res.ok) {

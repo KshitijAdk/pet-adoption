@@ -13,7 +13,7 @@ const VendorDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { userData } = useContext(AppContent);
+  const { userData, backendUrl } = useContext(AppContent);
   const [dashboardData, setDashboardData] = useState({
     vendorDetails: {},
     pets: [],
@@ -32,7 +32,7 @@ const VendorDashboard = () => {
         setLoading(true);
         const vendorId = userData?.vendorDetails?.vendorId;
 
-        const response = await axios.get(`http://localhost:3000/api/admin/${vendorId}`);
+        const response = await axios.get(`${backendUrl}/api/admin/${vendorId}`);
         setDashboardData(response.data);
       } catch (err) {
         console.error("Error fetching vendor data:", err);

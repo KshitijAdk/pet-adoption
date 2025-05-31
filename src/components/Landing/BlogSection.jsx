@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ArrowRight } from 'lucide-react';
 import AnimateOnScroll from '../ui/AnimateOnScroll';
 import BlogCard from '../ui/BlogCard';
+import { AppContent } from '../../context/AppContext';
 
 const BlogSection = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const {backendUrl} = useContext(AppContent);
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/blogs/');
+        const response = await fetch(`${backendUrl}/api/blogs/`);
         if (!response.ok) throw new Error('Failed to fetch blogs');
         const data = await response.json();
         // Sort by createdAt (newest first) and take the first 3

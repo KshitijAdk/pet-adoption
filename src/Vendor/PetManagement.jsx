@@ -8,7 +8,7 @@ import Loading from '../components/ui/Loading';
 import Sidebar from '../components/ui/Sidebar';
 
 const PetManagement = () => {
-    const { userData, loading: userLoading } = useContext(AppContent);
+    const { userData, loading: userLoading, backendUrl } = useContext(AppContent);
     const [pets, setPets] = useState([]);
     const [isAddingPet, setIsAddingPet] = useState(false);
     const [editingPetId, setEditingPetId] = useState(null);
@@ -42,7 +42,7 @@ const PetManagement = () => {
 
         const fetchPets = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/pets/getPets?vendorId=${userData.vendorDetails.vendorId}`);
+                const response = await fetch(`${backendUrl}/api/pets/getPets?vendorId=${userData.vendorDetails.vendorId}`);
                 if (response.ok) {
                     const data = await response.json();
                     setPets(data.pets);
@@ -84,7 +84,7 @@ const PetManagement = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:3000/api/pets/add', {
+            const response = await fetch(`${backendUrl}/api/pets/add`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -127,7 +127,7 @@ const PetManagement = () => {
         console.log('Form data being sent:', formData);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/${editingPetId}`, {
+            const response = await fetch(`${backendUrl}/api/pets/${editingPetId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -174,7 +174,7 @@ const PetManagement = () => {
 
     const handleDeletePet = async (petId) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/pets/${petId}`, {
+            const response = await fetch(`${backendUrl}/api/pets/${petId}`, {
                 method: 'DELETE',
             });
 

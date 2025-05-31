@@ -7,7 +7,7 @@ const FavouriteButton = ({ petId }) => {
     const [isFavourited, setIsFavourited] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isLoading, setIsLoading] = useState(true); // Add loading state
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
 
     useEffect(() => {
         const checkIfFavourited = async () => {
@@ -47,8 +47,8 @@ const FavouriteButton = ({ petId }) => {
             setIsFavourited(isAdding);
 
             const endpoint = isAdding
-                ? "http://localhost:3000/api/pets/add-to-favourite"
-                : "http://localhost:3000/api/pets/remove-from-favourite";
+                ? `${backendUrl}/api/pets/add-to-favourite`
+                : `${backendUrl}/api/pets/remove-from-favourite`;
 
             const payload = {
                 userId: userData.userId,

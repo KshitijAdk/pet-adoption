@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Newspaper, Search } from "lucide-react";
 import AnimateOnScroll from "./ui/AnimateOnScroll";
 import BlogCard from "./ui/BlogCard";
+import { AppContent } from "../context/AppContext";
 
 const categories = ["All Posts", "Adoption Stories", "Pet Care", "Health Tips", "Success Stories"];
 
@@ -12,11 +13,12 @@ export default function BlogPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeCategory, setActiveCategory] = useState("All Posts");
+    const { backendUrl } = useContext(AppContent);
 
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/blogs/');
+                const response = await fetch(`${backendUrl}/api/blogs/`);
                 if (!response.ok) throw new Error('Failed to fetch blogs');
                 const data = await response.json();
                 setBlogs(data);

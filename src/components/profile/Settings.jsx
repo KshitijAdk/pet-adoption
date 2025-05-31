@@ -6,7 +6,7 @@ import { AppContent } from '../../context/AppContext';
 import Cookies from "js-cookie";
 
 const Settings = () => {
-    const { userData } = useContext(AppContent);
+    const { userData, backendUrl } = useContext(AppContent);
     const [isEditingPassword, setIsEditingPassword] = useState(false);
     const [isPasswordShown, setIsPasswordShown] = useState({
         oldPassword: false,
@@ -46,7 +46,7 @@ const Settings = () => {
         setSuccessMessage(null);
 
         try {
-            const response = await axios.post('http://localhost:3000/api/user/change-password', {
+            const response = await axios.post(`${backendUrl}/api/user/change-password`, {
                 oldPassword: passwords.oldPassword,
                 newPassword: passwords.newPassword,
             });
@@ -74,7 +74,7 @@ const Settings = () => {
         try {
             const userId = userData?.userId
             // Send userId in the request body using the `data` property
-            const response = await axios.delete('http://localhost:3000/api/user/delete-user', {
+            const response = await axios.delete(`${backendUrl}/api/user/delete-user`, {
                 data: { userId }, // Send userId as part of the request body
             });
 

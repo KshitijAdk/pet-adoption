@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
     Layout,
     Button,
@@ -25,6 +25,7 @@ import {
 } from '@ant-design/icons';
 import { RefreshCw, Home, Users, Clock, ListChecks, PawPrint, Shield, FileText } from "lucide-react";
 import Sidebar from '../components/ui/Sidebar';
+import { AppContent } from '../context/AppContext'
 
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -47,6 +48,7 @@ const AdminBlogs = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const fileInputRef = useRef(null);
     const [messageApi, contextHolder] = message.useMessage();
+    const { backendUrl } = useContext(AppContent);
 
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -78,7 +80,7 @@ const AdminBlogs = () => {
         setSearchQuery(''); // Clear search query on refresh
         try {
             console.log('Fetching blogs...');
-            const response = await fetch('http://localhost:3000/api/blogs');
+            const response = await fetch(`${backendUrl}/api/blogs`);
             if (!response.ok) {
                 throw new Error('Failed to fetch blogs');
             }
@@ -158,7 +160,7 @@ const AdminBlogs = () => {
 
         setSubmitting(true);
         try {
-            const response = await fetch('http://localhost:3000/api/blogs/create', {
+            const response = await fetch(`${backendUrl}api/blogs/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -192,7 +194,7 @@ const AdminBlogs = () => {
 
     const handleDeleteBlog = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/blogs/${id}`, {
+            const response = await fetch(`${backendUrl}/api/blogs/${id}`, {
                 method: 'DELETE',
             });
 

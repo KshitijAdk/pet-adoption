@@ -4,7 +4,7 @@ import { AppContent } from '../../context/AppContext';
 import { toast } from 'react-toastify';
 
 const ProfileInfo = () => {
-    const { userData, setUserData } = useContext(AppContent);
+    const { userData, setUserData, backendUrl } = useContext(AppContent);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
@@ -31,7 +31,7 @@ const ProfileInfo = () => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/user/edit/profile', {
+            const response = await fetch(`${backendUrl}/api/user/edit/profile`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: userData?.userId, ...formData }),

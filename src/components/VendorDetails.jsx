@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Heart, Mail, Phone, MapPin, Calendar, Users, HeartHandshake,
     X, Camera, PawPrint, Clock, Award, ExternalLink, Info
 } from 'lucide-react';
 import PetCard from './ui/petcard';
+import { AppContent } from '../context/AppContext';
 
 const VendorDetails = () => {
     const { vendorId } = useParams();
@@ -15,12 +16,13 @@ const VendorDetails = () => {
     const [activeTab, setActiveTab] = useState('gallery');
     const [showDonateModal, setShowDonateModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const { backendUrl } = useContext(AppContent);
 
     // Fetch vendor data
     useEffect(() => {
         const fetchVendor = async () => {
             try {
-                const res = await fetch(`http://localhost:3000/api/vendors/${vendorId}`);
+                const res = await fetch(`${backendUrl}/api/vendors/${vendorId}`);
                 const data = await res.json();
                 if (data.success) {
                     setVendor(data.data);

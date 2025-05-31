@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { app } from '../utils/firebase.js'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { signInStart, signInSuccess, signInFail } from '../redux/slices/userSlice.js';
 import { message } from 'antd';
+import { AppContent } from '../context/AppContext.jsx';
 
 
 const OAuth = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { backendUrl } = useContext(AppContent)
 
     const handleGoogleClick = async () => {
         try {
@@ -36,7 +38,7 @@ const OAuth = () => {
 
             console.log('Google User Data:', userData);
 
-            const response = await fetch(`http://localhost:3000/api/auth/google`, {
+            const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

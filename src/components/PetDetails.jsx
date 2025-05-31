@@ -10,7 +10,7 @@ import { message } from "antd";
 const PetDetails = () => {
   const { petId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedin, userData } = useContext(AppContent);
+  const { isLoggedin, userData, backendUrl } = useContext(AppContent);
   const [pet, setPet] = useState(null);
   const [vendorLocation, setVendorLocation] = useState("");
   const [vendorName, setVendorName] = useState("");
@@ -24,7 +24,7 @@ const PetDetails = () => {
   useEffect(() => {
     const fetchPetDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/pets/petDetails/${petId}`);
+        const response = await fetch(`${backendUrl}/api/pets/petDetails/${petId}`);
         const result = await response.json();
 
         if (result.pet) {
