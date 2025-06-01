@@ -139,10 +139,6 @@ const Navbar = () => {
                         <User className="w-5 h-5 text-amber-600" />
                       )}
                     </div>
-                    <Menu
-                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 ease-in-out ${isProfileMenuOpen ? "rotate-180" : ""
-                        }`}
-                    />
                   </button>
                   {/* </div> */}
 

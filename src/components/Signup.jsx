@@ -3,7 +3,7 @@ import { PawPrint, User, Mail, Lock, Check, X } from "lucide-react";
 import Button from "./ui/button";
 import InputField from "./ui/InputField";
 import { AppContent } from "../context/AppContext";
-import { message } from 'antd'
+import { message } from 'antd';
 import Loading from "./ui/Loading";
 import OAuth from "./OAuth";
 
@@ -22,7 +22,7 @@ const Signup = () => {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [resendDisabled, setResendDisabled] = useState(false);
     const [countdown, setCountdown] = useState(30);
-    const [timeLeft, setTimeLeft] = useState(180); // in seconds
+    const [timeLeft, setTimeLeft] = useState(180);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -137,7 +137,6 @@ const Signup = () => {
         }
     };
 
-
     const handleResendOtp = async () => {
         setResendDisabled(true);
         setCountdown(30);
@@ -175,48 +174,66 @@ const Signup = () => {
     );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
-                <div className="px-8 pt-10 pb-8">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 px-4 sm:px-6 lg:px-8 py-6">
+            <div className="w-full max-w-md sm:max-w-lg bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
+                <div className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
                     {!showVerification ? (
                         <>
-                            <div className="flex justify-center mb-8">
-                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md">
-                                    <PawPrint size={32} className="text-white" />
+                            <div className="flex justify-center mb-6 sm:mb-8">
+                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-3 sm:p-4 rounded-full shadow-md">
+                                    <PawPrint size={24} className="text-white sm:h-8 sm:w-8" />
                                 </div>
                             </div>
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold text-gray-800">Welcome to NayaSathi</h2>
-                                <p className="text-gray-500 mt-2 text-sm">Create an account in seconds</p>
+                            <div className="text-center mb-6 sm:mb-8">
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Welcome to NayaSathi</h2>
+                                <p className="text-gray-500 mt-2 text-xs sm:text-sm">Create an account in seconds</p>
                             </div>
 
-                            <form onSubmit={handleSignup} className="space-y-4">
-                                <InputField id="name" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} icon={User} required />
-                                <InputField id="email" type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} icon={Mail} required />
+                            <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4">
+                                <InputField
+                                    id="name"
+                                    placeholder="Your Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    icon={User}
+                                    required
+                                    className="text-sm sm:text-base"
+                                />
+                                <InputField
+                                    id="email"
+                                    type="email"
+                                    placeholder="Email Address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    icon={Mail}
+                                    required
+                                    className="text-sm sm:text-base"
+                                />
                                 <InputField
                                     id="password"
                                     type={isPasswordShown ? "text" : "password"}
                                     placeholder="Create Password"
                                     value={password}
-                                    onChange={e => setPassword(e.target.value)}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     onFocus={() => setShowPasswordRequirements(true)}
                                     onBlur={() => password.length === 0 && setShowPasswordRequirements(false)}
                                     icon={Lock}
                                     isPasswordShown={isPasswordShown}
-                                    togglePasswordVisibility={() => setIsPasswordShown(prev => !prev)}
+                                    togglePasswordVisibility={() => setIsPasswordShown((prev) => !prev)}
                                     required
+                                    className="text-sm sm:text-base"
                                 />
 
                                 {showPasswordRequirements && (
-                                    <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-1">
-                                        <p className="text-xs font-medium text-gray-500">Password must contain:</p>
+                                    <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-1 text-xs sm:text-sm">
+                                        <p className="font-medium text-gray-500">Password must contain:</p>
                                         {Object.entries({
                                             "At least 8 characters": validations.hasMinLength,
                                             "At least one letter": validations.hasLetter,
                                             "At least one number": validations.hasNumber,
-                                            "At least one special character": validations.hasSpecialChar
+                                            "At least one special character": validations.hasSpecialChar,
                                         }).map(([text, valid], idx) => (
-                                            <div key={idx} className="flex items-center gap-2 text-xs">
+                                            <div key={idx} className="flex items-center gap-2">
                                                 <ValidationIcon isValid={valid} />
                                                 <span className={valid ? "text-green-500" : "text-gray-500"}>{text}</span>
                                             </div>
@@ -224,32 +241,43 @@ const Signup = () => {
                                     </div>
                                 )}
 
-                                <Button text={isLoading ? "Creating Account..." : "Create Account"} type="submit" disabled={!isValidPassword || isLoading} className="w-full h-12 mt-4" />
-                                <div className="mt-6 relative">
+                                <Button
+                                    text={isLoading ? "Creating Account..." : "Create Account"}
+                                    type="submit"
+                                    disabled={!isValidPassword || isLoading}
+                                    className="w-full h-10 sm:h-12 mt-3 sm:mt-4 text-sm sm:text-base"
+                                />
+                                <div className="mt-4 sm:mt-6 relative">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-gray-100"></div>
                                     </div>
                                     <div className="relative flex justify-center">
-                                        <span className="px-4 bg-white text-gray-400 text-sm">or</span>
+                                        <span className="px-4 bg-white text-gray-400 text-xs sm:text-sm">or</span>
                                     </div>
                                 </div>
                                 <OAuth />
-                                <p className="text-sm text-center text-gray-500 mt-6">
-                                    Already have an account? <a href="/login" className="font-semibold text-amber-600 hover:text-amber-700">Sign in</a>
+                                <p className="text-xs sm:text-sm text-center text-gray-500 mt-4 sm:mt-6">
+                                    Already have an account?{" "}
+                                    <a href="/login" className="font-semibold text-amber-600 hover:text-amber-700">
+                                        Sign in
+                                    </a>
                                 </p>
                             </form>
                         </>
                     ) : (
                         <>
-                            <div className="text-center mb-8">
-                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-4 rounded-full shadow-md inline-block">
-                                    <PawPrint size={32} className="text-white" />
+                            <div className="text-center mb-6 sm:mb-8">
+                                <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-3 sm:p-4 rounded-full shadow-md inline-block">
+                                    <PawPrint size={24} className="text-white sm:h-8 sm:w-8" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-800 mt-4">Verify Your Email</h1>
-                                <p className="text-gray-600 mt-2">Enter the 6-digit code sent to <span className="text-amber-600 font-semibold">{email}</span></p>
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mt-4">Verify Your Email</h1>
+                                <p className="text-gray-600 mt-2 text-xs sm:text-sm">
+                                    Enter the 6-digit code sent to{" "}
+                                    <span className="text-amber-600 font-semibold">{email}</span>
+                                </p>
                             </div>
 
-                            <div className="flex justify-center gap-3 mb-6" onPaste={handleOtpPaste}>
+                            <div className="flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-6" onPaste={handleOtpPaste}>
                                 {otp.map((digit, idx) => (
                                     <InputField
                                         key={idx}
@@ -259,26 +287,39 @@ const Signup = () => {
                                         pattern="[0-9]*"
                                         maxLength={1}
                                         value={digit}
-                                        onChange={e => handleOtpChange(idx, e.target.value, e)}
-                                        onKeyDown={e => handleOtpChange(idx, e.target.value, e)}
-                                        className="w-14 h-14 text-2xl font-bold text-center border-2 rounded-lg"
+                                        onChange={(e) => handleOtpChange(idx, e.target.value, e)}
+                                        onKeyDown={(e) => handleOtpChange(idx, e.target.value, e)}
+                                        className="w-10 h-10 sm:w-14 sm:h-14 text-lg sm:text-2xl font-bold text-center border-2 rounded-lg"
                                         disabled={isLoading}
                                     />
                                 ))}
                             </div>
 
-                            <p className={`text-center text-sm ${timeLeft < 60 ? 'text-red-500' : 'text-gray-500'} mb-6`}>
-                                {timeLeft > 0 ? `Code expires in ${formatTime(timeLeft)}` : "Code has expired. Please request a new one."}
+                            <p
+                                className={`text-center text-xs sm:text-sm ${timeLeft < 60 ? "text-red-500" : "text-gray-500"
+                                    } mb-4 sm:mb-6`}
+                            >
+                                {timeLeft > 0
+                                    ? `Code expires in ${formatTime(timeLeft)}`
+                                    : "Code has expired. Please request a new one."}
                             </p>
 
-                            <Button text={isLoading ? "Verifying..." : "Verify Email"} onClick={handleVerify} disabled={isLoading || timeLeft <= 0} className="w-full mb-4" />
+                            <Button
+                                text={isLoading ? "Verifying..." : "Verify Email"}
+                                onClick={handleVerify}
+                                disabled={isLoading || timeLeft <= 0}
+                                className="w-full h-10 sm:h-12 mb-3 sm:mb-4 text-sm sm:text-base"
+                            />
 
-                            <div className="text-sm text-center text-gray-600">
+                            <div className="text-xs sm:text-sm text-center text-gray-600">
                                 Didn't receive the code?{" "}
                                 {resendDisabled ? (
                                     <span className="text-amber-600">Resend available in {countdown}s</span>
                                 ) : (
-                                    <button onClick={handleResendOtp} className="text-amber-600 font-medium hover:underline">
+                                    <button
+                                        onClick={handleResendOtp}
+                                        className="text-amber-600 font-medium hover:underline"
+                                    >
                                         Resend OTP
                                     </button>
                                 )}
@@ -288,7 +329,9 @@ const Signup = () => {
                 </div>
             </div>
 
-            {isLoading && <Loading text={showVerification ? "Verifying your email..." : "Creating your account..."} />}
+            {isLoading && (
+                <Loading text={showVerification ? "Verifying your email..." : "Creating your account..."} />
+            )}
         </div>
     );
 };
